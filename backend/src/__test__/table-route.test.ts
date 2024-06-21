@@ -9,9 +9,8 @@ describe("Sanity test", () => {
 
 describe("Invalid json format", () => {
   test("should return error", async () => {
-    const res = await request(server).delete(
-      `/table/delete/${"{tableName=mock_table_2024}"}`
-    );
+    const invalidJson = '{tableName="test_table_2024"}';
+    const res = await request(server).delete(`/table/delete/${invalidJson}`);
     expect(res.statusCode).toEqual(400);
     expect(res.body).toEqual({ error: "invalid JSON format" });
   });

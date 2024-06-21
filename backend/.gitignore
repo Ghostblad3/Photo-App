@@ -32,3 +32,4 @@ screenshots
 dummy_data
 dummy.ts
 rules.md
+*.db
