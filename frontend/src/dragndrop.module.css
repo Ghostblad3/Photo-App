@@ -1,0 +1,24 @@
+.dragdrop {
+  border: 2px solid hsl(0, 0%, 90%);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  flex: 0 0 auto;
+}
+
+.dragdrop > * {
+  margin: 10px;
+}
+
+.dragdrop h2 {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  font-weight: 600;
+}
+
+.selectButton {
+  margin-top: 100px;
+}
