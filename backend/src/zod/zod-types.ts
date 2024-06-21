@@ -39,7 +39,10 @@ const userIdType = z.string().min(1).max(50);
 
 const dayNumberType = z.string().min(1).max(10);
 
-const screenshotType = z.any().or(z.instanceof(Buffer));
+const screenshotType = z.object({
+  type: z.literal("Buffer"),
+  data: z.array(z.number()),
+});
 
 const columnNamesType = z
   .array(

@@ -1,10 +1,12 @@
 import express, { Express, Request, Response, NextFunction } from "express";
+import dotenv from "dotenv";
 import cors from "cors";
 import fs from "fs/promises";
 import tableRouter from "./routes/table-routes";
 import screenshotRouter from "./routes/screenshot-routes";
 import recordRouter from "./routes/record-routes";
 
+dotenv.config();
 const app: Express = express();
 const port = 3000;
 
@@ -42,7 +44,7 @@ app.use(
       error: err.message,
     };
 
-    if (false) {
+    if (process.env.LOG_ERRORS || false) {
       await fs.writeFile(
         `./logs/${time}.txt`,
         JSON.stringify(errorObject, null, 2)
@@ -70,8 +72,10 @@ app.all("/*", (_: Request, res: Response) => {
   res.status(404).send({ error: "route not found" });
 });
 
-const server = app.listen(port, async () => {
-  console.log(`Server is running at http://localhost:${port}`);
+const server = app.listen(process.env.PORT || 3000, async () => {
+  console.log(
+    `Server is running at http://localhost:${process.env.PORT || 3000}`
+  );
 
   try {
     await fs.access("./screenshots");

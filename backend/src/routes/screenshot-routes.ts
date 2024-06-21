@@ -1,5 +1,5 @@
-import express, { Request, Response } from "express";
-import { string, z } from "zod";
+import express, { NextFunction, Request, Response } from "express";
+import { z } from "zod";
 import fs from "fs/promises";
 import crypto from "crypto";
 import schemaValidator from "../middleware/validator-middleware";
@@ -8,8 +8,8 @@ import {
   userIdType,
   tableNameType,
   dayNumberType,
-  screenshotType,
   userIdNameType,
+  screenshotType,
 } from "../zod/zod-types";
 
 const screenshotRouter = express.Router();
@@ -19,30 +19,53 @@ screenshotRouter.post(
   "/add-user-screenshot",
   schemaValidator(
     z.object({
+      userIdName: userIdNameType,
       userId: userIdType,
       dayNumber: dayNumberType,
       tableName: tableNameType,
-      screenshot: screenshotType,
+      screenshot: z.any(),
     })
   ),
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const {
+      userIdName,
       userId,
       dayNumber,
       tableName,
       screenshot,
     }: {
+      userIdName: string;
       userId: string;
       dayNumber: string;
       tableName: string;
-      screenshot: any | Buffer;
+      screenshot: { type: "Buffer"; data: Buffer };
     } = req.body;
 
-    const screenshotAsTxt = await fs.readFile(
-      "./screenshot-as-txt/screenshot.txt"
+    // console.log(typeof screenshot.type);
+    // console.log(typeof screenshot.data);
+
+    let columnNames;
+
+    try {
+      columnNames = sqlite
+        .prepare(
+          `select * 
+          from pragma_table_info(?)`
+        )
+        .all(tableName) as { name: string }[];
+    } catch (e) {
+      return next(new Error((e as Error).toString()));
+    }
+
+    columnNames = columnNames.filter(
+      (columnName) => columnName.name !== "rec_id"
     );
 
-    const screenshot_temp = Buffer.from(screenshotAsTxt);
+    const [firstColumn] = columnNames;
+
+    if (firstColumn.name !== userIdName) {
+      return next(new Error("user does not have the correct properties"));
+    }
 
     let result;
 
@@ -51,27 +74,17 @@ screenshotRouter.post(
         .prepare(
           `select count(*) as count
           from "${tableName}"
-          where rec_id = ?`
+          where ${userIdName} = ?`
         )
         .get(userId) as { count: number };
     } catch (e) {
-      return res.send({
-        status: "error",
-        data: {},
-        error: { message: "error occured" },
-      });
+      return next(new Error((e as Error).toString()));
     }
 
     const { count } = result;
 
     if (count === 0) {
-      return res.send({
-        status: "error",
-        data: {},
-        error: {
-          message: "user not found",
-        },
-      });
+      return next(new Error("user not found"));
     }
 
     let screenshotFolderExists = false;
@@ -86,13 +99,7 @@ screenshotRouter.post(
       try {
         await fs.mkdir("./screenshots");
       } catch (e) {
-        return res.send({
-          status: "error",
-          data: {},
-          error: {
-            message: "error occured",
-          },
-        });
+        return next(new Error((e as Error).toString()));
       }
     }
 
@@ -105,24 +112,44 @@ screenshotRouter.post(
       try {
         await fs.mkdir(`./screenshots/${tableName}`);
       } catch (e) {
-        return res.send({
-          status: "error",
-          data: {},
-          error: {
-            message: "error occured",
-          },
-        });
+        return next(new Error((e as Error).toString()));
       }
     }
 
-    const hash = crypto.createHash("md5").update(screenshot_temp).digest("hex");
+    const buffer = Buffer.from(screenshot.data);
+    let hash;
+
+    try {
+      hash = crypto.createHash("md5").update(buffer).digest("hex");
+    } catch (e) {
+      return next(new Error((e as Error).toString()));
+    }
 
     const screenshotFilePath = `./screenshots/${tableName}/${hash}.png`;
 
-    await fs.writeFile(
-      `./screenshots/${tableName}/${hash}.png`,
-      screenshot_temp
-    );
+    try {
+      await fs.writeFile(screenshotFilePath, buffer, {
+        encoding: "utf8",
+      });
+    } catch (e) {
+      return next(new Error((e as Error).toString()));
+    }
+
+    let idResult;
+
+    try {
+      idResult = sqlite
+        .prepare(
+          `select rec_id
+          from "${tableName}"
+          where ${userIdName} = ?`
+        )
+        .get(userId) as { rec_id: string };
+    } catch (e) {
+      return next(new Error((e as Error).toString()));
+    }
+
+    const { rec_id } = idResult;
 
     try {
       sqlite
@@ -130,15 +157,9 @@ screenshotRouter.post(
           `insert into "${tableName}_photos"
           (dayNumber, path, photo_timestamp, rec_id) values (?, ?, ?, ?)`
         )
-        .run(dayNumber, screenshotFilePath, new Date().toISOString(), userId);
-    } catch (error) {
-      return res.send({
-        status: "error",
-        data: {},
-        error: {
-          message: "could not add screenshot to database",
-        },
-      });
+        .run(dayNumber, screenshotFilePath, new Date().toISOString(), rec_id);
+    } catch (e) {
+      return next(new Error((e as Error).toString()));
     }
 
     return res.send({
@@ -159,7 +180,7 @@ screenshotRouter.delete(
       tableName: tableNameType,
     })
   ),
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const {
       userIdName,
       userId,
@@ -168,63 +189,66 @@ screenshotRouter.delete(
       req.params["query"]
     );
 
+    let columnNames;
+
+    try {
+      columnNames = sqlite
+        .prepare(
+          `select * 
+          from pragma_table_info(?)`
+        )
+        .all(tableName) as { name: string }[];
+    } catch (e) {
+      return next(new Error((e as Error).toString()));
+    }
+
+    columnNames = columnNames.filter(
+      (columnName) => columnName.name !== "rec_id"
+    );
+
+    const [firstColumn] = columnNames;
+
+    if (firstColumn.name !== userIdName) {
+      return next(new Error("user does not have the correct properties"));
+    }
+
     let result;
 
     try {
       result = sqlite
         .prepare(
-          `select path from ${tableName}_photos
+          `select path, ${tableName}.rec_id from ${tableName}_photos
           inner join ${tableName} on ${tableName}_photos.rec_id = ${tableName}.rec_id
           where ${tableName}.${userIdName} = ?`
         )
-        .get(userId) as { path: string } | undefined;
+        .get(userId) as { path: string; rec_id: string } | undefined;
     } catch (e) {
-      return res.send({
-        status: "error",
-        data: {},
-        error: { message: "error occured" },
-      });
+      return next(new Error((e as Error).toString()));
     }
 
     if (!result) {
-      return res.send({
-        status: "error",
-        data: {},
-        error: {
-          message: "screenshot not found",
-        },
-      });
+      return next(new Error("screenshot not found"));
     }
 
-    const { path } = result;
+    const { path, rec_id } = result;
 
     if (!path) {
-      return res.send({
-        status: "error",
-        data: {},
-        error: {
-          message: "screenshot not found",
-        },
-      });
+      return next(new Error("screenshot not found"));
     }
 
     try {
-      await fs.unlink(path); // Should be done periodically by server
+      await fs.unlink(path);
+    } catch (e) {}
 
+    try {
       sqlite
         .prepare(
           `delete from ${tableName}_photos
-          where ${userIdName} = ?`
+          where rec_id = ?`
         )
-        .run(userId);
+        .run(rec_id);
     } catch (e) {
-      return res.send({
-        status: "error",
-        data: {},
-        error: {
-          message: "could not delete screenshot from database",
-        },
-      });
+      return next(new Error((e as Error).toString()));
     }
 
     return res.send({
@@ -252,20 +276,12 @@ screenshotRouter.post(
       tableName,
     }: { userId: string; dayNumber: string; tableName: string } = req.body;
 
-    try {
-      sqlite
-        .prepare(
-          `update "${tableName}_photos" set dayNumber = ? 
+    sqlite
+      .prepare(
+        `update "${tableName}_photos" set dayNumber = ? 
           where rec_id = ?`
-        )
-        .run(dayNumber, userId);
-    } catch (error) {
-      return res.send({
-        status: "error",
-        data: {},
-        error: { message: "could not update screenshot date" },
-      });
-    }
+      )
+      .run(dayNumber, userId);
 
     return res.send({
       status: "success",
@@ -284,7 +300,7 @@ screenshotRouter.get(
       tableName: tableNameType,
     })
   ),
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const { tableName, dayNumber }: { tableName: string; dayNumber: string } =
       JSON.parse(req.params["query"]);
 
@@ -305,31 +321,31 @@ screenshotRouter.get(
         path: string;
       }[];
     } catch (e) {
-      return res.send({
-        status: "error",
-        data: {},
-        error: { message: "error occured" },
-      });
+      return next(new Error((e as Error).toString()));
     }
 
     const final: {
       [key: string]: string;
     }[] = [];
 
-    for (const element of result) {
-      let tempObj: { [key: string]: string } = {};
+    try {
+      for (const element of result) {
+        let tempObj: { [key: string]: string } = {};
 
-      Object.keys(element).forEach((key) => {
-        if (key !== "path") {
-          tempObj[key] = element[key];
-        }
-      });
+        Object.keys(element).forEach((key) => {
+          if (key !== "path") {
+            tempObj[key] = element[key];
+          }
+        });
 
-      tempObj.screenshot = (
-        await fs.readFile(element.path!, { encoding: "base64" })
-      ).toString()!;
+        tempObj.screenshot = (
+          await fs.readFile(element.path!, { encoding: "base64" })
+        ).toString()!;
 
-      final.push(tempObj);
+        final.push(tempObj);
+      }
+    } catch (e) {
+      return next(new Error((e as Error).toString()));
     }
 
     return res.send({
@@ -353,23 +369,13 @@ screenshotRouter.get(
       req.params["query"]
     );
 
-    let result;
-
-    try {
-      result = sqlite
-        .prepare(
-          `select dayNumber
+    const result = sqlite
+      .prepare(
+        `select dayNumber
           from ${tableName}_photos
           group by dayNumber`
-        )
-        .all() as { dayNumber: string }[];
-    } catch (e) {
-      return res.send({
-        status: "error",
-        data: {},
-        error: { message: "error occured" },
-      });
-    }
+      )
+      .all() as { dayNumber: string }[];
 
     return res.send({
       status: "success",
@@ -387,42 +393,52 @@ screenshotRouter.get(
       tableName: tableNameType,
     })
   ),
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const { tableName }: { tableName: string } = JSON.parse(
       req.params["query"]
     );
 
-    let result = sqlite
-      .prepare(
-        `select * from ${tableName}
-        inner join ${tableName}_photos on ${tableName}_photos.photo_id = ${tableName}.rec_id`
-      )
-      .all() as {
-      [key: string]: string;
-      photo_id: string;
-      rec_id: string;
-      dayNumber: string;
-      path: string;
-    }[];
+    let result;
+
+    try {
+      result = sqlite
+        .prepare(
+          `select * from ${tableName}
+          inner join ${tableName}_photos on ${tableName}_photos.photo_id = ${tableName}.rec_id`
+        )
+        .all() as {
+        [key: string]: string;
+        photo_id: string;
+        rec_id: string;
+        dayNumber: string;
+        path: string;
+      }[];
+    } catch (e) {
+      return next(new Error((e as Error).toString()));
+    }
 
     const final: {
       [key: string]: string;
     }[] = [];
 
-    for (const element of result) {
-      let tempObj: { [key: string]: string } = {};
+    try {
+      for (const element of result) {
+        let tempObj: { [key: string]: string } = {};
 
-      Object.keys(element).forEach((key) => {
-        if (key !== "path" && key !== "rec_id" && key !== "photo_id") {
-          tempObj[key] = element[key];
-        }
-      });
+        Object.keys(element).forEach((key) => {
+          if (key !== "path" && key !== "rec_id" && key !== "photo_id") {
+            tempObj[key] = element[key];
+          }
+        });
 
-      tempObj.screenshot = (
-        await fs.readFile(element.path!, { encoding: "base64" })
-      ).toString()!;
+        tempObj.screenshot = (
+          await fs.readFile(element.path!, { encoding: "base64" })
+        ).toString()!;
 
-      final.push(tempObj);
+        final.push(tempObj);
+      }
+    } catch (e) {
+      return next(new Error((e as Error).toString()));
     }
 
     return res.send({
@@ -444,7 +460,7 @@ screenshotRouter.get(
       tableName: tableNameType,
     })
   ),
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const {
       userIdName,
       userId,
@@ -468,19 +484,11 @@ screenshotRouter.get(
           }
         | undefined;
     } catch (e) {
-      return res.send({
-        status: "error",
-        data: {},
-        error: { message: "error occured" },
-      });
+      return next(new Error((e as Error).toString()));
     }
 
     if (!result) {
-      return res.send({
-        status: "error",
-        data: {},
-        error: { message: "screenshot not found" },
-      });
+      return next(new Error("screenshot not found"));
     }
 
     let screenshot: string;
@@ -488,11 +496,7 @@ screenshotRouter.get(
     try {
       screenshot = await fs.readFile(result.path!, { encoding: "base64" })!;
     } catch (e) {
-      return res.send({
-        status: "error",
-        data: {},
-        error: { message: "screenshot not found" },
-      });
+      return next(new Error("screenshot not found"));
     }
 
     return res.send({
@@ -510,17 +514,23 @@ screenshotRouter.get(
       tableName: tableNameType,
     })
   ),
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response, next: NextFunction) => {
     const { tableName }: { tableName: string } = JSON.parse(
       req.params["query"]
     );
 
-    let columnNamesResult = sqlite
-      .prepare(
-        `select name
+    let columnNamesResult;
+
+    try {
+      columnNamesResult = sqlite
+        .prepare(
+          `select name
         from pragma_table_info(?)`
-      )
-      .all(tableName) as { name: string }[];
+        )
+        .all(tableName) as { name: string }[];
+    } catch (e) {
+      return next(new Error((e as Error).toString()));
+    }
 
     columnNamesResult = columnNamesResult.filter(
       (columnName) => columnName.name !== "rec_id"
@@ -532,16 +542,22 @@ screenshotRouter.get(
       query = query + ` ${columnName.name},`;
     });
 
-    const result = sqlite
-      .prepare(
-        `${query} dayNumber, photo_timestamp from ${tableName}_photos
+    let result;
+
+    try {
+      result = sqlite
+        .prepare(
+          `${query} dayNumber, photo_timestamp from ${tableName}_photos
         inner join ${tableName} on ${tableName}_photos.rec_id = ${tableName}.rec_id`
-      )
-      .all() as {
-      [key: string]: string;
-      dayNumber: string;
-      photo_timestamp: string;
-    }[];
+        )
+        .all() as {
+        [key: string]: string;
+        dayNumber: string;
+        photo_timestamp: string;
+      }[];
+    } catch (e) {
+      return next(new Error((e as Error).toString()));
+    }
 
     return res.send({
       status: "success",
