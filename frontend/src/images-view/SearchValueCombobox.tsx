@@ -29,10 +29,13 @@ function SearchValueCombobox() {
       resetSearch: state.resetSearch,
     })
   );
-  const { userData, setUserDataFiltered } = userDataStore((state) => ({
-    userData: state.userData,
-    setUserDataFiltered: state.setUserDataFiltered,
-  }));
+  const { userData, fetching, setUserDataFiltered } = userDataStore(
+    (state) => ({
+      userData: state.userData,
+      fetching: state.fetching,
+      setUserDataFiltered: state.setUserDataFiltered,
+    })
+  );
   const [values, setValues] = useState<{ value: string; label: string }[]>([]);
 
   useEffect(() => {
@@ -78,7 +81,7 @@ function SearchValueCombobox() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchValue]);
 
-  if (userData.length === 0)
+  if (fetching)
     return (
       <div className="p-2.5 flex gap-2 w-[300px]">
         <div className="flex gap-2 mb-2.5 ">

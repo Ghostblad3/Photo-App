@@ -23,7 +23,7 @@ screenshotRouter.post(
       userId: userIdType,
       dayNumber: dayNumberType,
       tableName: tableNameType,
-      screenshot: z.any(),
+      screenshot: screenshotType,
     })
   ),
   async (req: Request, res: Response, next: NextFunction) => {
@@ -41,20 +41,18 @@ screenshotRouter.post(
       screenshot: { type: "Buffer"; data: Buffer };
     } = req.body;
 
-    // console.log(typeof screenshot.type);
-    // console.log(typeof screenshot.data);
-
     let columnNames;
 
     try {
       columnNames = sqlite
-        .prepare(
-          `select * 
-          from pragma_table_info(?)`
-        )
+        .prepare(`select name from pragma_table_info(?)`)
         .all(tableName) as { name: string }[];
     } catch (e) {
       return next(new Error((e as Error).toString()));
+    }
+
+    if (columnNames.length === 0) {
+      return next(new Error("table not found"));
     }
 
     columnNames = columnNames.filter(
@@ -63,7 +61,9 @@ screenshotRouter.post(
 
     const [firstColumn] = columnNames;
 
-    if (firstColumn.name !== userIdName) {
+    const { name } = firstColumn;
+
+    if (name !== userIdName) {
       return next(new Error("user does not have the correct properties"));
     }
 
@@ -162,7 +162,7 @@ screenshotRouter.post(
       return next(new Error((e as Error).toString()));
     }
 
-    return res.send({
+    return res.status(201).send({
       status: "success",
       data: {},
       error: { message: "" },
@@ -194,7 +194,7 @@ screenshotRouter.delete(
     try {
       columnNames = sqlite
         .prepare(
-          `select * 
+          `select name 
           from pragma_table_info(?)`
         )
         .all(tableName) as { name: string }[];
@@ -202,14 +202,39 @@ screenshotRouter.delete(
       return next(new Error((e as Error).toString()));
     }
 
+    if (columnNames.length === 0) {
+      return next(new Error("table not found"));
+    }
+
     columnNames = columnNames.filter(
       (columnName) => columnName.name !== "rec_id"
     );
 
     const [firstColumn] = columnNames;
+    const { name } = firstColumn;
 
-    if (firstColumn.name !== userIdName) {
+    if (name !== userIdName) {
       return next(new Error("user does not have the correct properties"));
+    }
+
+    let exists;
+
+    try {
+      exists = sqlite
+        .prepare(
+          `select count(*) as count
+          from "${tableName}"
+          where ${userIdName} = ?`
+        )
+        .get(userId) as { count: number };
+    } catch (e) {
+      return next(new Error((e as Error).toString()));
+    }
+
+    const { count } = exists;
+
+    if (count === 0) {
+      return next(new Error("user not found"));
     }
 
     let result;
@@ -232,10 +257,6 @@ screenshotRouter.delete(
 
     const { path, rec_id } = result;
 
-    if (!path) {
-      return next(new Error("screenshot not found"));
-    }
-
     try {
       await fs.unlink(path);
     } catch (e) {}
@@ -251,7 +272,7 @@ screenshotRouter.delete(
       return next(new Error((e as Error).toString()));
     }
 
-    return res.send({
+    return res.status(200).send({
       status: "success",
       data: {},
       error: { message: "" },
@@ -264,6 +285,7 @@ screenshotRouter.post(
   "/update-user-screenshot-date",
   schemaValidator(
     z.object({
+      userIdName: userIdNameType,
       userId: userIdType,
       dayNumber: dayNumberType,
       tableName: tableNameType,
@@ -271,23 +293,62 @@ screenshotRouter.post(
   ),
   (req: Request, res: Response) => {
     const {
+      userIdName,
       userId,
       dayNumber,
       tableName,
-    }: { userId: string; dayNumber: string; tableName: string } = req.body;
+    }: {
+      userIdName: string;
+      userId: string;
+      dayNumber: string;
+      tableName: string;
+    } = req.body;
+
+    let columnNames;
+    columnNames = sqlite
+      .prepare(
+        `select name
+        from pragma_table_info(?)`
+      )
+      .all(tableName) as { name: string }[];
+
+    if (columnNames.length === 0) {
+      throw new Error("table not found");
+    }
+
+    columnNames = columnNames.filter(
+      (columnName) => columnName.name !== "rec_id"
+    );
+
+    const [firstColumn] = columnNames;
+    const { name } = firstColumn;
+
+    if (name !== userIdName) {
+      throw new Error("user does not have the correct properties");
+    }
+
+    const idResult = sqlite
+      .prepare(
+        `select rec_id from ${tableName} 
+        where ${name} = ?`
+      )
+      .get(userId) as { rec_id: string } | undefined;
+
+    if (!idResult) {
+      throw new Error("user not found");
+    }
+
+    const { rec_id } = idResult;
 
     sqlite
       .prepare(
-        `update "${tableName}_photos" set dayNumber = ? 
-          where rec_id = ?`
+        `update "${tableName}_photos" 
+        set dayNumber = ? 
+        where rec_id = ?`
       )
-      .run(dayNumber, userId);
+      .run(dayNumber, rec_id);
 
-    return res.send({
-      status: "success",
-      data: {},
-      error: { message: "" },
-    });
+    return res.status(204).send({});
   }
 );
 
@@ -348,7 +409,7 @@ screenshotRouter.get(
       return next(new Error((e as Error).toString()));
     }
 
-    return res.send({
+    return res.status(200).send({
       status: "success",
       data: final,
       error: { message: "" },
@@ -372,14 +433,16 @@ screenshotRouter.get(
     const result = sqlite
       .prepare(
         `select dayNumber
-          from ${tableName}_photos
-          group by dayNumber`
+        from ${tableName}_photos
+        group by dayNumber`
       )
       .all() as { dayNumber: string }[];
 
-    return res.send({
+    const days = result.map(({ dayNumber }) => dayNumber);
+
+    return res.status(200).send({
       status: "success",
-      data: result,
+      data: days,
       error: { message: "" },
     });
   }
@@ -421,35 +484,43 @@ screenshotRouter.get(
       [key: string]: string;
     }[] = [];
 
-    try {
-      for (const element of result) {
-        let tempObj: { [key: string]: string } = {};
+    for (const element of result) {
+      let tempObj: { [key: string]: string } = {};
 
-        Object.keys(element).forEach((key) => {
-          if (key !== "path" && key !== "rec_id" && key !== "photo_id") {
-            tempObj[key] = element[key];
-          }
-        });
+      Object.keys(element).forEach((key) => {
+        if (key !== "path" && key !== "rec_id" && key !== "photo_id") {
+          tempObj[key] = element[key];
+        }
+      });
 
+      try {
+        await fs.access(element.path!);
         tempObj.screenshot = (
           await fs.readFile(element.path!, { encoding: "base64" })
         ).toString()!;
-
-        final.push(tempObj);
+      } catch (e) {
+        try {
+          sqlite
+            .prepare(
+              `delete from ${tableName}_photos
+              where rec_id = ?`
+            )
+            .run(element.rec_id);
+        } catch (e) {
+          return next(new Error((e as Error).toString()));
+        }
       }
-    } catch (e) {
-      return next(new Error((e as Error).toString()));
+
+      final.push(tempObj);
     }
 
-    return res.send({
+    return res.status(200).send({
       status: "success",
       data: final,
       error: { message: "" },
     });
   }
 );
-
-// {"userIdName":"user_asm","userId":"1020489","tableName":"table_2024"}
 
 screenshotRouter.get(
   "/retrieve-user-screenshot/:query",
@@ -468,6 +539,55 @@ screenshotRouter.get(
     }: { userIdName: string; userId: string; tableName: string } = JSON.parse(
       req.params["query"]
     );
+    let columnNames;
+
+    try {
+      columnNames = sqlite
+        .prepare(
+          `select name 
+          from pragma_table_info(?)`
+        )
+        .all(tableName) as { name: string }[];
+    } catch (e) {
+      return next(new Error((e as Error).toString()));
+    }
+
+    if (columnNames.length === 0) {
+      return next(new Error("table not found"));
+    }
+
+    columnNames = columnNames.filter(
+      (columnName) => columnName.name !== "rec_id"
+    );
+
+    const [firstColumn] = columnNames;
+
+    if (firstColumn.name !== userIdName) {
+      return next(new Error("user does not have the correct properties"));
+    }
+
+    let exists;
+
+    try {
+      exists = sqlite
+        .prepare(
+          `select count(*) as count, rec_id
+          from ${tableName}
+          where ${tableName}.${userIdName} = ?`
+        )
+        .get(userId) as {
+        count: number;
+        rec_id: string;
+      };
+    } catch (e) {
+      return next(new Error((e as Error).toString()));
+    }
+
+    const { count } = exists;
+
+    if (count === 0) {
+      return next(new Error("user not found"));
+    }
 
     let result;
 
@@ -491,15 +611,27 @@ screenshotRouter.get(
       return next(new Error("screenshot not found"));
     }
 
+    const { path } = result;
     let screenshot: string;
 
     try {
-      screenshot = await fs.readFile(result.path!, { encoding: "base64" })!;
+      await fs.access(path);
+      screenshot = await fs.readFile(path, { encoding: "base64" })!;
     } catch (e) {
+      const { rec_id } = exists;
+
+      try {
+        sqlite
+          .prepare(`delete from ${tableName}_photos where rec_id = ?`)
+          .run(rec_id);
+      } catch (e) {
+        return next(new Error((e as Error).toString()));
+      }
+
       return next(new Error("screenshot not found"));
     }
 
-    return res.send({
+    return res.status(200).send({
       status: "success",
       data: screenshot,
       error: { message: "" },
@@ -525,7 +657,7 @@ screenshotRouter.get(
       columnNamesResult = sqlite
         .prepare(
           `select name
-        from pragma_table_info(?)`
+          from pragma_table_info(?)`
         )
         .all(tableName) as { name: string }[];
     } catch (e) {
@@ -547,11 +679,14 @@ screenshotRouter.get(
     try {
       result = sqlite
         .prepare(
-          `${query} dayNumber, photo_timestamp from ${tableName}_photos
-        inner join ${tableName} on ${tableName}_photos.rec_id = ${tableName}.rec_id`
+          `select * from ${tableName}_photos
+          inner join ${tableName} on ${tableName}_photos.rec_id = ${tableName}.rec_id`
         )
         .all() as {
-        [key: string]: string;
+        [key: string]: string | number;
+        rec_id: number;
+        path: string;
+        photo_id: number;
         dayNumber: string;
         photo_timestamp: string;
       }[];
@@ -559,9 +694,23 @@ screenshotRouter.get(
       return next(new Error((e as Error).toString()));
     }
 
-    return res.send({
+    let final: { [key: string]: string }[] = [];
+
+    result.forEach((element) => {
+      let tempObj: { [key: string]: string } = {};
+
+      Object.assign(tempObj, element);
+
+      delete tempObj!.rec_id;
+      delete tempObj!.photo_id;
+      delete tempObj!.path;
+
+      final.push(tempObj);
+    });
+
+    return res.status(200).send({
       status: "success",
-      data: result,
+      data: final,
       error: { message: "" },
     });
   }

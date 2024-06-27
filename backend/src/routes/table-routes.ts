@@ -3,7 +3,7 @@ import { z } from "zod";
 import fs from "fs/promises";
 import schemaValidator from "../middleware/validator-middleware";
 import sqlite from "../database/connection";
-import getFilesInDirectorySync from "../utils/util";
+import { getFilesInDirectorySync } from "../utils/util";
 import { tableNameType, columnNamesType } from "../zod/zod-types";
 
 const tableRouter = express.Router();
@@ -12,8 +12,8 @@ tableRouter.get("/names", (_, res: Response) => {
   let data = sqlite
     .prepare(
       `select name
-        from sqlite_master
-        where type='table';`
+      from sqlite_master
+      where type='table';`
     )
     .all() as { name: string }[];
 
@@ -21,7 +21,9 @@ tableRouter.get("/names", (_, res: Response) => {
     (item) => item.name !== "sqlite_sequence" && !item.name.endsWith("_photos")
   );
 
-  return res.send({ status: "success", data, error: { message: "" } });
+  return res
+    .status(200)
+    .send({ status: "success", data, error: { message: "" } });
 });
 
 tableRouter.post(
@@ -38,7 +40,7 @@ tableRouter.post(
       columnNames,
     }: { tableName: string; columnNames: string[] } = req.body;
 
-    let queryA = `create table if not exists ${tableName} (rec_id integer not null,`;
+    let queryA = `create table ${tableName} (rec_id integer not null,`;
 
     columnNames.forEach((columnName, index) => {
       queryA += `${columnName} text not null ${index === 0 ? "unique" : ""},`;
@@ -46,7 +48,7 @@ tableRouter.post(
 
     queryA += `primary key("rec_id"));`;
 
-    const queryB = `create table if not exists ${tableName}_photos (
+    const queryB = `create table ${tableName}_photos (
       photo_id integer not null,
       dayNumber text not null,
       path text not null unique,
@@ -72,10 +74,14 @@ tableRouter.post(
     try {
       await fs.mkdir(`./screenshots/${tableName}`);
     } catch (e) {
+      sqlite.prepare(`drop table "${tableName}"`).run();
+
       return next(new Error("error occured during creating table folder"));
     }
 
-    return res.send({ status: "success", data: {}, error: { message: "" } });
+    return res
+      .status(201)
+      .send({ status: "success", data: {}, error: { message: "" } });
   }
 );
 
@@ -97,7 +103,7 @@ tableRouter.delete(
       result = sqlite
         .prepare(
           `select path
-          from "table_2024_photos"`
+          from "${tableName}_photos"`
         )
         .all() as { path: string }[];
     } catch (e) {
@@ -111,7 +117,10 @@ tableRouter.delete(
     }
 
     try {
-      await fs.rmdir(`./screenshots/${tableName}`);
+      await fs.rm(`./screenshots/${tableName}`, {
+        recursive: true,
+        force: true,
+      });
     } catch (e) {}
 
     let tsx;
@@ -127,7 +136,9 @@ tableRouter.delete(
       return next(new Error((e as Error).toString()));
     }
 
-    return res.send({ status: "success", data: {}, error: { message: "" } });
+    return res
+      .status(200)
+      .send({ status: "success", data: {}, error: { message: "" } });
   }
 );
 
@@ -152,7 +163,7 @@ tableRouter.get(
 
     const { count } = result;
 
-    return res.send({
+    return res.status(200).send({
       status: "success",
       data: count,
       error: { message: "" },
@@ -181,7 +192,7 @@ tableRouter.get(
 
     const { count } = result;
 
-    return res.send({
+    return res.status(200).send({
       status: "success",
       data: count,
       error: { message: "" },
@@ -201,6 +212,28 @@ tableRouter.get(
       req.params["query"]
     );
 
+    let result;
+
+    try {
+      result = sqlite
+        .prepare(
+          `select name
+          from sqlite_master
+          where type='table';`
+        )
+        .all() as { name: string }[];
+    } catch (e) {
+      return next(new Error((e as Error).toString()));
+    }
+
+    result = result
+      .filter((item) => !item.name.endsWith("_photos"))
+      .map((item) => item.name);
+
+    if (!result.includes(tableName)) {
+      return next(new Error("table not found"));
+    }
+
     let bytes: number | null = null;
 
     try {
@@ -210,7 +243,7 @@ tableRouter.get(
       return next(new Error((e as Error).toString()));
     }
 
-    return res.send({
+    return res.status(200).send({
       status: "success",
       data: bytes ? bytes : 0,
       error: { message: "" },
@@ -245,7 +278,7 @@ tableRouter.get(
       .map((item) => item.name)
       .filter((item) => item !== "rec_id");
 
-    return res.send({
+    return res.status(200).send({
       status: "success",
       data: columnNames,
       error: { message: "" },

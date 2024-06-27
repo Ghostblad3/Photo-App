@@ -1,16 +1,23 @@
 import request from "supertest";
-import server from "../server";
+import { server } from "../server";
+import {
+  createUserTable,
+  createPhotoTable,
+  dropTables,
+  insertUser,
+  deleteUser,
+  insertPhoto,
+  movePhotoToFolder,
+  deletePhotoFromFolder,
+} from "../testPrepareFunctions";
 
-describe("Sanity test", () => {
-  test("1 should equal 1", () => {
-    expect(1).toBe(1);
-  });
-});
+jest.setTimeout(30000);
 
-describe("Invalid json format", () => {
+describe("Send json with invalid format to an api route", () => {
   test("should return error", async () => {
     const invalidJson = '{tableName="test_table_2024"}';
     const res = await request(server).delete(`/table/delete/${invalidJson}`);
+
     expect(res.statusCode).toEqual(400);
     expect(res.body).toEqual({ error: "invalid JSON format" });
   });
@@ -20,9 +27,10 @@ describe("Invalid json format", () => {
   });
 });
 
-describe("Unregisted route", () => {
+describe("Call an api route that doesn't exist", () => {
   test("should return error", async () => {
-    const res = await request(server).get("/random-route/user");
+    const res = await request(server).get("/table/random-route");
+
     expect(res.statusCode).toEqual(404);
     expect(res.body).toEqual({ error: "route not found" });
   });
@@ -32,7 +40,12 @@ describe("Unregisted route", () => {
   });
 });
 
-describe("Get table names", () => {
+describe("Get table names for user tables", () => {
+  beforeAll(() => {
+    createUserTable("test_table_2024");
+    createUserTable("other_table_2024");
+  });
+
   test("should return success", async () => {
     const res = await request(server).get("/table/names");
 
@@ -40,23 +53,30 @@ describe("Get table names", () => {
     expect(res.body).toMatchObject({
       status: "success",
       data: expect.arrayContaining([
-        expect.objectContaining({ name: "table_2024" }),
-        expect.objectContaining({ name: "mock_table_2024" }),
         expect.objectContaining({ name: "test_table_2024" }),
+        expect.objectContaining({ name: "other_table_2024" }),
       ]),
       error: { message: "" },
     });
   });
 
-  afterAll(() => {
+  afterAll(async () => {
+    dropTables(["test_table_2024", "other_table_2024"]);
+
     server.close();
   });
 });
 
 describe("Delete a table that exists", () => {
+  beforeAll(async () => {
+    createUserTable();
+    createPhotoTable();
+    await movePhotoToFolder();
+  });
+
   test("should return success", async () => {
     const obj = {
-      tableName: "mock_table_2024",
+      tableName: "test_table_2024",
     };
 
     const res = await request(server).delete(
@@ -71,6 +91,30 @@ describe("Delete a table that exists", () => {
     });
   });
 
+  afterAll(async () => {
+    await deletePhotoFromFolder();
+    server.close();
+  });
+});
+
+describe("Delete a table that doesn't exist", () => {
+  test("should return error", async () => {
+    const obj = {
+      tableName: "test_table_2024",
+    };
+
+    const res = await request(server).delete(
+      `/table/delete/${JSON.stringify(obj)}`
+    );
+
+    expect(res.statusCode).toEqual(404);
+    expect(res.body).toEqual({
+      status: "error",
+      data: {},
+      error: { message: "table not found" },
+    });
+  });
+
   afterAll(() => {
     server.close();
   });
@@ -81,11 +125,11 @@ describe("Create a new table", () => {
     const res = await request(server)
       .post("/table/create")
       .send({
-        tableName: "mock_table_2024",
+        tableName: "test_table_2024",
         columnNames: ["firstName", "lastName"],
       });
 
-    expect(res.statusCode).toEqual(200);
+    expect(res.statusCode).toEqual(201);
     expect(res.body).toEqual({
       status: "success",
       data: {},
@@ -93,37 +137,54 @@ describe("Create a new table", () => {
     });
   });
 
-  afterAll(() => {
+  afterAll(async () => {
+    dropTables();
+    await deletePhotoFromFolder();
+
     server.close();
   });
 });
 
 describe("Create a new table that already exists", () => {
+  beforeAll(async () => {
+    createUserTable();
+    createPhotoTable();
+    await movePhotoToFolder();
+  });
+
   test("should return error", async () => {
     const res = await request(server)
       .post("/table/create")
       .send({
-        tableName: "mock_table_2024",
+        tableName: "test_table_2024",
         columnNames: ["firstName", "lastName"],
       });
 
-    expect(res.statusCode).toEqual(500);
+    expect(res.statusCode).toEqual(409);
     expect(res.body).toEqual({
       status: "error",
       data: {},
-      error: { message: expect.any(String) },
+      error: { message: "table already exists" },
     });
   });
 
-  afterAll(() => {
+  afterAll(async () => {
+    dropTables();
+    await deletePhotoFromFolder();
+
     server.close();
   });
 });
 
-describe("Count records in mock_table_2024", () => {
+describe("Count records of users in specific table ", () => {
+  beforeAll(() => {
+    createUserTable();
+    insertUser();
+  });
+
   test("should return success", async () => {
     const obj = {
-      tableName: "mock_table_2024",
+      tableName: "test_table_2024",
     };
 
     const res = await request(server).get(
@@ -133,32 +194,35 @@ describe("Count records in mock_table_2024", () => {
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual({
       status: "success",
-      data: 0,
+      data: 1,
       error: { message: "" },
     });
   });
 
   afterAll(() => {
+    deleteUser();
+    dropTables();
+
     server.close();
   });
 });
 
-describe("Count records in unknown table", () => {
+describe("Count records in table that doesn't exist", () => {
   test("should return error", async () => {
     const obj = {
-      tableName: "unknown_table",
+      tableName: "test_table_2024",
     };
 
     const res = await request(server).get(
       `/table/count-records/${JSON.stringify(obj)}`
     );
 
-    expect(res.statusCode).toEqual(500);
+    expect(res.statusCode).toEqual(404);
     expect(res.body).toEqual({
       status: "error",
       data: {},
       error: {
-        message: expect.any(String),
+        message: "table not found",
       },
     });
   });
@@ -168,10 +232,17 @@ describe("Count records in unknown table", () => {
   });
 });
 
-describe("Count screenshots in mock_table_2024", () => {
+describe("Count screenshots for users of specific table", () => {
+  beforeAll(() => {
+    createUserTable();
+    createPhotoTable();
+    insertUser();
+    insertPhoto();
+  });
+
   test("should return success", async () => {
     const obj = {
-      tableName: "mock_table_2024",
+      tableName: "test_table_2024",
     };
 
     const res = await request(server).get(
@@ -181,20 +252,31 @@ describe("Count screenshots in mock_table_2024", () => {
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual({
       status: "success",
-      data: 0,
+      data: 1,
       error: { message: "" },
     });
   });
 
   afterAll(() => {
+    deleteUser();
+    dropTables();
+
     server.close();
   });
 });
 
-describe("Get screenshot size for mock_table_2024", () => {
+describe("Get screenshot size of users of specific table", () => {
+  beforeAll(async () => {
+    createUserTable();
+    createPhotoTable();
+    insertUser();
+    insertPhoto();
+    await movePhotoToFolder();
+  });
+
   test("should return success", async () => {
     const obj = {
-      tableName: "mock_table_2024",
+      tableName: "test_table_2024",
     };
 
     const res = await request(server).get(
@@ -204,31 +286,35 @@ describe("Get screenshot size for mock_table_2024", () => {
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual({
       status: "success",
-      data: 0,
+      data: expect.any(Number),
       error: { message: "" },
     });
   });
 
-  afterAll(() => {
+  afterAll(async () => {
+    deleteUser();
+    dropTables();
+    await deletePhotoFromFolder();
+
     server.close();
   });
 });
 
-describe("Get screenshot size for unknown table", () => {
+describe("Get screenshot size for table that doesn't exist", () => {
   test("should return error", async () => {
     const obj = {
-      tableName: "uknown_table",
+      tableName: "test_table_2024",
     };
 
     const res = await request(server).get(
       `/table/screenshots-size/${JSON.stringify(obj)}`
     );
 
-    expect(res.statusCode).toEqual(500);
+    expect(res.statusCode).toEqual(404);
     expect(res.body).toEqual({
       status: "error",
       data: {},
-      error: { message: expect.any(String) },
+      error: { message: "table not found" },
     });
   });
 
@@ -237,10 +323,14 @@ describe("Get screenshot size for unknown table", () => {
   });
 });
 
-describe("Get column names for known table", () => {
+describe("Get column names for users of specific table", () => {
+  beforeAll(() => {
+    createUserTable();
+  });
+
   test("should return success", async () => {
     const obj = {
-      tableName: "mock_table_2024",
+      tableName: "test_table_2024",
     };
 
     const res = await request(server).get(
@@ -250,31 +340,33 @@ describe("Get column names for known table", () => {
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual({
       status: "success",
-      data: ["firstName", "lastName"],
+      data: expect.arrayContaining(["user_asm", "firstName", "lastName"]),
       error: { message: "" },
     });
   });
 
   afterAll(() => {
+    dropTables();
+
     server.close();
   });
 });
 
-describe("Get column names for unknown table", () => {
+describe("Get column names for table that doesn't exist", () => {
   test("should return error", async () => {
     const obj = {
-      tableName: "unknown_table",
+      tableName: "test_table_2024",
     };
 
     const res = await request(server).get(
       `/table/table-column-names/${JSON.stringify(obj)}`
     );
 
-    expect(res.statusCode).toEqual(500);
+    expect(res.statusCode).toEqual(404);
     expect(res.body).toEqual({
       status: "error",
       data: {},
-      error: { message: expect.any(String) },
+      error: { message: "table not found" },
     });
   });
 

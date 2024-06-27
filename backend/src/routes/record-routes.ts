@@ -33,8 +33,8 @@ recordRouter.post(
     const tableExists = sqlite
       .prepare(
         `select name
-          from sqlite_master
-          where type = 'table' and name = ?;`
+        from sqlite_master
+        where type = 'table' and name = ?;`
       )
       .get(tableName) as { name: string } | undefined;
 
@@ -45,7 +45,7 @@ recordRouter.post(
     const queryResult = sqlite
       .prepare(
         `select name
-          from pragma_table_info(?)`
+        from pragma_table_info(?)`
       )
       .all(tableName) as { name: string }[];
 
@@ -96,97 +96,13 @@ recordRouter.post(
 
     tsx(users);
 
-    res.send({
+    res.status(201).send({
       status: "success",
       data: {},
       error: { message: "" },
     });
   }
 );
-
-// recordRouter.post(
-//   "/add-new-user",
-//   schemaValidator(
-//     z.object({
-//       tableName: tableNameType,
-//       user: userType,
-//     })
-//   ),
-//   (req: Request, res: Response) => {
-//     const {
-//       tableName,
-//       user,
-//     }: {
-//       tableName: string;
-//       user: { [key: string]: string };
-//     } = req.body;
-
-//     const tableExists = sqlite
-//       .prepare(
-//         `select name
-//           from sqlite_master
-//           where type = 'table' and name = ?`
-//       )
-//       .get(tableName) as { name: string } | undefined;
-
-//     if (!tableExists) {
-//       throw new Error("table not found");
-//     }
-
-//     const queryResult = sqlite
-//       .prepare(
-//         `select name
-//           from PRAGMA_TABLE_INFO(?)`
-//       )
-//       .all(tableName) as { name: string }[];
-
-//     const columnNames = queryResult.map((item) => item.name);
-
-//     const [firstColName, ...rest] = columnNames;
-
-//     if (user[firstColName] || Object.keys(user).length !== rest.length) {
-//       throw new Error("user does not have the correct properties");
-//     }
-
-//     rest.forEach((columnName) => {
-//       if (!user[columnName]) {
-//         throw new Error("user does not have the correct properties");
-//       }
-//     });
-
-//     const [secondColName, _] = rest;
-
-//     const result = sqlite
-//       .prepare(
-//         `select count(*) as count
-//           from ${tableName}
-//           where ${secondColName} = ?`
-//       )
-//       .get(user[secondColName]) as { count: number };
-
-//     const { count } = result;
-
-//     if (count > 0) {
-//       throw new Error("user already exists");
-//     }
-
-//     sqlite
-//       .prepare(
-//         `insert into ${tableName} (${rest
-//           .map((columnName) => `${columnName}`)
-//           .join(",")}) values (${rest.map(() => "?").join(",")})`
-//       )
-//       .run(Object.values(user));
-
-//     return res.send({
-//       status: "success",
-//       data: {},
-//       error: {
-//         message: "",
-//       },
-//     });
-//   }
-// );
 
 recordRouter.delete(
   "/remove-user/:query",
@@ -205,6 +121,31 @@ recordRouter.delete(
       userId: string;
       tableName: string;
     };
+
+    let columnNames;
+
+    try {
+      columnNames = sqlite
+        .prepare(
+          `select name
+          from pragma_table_info(?)`
+        )
+        .all(tableName) as { name: string }[];
+    } catch (e) {
+      return next(new Error((e as Error).toString()));
+    }
+
+    if (columnNames.length === 0) {
+      return next(new Error("table not found"));
+    }
+
+    columnNames = columnNames.filter((item) => item.name !== "rec_id");
+
+    const [firstColumnName] = columnNames;
+
+    if (firstColumnName.name !== userIdName) {
+      return next(new Error("user does not have the correct properties"));
+    }
 
     let photoPath;
 
@@ -226,7 +167,8 @@ recordRouter.delete(
     try {
       countResult = sqlite
         .prepare(
-          `select count(*) as count from ${tableName}
+          `select count(*) as count
+          from ${tableName}
           where ${userIdName} = ?`
         )
         .get(userId) as { count: number };
@@ -259,7 +201,7 @@ recordRouter.delete(
       } catch (e) {}
     }
 
-    res.send({
+    res.status(200).send({
       status: "success",
       data: {},
       error: {
@@ -284,16 +226,16 @@ recordRouter.get(
     let result = sqlite
       .prepare(
         `select *
-          from ${tableName}`
+        from ${tableName}`
       )
-      .all() as { [key: string]: string }[];
+      .all() as { [key: string]: string | number }[];
 
     result = result.map((user) => {
       delete user.rec_id;
       return user;
     });
 
-    res.send({
+    res.status(200).send({
       status: "success",
       data: result,
       error: {
@@ -328,7 +270,7 @@ recordRouter.delete(
       return next(new Error((e as Error).toString()));
     }
 
-    for (const { path } of result!) {
+    for (const { path } of result) {
       try {
         await fs.unlink(path);
       } catch (e) {}
@@ -340,7 +282,9 @@ recordRouter.delete(
       return next(new Error((e as Error).toString()));
     }
 
-    return res.send({ status: "success", data: {}, error: { message: "" } });
+    return res
+      .status(200)
+      .send({ status: "success", data: {}, error: { message: "" } });
   }
 );
 
@@ -358,23 +302,36 @@ recordRouter.post(
       tableName,
       userId,
       user,
-    }: { tableName: string; userId: string; user: { [key: string]: string } } =
-      req.body;
+    }: {
+      tableName: string;
+      userId: string;
+      user: { [key: string]: string };
+    } = req.body;
 
     let result = sqlite
       .prepare(
         `select name
-          from pragma_table_info(?)`
+        from pragma_table_info(?)`
       )
       .all(tableName) as { name: string }[];
 
-    const columnNames = result!
+    if (result.length === 0) {
+      throw new Error("table not found");
+    }
+
+    const columnNames = result
       .map((item) => item.name)
       .filter((item) => item !== "rec_id");
 
-    const userKeys = Object.keys(user);
+    const [firstColumnName] = columnNames;
 
-    if (columnNames.length !== userKeys.length) {
+    const userKeys = Object.keys(user);
+    const [userIdName] = userKeys;
+
+    if (
+      firstColumnName !== userIdName ||
+      columnNames.length !== userKeys.length
+    ) {
       throw new Error("user does not have the correct properties");
     }
 
@@ -384,19 +341,33 @@ recordRouter.post(
       }
     });
 
-    if (userId !== user[columnNames[0]]) {
+    const countResult = sqlite
+      .prepare(
+        `select count(*) as count
+        from ${tableName}
+        where ${firstColumnName} = ?`
+      )
+      .get(userId) as { count: number };
+
+    const { count } = countResult;
+
+    if (count === 0) {
+      throw new Error("user not found");
+    }
+
+    if (userId !== user[firstColumnName]) {
       let result = sqlite
         .prepare(
           `select count(*) as count
-            from ${tableName}
-            where ${columnNames[0]} = ?`
+          from ${tableName}
+          where ${firstColumnName} = ?`
         )
-        .get(user[columnNames[0]]) as { count: number };
+        .get(user[firstColumnName]) as { count: number };
 
       const { count } = result!;
 
       if (count === 1) {
-        throw new Error("there is another user with that id");
+        throw new Error("new user id already exists");
       }
     }
 
@@ -415,17 +386,11 @@ recordRouter.post(
       counter++;
     }
 
-    query += `where ${userKeys[0]} = ?`;
+    query += `where ${firstColumnName} = ?`;
 
     sqlite.prepare(query).run(Object.values(user), userId);
 
-    return res.send({
-      status: "success",
-      data: {},
-      error: {
-        message: "",
-      },
-    });
+    return res.status(204).send({});
   }
 );
 

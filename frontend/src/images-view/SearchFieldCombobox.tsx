@@ -26,7 +26,10 @@ function SearchFieldCombobox() {
     setSearchField: state.setSearchField,
     resetSearch: state.resetSearch,
   }));
-  const userData = userDataStore((state) => state.userData);
+  const { userData, fetching } = userDataStore((state) => ({
+    userData: state.userData,
+    fetching: state.fetching,
+  }));
   const [values, setValues] = useState<
     {
       value: string;
@@ -53,7 +56,7 @@ function SearchFieldCombobox() {
     setValues(values);
   }, [userData]);
 
-  if (userData.length === 0)
+  if (fetching)
     return (
       <div className="p-2.5 flex gap-2 w-[300px]">
         <div className="flex gap-2 mb-2.5 ">

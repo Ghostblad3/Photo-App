@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Switch } from "../components/ui/switch";
 import { Label } from "../components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import Card from "./Card";
 import selectedTableInfoStore from "./stores/selectedTableInfoStore";
-import { Skeleton } from "@/components/ui/skeleton";
 
 function Cards() {
   const [showCards, setShowCards] = useState(true);

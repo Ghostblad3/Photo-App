@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Layout from "./Layout.tsx";
+import TestComponent from "./test-view/TestComponent.tsx";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -16,6 +17,7 @@ function App() {
     <>
       <QueryClientProvider client={queryClient}>
         <Layout />
+        {/* <TestComponent /> */}
       </QueryClientProvider>
     </>
   );

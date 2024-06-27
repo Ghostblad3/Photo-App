@@ -14,9 +14,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import searchStore from "./stores/searchStore";
 import userDataStore from "./stores/userDataStore";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 function SearchValueCombobox() {
   const [open, setOpen] = useState(false);

@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import userDataStore from "./stores/userDataStore";
 import deleteUserScreenshotStore from "./stores/deleteUserScreenshotStore";
-import modifyOperationStore from "./stores/modifyOperationStore";
+import operationStore from "./stores/operationStore";
 
 function DeleteUserScreenshotDialog() {
   const deleteUserScreenshot = userDataStore(
@@ -31,7 +31,7 @@ function DeleteUserScreenshotDialog() {
     setDeleteUserScreenshotShowDialog: state.setDeleteUserScreenshotShowDialog,
     resetDeleteUserScreenshotStore: state.resetDeleteUserScreenshotStore,
   }));
-  const { setStatus, setOperation } = modifyOperationStore((state) => ({
+  const { setStatus, setOperation } = operationStore((state) => ({
     setStatus: state.setStatus,
     setOperation: state.setOperation,
   }));

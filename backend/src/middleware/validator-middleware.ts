@@ -7,12 +7,6 @@ export default function schemaValidator(schema: z.ZodObject<any, any>) {
 
     let validationResult;
 
-    // if (method === "POST") {
-    //   console.log(req.body);
-    // } else {
-    //   console.log(JSON.parse(req.params["query"]));
-    // }
-
     try {
       validationResult = schema.safeParse(
         method === "POST" ? req.body : JSON.parse(req.params["query"])

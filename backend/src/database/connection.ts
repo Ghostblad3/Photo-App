@@ -1,5 +1,10 @@
 import Database from "better-sqlite3";
+import dotenv from "dotenv";
 
-const sqlite = new Database("sqlite.db");
+dotenv.config();
+
+const sqlite = new Database(
+  process.env.NODE_ENVIRONMENT === "TEST" ? ":memory:" : "sqlite.db"
+);
 
 export default sqlite;

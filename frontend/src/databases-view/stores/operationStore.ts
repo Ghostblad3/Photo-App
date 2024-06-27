@@ -3,15 +3,15 @@ import { create } from "zustand";
 type Status = "nop" | "pending" | "success" | "error";
 type Operation = "nop" | "create" | "update" | "delete";
 
-interface ModifyOperation {
+interface OperationStore {
   status: Status;
   operation: Operation;
   setStatus: (status: Status) => void;
   setOperation: (operation: Operation) => void;
-  resetModifyOpeation: () => void;
+  resetOperationStore: () => void;
 }
 
-const modifyOperationStore = create<ModifyOperation>((set) => ({
+const operationStore = create<OperationStore>((set) => ({
   status: "nop",
   operation: "nop",
   setStatus: (status) =>
@@ -22,7 +22,7 @@ const modifyOperationStore = create<ModifyOperation>((set) => ({
     set(() => ({
       operation: operation,
     })),
-  resetModifyOpeation: () => set({ status: "nop" }),
+  resetOperationStore: () => set({ status: "nop", operation: "nop" }),
 }));
 
-export default modifyOperationStore;
+export default operationStore;

@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { CircleX } from "lucide-react";
 import userDataStore from "./stores/userDataStore";
 import addNewUserStore from "./stores/addNewUserStore";
-import modifyOperationStore from "./stores/modifyOperationStore";
+import operationStore from "./stores/operationStore";
 
 function AddNewUserDialog() {
   const {
@@ -30,7 +30,7 @@ function AddNewUserDialog() {
     addUser: state.addUser,
   }));
 
-  const { setStatus, setOperation } = modifyOperationStore((state) => ({
+  const { setStatus, setOperation } = operationStore((state) => ({
     setStatus: state.setStatus,
     setOperation: state.setOperation,
   }));

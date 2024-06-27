@@ -19,6 +19,7 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { columns } from "./columns";
 import SearchValueCombobox from "./SearchValueCombobox";
 import SearchFieldCombobox from "./SearchFieldCombobox";
 import DeleteUserScreenshotDialog from "./DeleteUserScreenshotDialog";
@@ -33,11 +34,8 @@ import ScreenshotDialog from "./ScreenshotDialog";
 import AddNewUserDialog from "./AddNewUserDialog";
 import deleteUserScreenshotStore from "./stores/deleteUserScreenshotStore";
 import updateUserInfoStore from "./stores/updateUserInfoStore";
-import modifyOperationStore from "./stores/modifyOperationStore";
-import { columns } from "./columns";
+import operationStore from "./stores/operationStore";
 
-// Original Table is wrapped with a <div> (see https://ui.shadcn.com/docs/components/table#radix-:r24:-content-manual),
-// but here we don't want it, so let's use a new component with only <table> tag
 const TableComponent = forwardRef<
   HTMLTableElement,
   React.HTMLAttributes<HTMLTableElement>
@@ -94,17 +92,17 @@ export function DataTable<TData, TValue>() {
     updateUserInfoStoreProps: state.updateUserInfoStoreProps,
     setUpdateUserInfoStoreProps: state.setUpdateUserInfoStoreProps,
   }));
-  const { status, setStatus, resetModifyOpeation } = modifyOperationStore(
+  const { status, setStatus, resetOperationStore } = operationStore(
     (state) => ({
       status: state.status,
       setStatus: state.setStatus,
-      resetModifyOpeation: state.resetModifyOpeation,
+      resetOperationStore: state.resetOperationStore,
     })
   );
 
   useEffect(() => {
     return () => {
-      resetModifyOpeation();
+      resetOperationStore();
       resetUserData();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

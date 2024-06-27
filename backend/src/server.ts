@@ -2,19 +2,31 @@ import express, { Express, Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import fs from "fs/promises";
+import sqlite from "./database/connection";
 import tableRouter from "./routes/table-routes";
 import screenshotRouter from "./routes/screenshot-routes";
 import recordRouter from "./routes/record-routes";
+import { getErrorCodeAndMessage, errorLogger } from "./utils/util";
 
 dotenv.config();
 const app: Express = express();
-const port = 3000;
 
 app.use(express.json());
 app.use(cors({ origin: "http://localhost:5173", optionsSuccessStatus: 200 }));
 app.use("/table", tableRouter);
 app.use("/screenshot", screenshotRouter);
 app.use("/record", recordRouter);
+
+let counter = 1;
+app.get("/test-route", (req, res) => {
+  if (counter % 2 === 0) {
+    counter++;
+    return res.send({ message: "ok" });
+  }
+
+  counter++;
+  return res.status(500).send({ message: "not ok" });
+});
 
 app.use(
   async (
@@ -29,12 +41,6 @@ app.use(
       return res.status(400).send({ error: "invalid JSON format" });
     }
 
-    const time = new Date()
-      .toISOString()
-      .replace(".", "-")
-      .replace(":", "-")
-      .replace(":", "-");
-
     const errorObject = {
       method: req.method,
       url: req.url,
@@ -44,25 +50,34 @@ app.use(
       error: err.message,
     };
 
-    if (process.env.LOG_ERRORS || false) {
-      await fs.writeFile(
-        `./logs/${time}.txt`,
-        JSON.stringify(errorObject, null, 2)
+    let url = req.url.replace("/", "=");
+    if (url.includes("/")) url = url.replace("/", "=");
+    if (url.includes("/")) url = url.replace("/", "=");
+    if (url.includes("%")) url = url.split("%")[0];
+
+    await fs.appendFile(
+      "./logs/reasons.txt",
+      `${JSON.stringify(errorObject, null, 2)}\n`
+    );
+
+    if (process.env.LOG_ERRORS === "TRUE") {
+      errorLogger(errorObject, url, req.method);
+    }
+
+    const { statusCode, messageReturned } = getErrorCodeAndMessage(err.message);
+
+    if (messageReturned === "an unexpected error occurred") {
+      await fs.appendFile(
+        "./logs/unexpected-errors.txt",
+        `${JSON.stringify(errorObject, null, 2)}\n`
       );
     }
 
-    if (err.name === "SqliteError") {
-      if (err.message.includes("")) {
-      } else if (err.message.includes("")) {
-      }
-    } else if (err.name === "Error") {
-    }
-
-    return res.status(500).send({
+    return res.status(statusCode).send({
       status: "error",
       data: {},
       error: {
-        message: err.message,
+        message: messageReturned,
       },
     });
   }
@@ -84,4 +99,4 @@ const server = app.listen(process.env.PORT || 3000, async () => {
   }
 });
 
-export default server;
+export { server, sqlite };

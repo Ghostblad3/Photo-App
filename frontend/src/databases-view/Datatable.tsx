@@ -38,7 +38,7 @@ import ScreenshotDialog from "./ScreenshotDialog";
 import AddNewUserDialog from "./AddNewUserDialog";
 import deleteUserScreenshotStore from "./stores/deleteUserScreenshotStore";
 import updateUserInfoStore from "./stores/updateUserInfoStore";
-import modifyOperationStore from "./stores/modifyOperationStore";
+import operationStore from "./stores/operationStore";
 
 export function DataTable<TData, TValue>() {
   const { userData, resetUserData } = userDataStore((state) => ({
@@ -84,11 +84,11 @@ export function DataTable<TData, TValue>() {
     updateUserInfoStoreProps: state.updateUserInfoStoreProps,
     setUpdateUserInfoStoreProps: state.setUpdateUserInfoStoreProps,
   }));
-  const { status, setStatus, resetModifyOpeation } = modifyOperationStore(
+  const { status, setStatus, resetOperationStore } = operationStore(
     (state) => ({
       status: state.status,
       setStatus: state.setStatus,
-      resetModifyOpeation: state.resetModifyOpeation,
+      resetOperationStore: state.resetOperationStore,
     })
   );
 
@@ -111,7 +111,7 @@ export function DataTable<TData, TValue>() {
 
   useEffect(() => {
     return () => {
-      resetModifyOpeation();
+      resetOperationStore();
       resetUserData();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

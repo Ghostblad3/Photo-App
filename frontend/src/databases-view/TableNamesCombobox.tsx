@@ -58,7 +58,13 @@ function TableNamesCombobox() {
 
       const timeTaken = Date.now() - startTime;
 
-      if (!response.ok) return {};
+      if (!response.ok) {
+        switch (response.status) {
+          case 500:
+        }
+
+        return {};
+      }
 
       const receivedObject: {
         status: string;
@@ -66,9 +72,7 @@ function TableNamesCombobox() {
         error: { message: string };
       } = await response.json();
 
-      const { status, data } = receivedObject;
-
-      if (status === "error") return {};
+      const { data } = receivedObject;
 
       if (timeTaken < 500) {
         await new Promise((resolve) => {
@@ -90,6 +94,7 @@ function TableNamesCombobox() {
           <Skeleton className="h-[40px] w-full" />
         </>
       ) : null}
+
       {tableNames.length !== 0 ? (
         <>
           <h1 className="mb-2">Tables</h1>
@@ -100,6 +105,7 @@ function TableNamesCombobox() {
                 role="combobox"
                 aria-expanded={open}
                 className="w-[100%] justify-between"
+                disabled={true}
               >
                 {selectedTableInfo.tableName !== ""
                   ? tableNames.find(

@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { CircleX } from "lucide-react";
 import updateUserInfoStore from "./stores/updateUserInfoStore";
 import userDataStore from "./stores/userDataStore";
-import modifyOperationStore from "./stores/modifyOperationStore";
+import operationStore from "./stores/operationStore";
 
 function UpdateUserDialog() {
   const {
@@ -37,7 +37,7 @@ function UpdateUserDialog() {
     updateUser: state.updateUser,
   }));
 
-  const { setStatus, setOperation } = modifyOperationStore((state) => ({
+  const { setStatus, setOperation } = operationStore((state) => ({
     setStatus: state.setStatus,
     setOperation: state.setOperation,
   }));
@@ -99,20 +99,14 @@ function UpdateUserDialog() {
         }),
       });
 
+      console.log(result);
+
       if (!result.ok) {
         setStatus("error");
         return {};
       }
 
-      const json: {
-        status: string;
-        data: [];
-        error: { message: string };
-      } = await result.json();
-
-      const { status } = json;
-
-      if (status !== "success") {
+      if (result.status !== 204) {
         setStatus("error");
         return {};
       }

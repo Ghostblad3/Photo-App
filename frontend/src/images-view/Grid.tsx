@@ -21,14 +21,23 @@ function Grid() {
   const selectedTableInfo = selectedTableInfoStore(
     (state) => state.selectedTableInfo
   );
-  const { userData, userDataFiltered, userKeys, setUserData, resetUserData } =
-    userDataStore((state) => ({
-      userData: state.userData,
-      userDataFiltered: state.userDataFiltered,
-      userKeys: state.userKeys,
-      setUserData: state.setUserData,
-      resetUserData: state.resetUserData,
-    }));
+  const {
+    userData,
+    userDataFiltered,
+    userKeys,
+    fetching,
+    setUserData,
+    resetUserData,
+    setFetching,
+  } = userDataStore((state) => ({
+    userData: state.userData,
+    userDataFiltered: state.userDataFiltered,
+    userKeys: state.userKeys,
+    fetching: state.fetching,
+    setUserData: state.setUserData,
+    setFetching: state.setFetching,
+    resetUserData: state.resetUserData,
+  }));
   const setSingleUserData = singleUserStore((state) => state.setSingleUserData);
 
   useEffect(() => {
@@ -41,6 +50,8 @@ function Grid() {
   useQuery({
     queryKey: ["user-data", selectedTableInfo.tableName],
     queryFn: async () => {
+      setFetching(true);
+
       const paramsObj = JSON.stringify({
         tableName: selectedTableInfo.tableName,
       });
@@ -55,6 +66,7 @@ function Grid() {
       );
 
       if (!countResponse.ok) {
+        resetUserData();
         return {};
       }
 
@@ -67,6 +79,7 @@ function Grid() {
       const { status: countStatus, data: countData } = countResult;
 
       if (countStatus === "error") {
+        resetUserData();
         return {};
       }
 
@@ -80,6 +93,7 @@ function Grid() {
       );
 
       if (!response.ok) {
+        resetUserData();
         return {};
       }
 
@@ -92,6 +106,7 @@ function Grid() {
       const { status, data } = result;
 
       if (status === "error") {
+        resetUserData();
         return {};
       }
 
@@ -100,28 +115,47 @@ function Grid() {
       if (timeTaken < 500)
         await new Promise((resolve) => setTimeout(resolve, 500 - timeTaken));
 
-      const keys = Object.keys(data[0]);
+      if (data.length === 0) {
+        resetUserData();
+        return {};
+      }
+
+      const [firstObject] = data;
+      const keys = Object.keys(firstObject);
+
       setUserData(data);
       setAvailableKeys(keys);
+      setFetching(false);
 
       return {};
     },
     enabled: selectedTableInfo.tableName !== "",
   });
 
+  if (!fetching && userData.length === 0) {
+    return (
+      <div className="flex flex-shrink-0 m-2.5">
+        <span className="mx-auto tx-xl">
+          <Label className="text-xl">No data to display</Label>
+        </span>
+      </div>
+    );
+  }
+
   return (
     <>
-      {selectedTableInfo.tableName !== "" ? <SelectedKeysCombobox /> : null}
-
-      {selectedTableInfo.tableName !== "" ? (
-        <div className="flex flex-wrap gap-2 mb-2.5">
-          <SearchValueCombobox />
-          <SearchFieldCombobox />
-        </div>
+      {selectedTableInfo.tableName !== "" && fetching ? (
+        <>
+          <SelectedKeysCombobox />
+          <div className="flex flex-wrap gap-2 mb-2.5">
+            <SearchValueCombobox />
+            <SearchFieldCombobox />
+          </div>
+        </>
       ) : null}
 
       <div className="m-2.5 grid grid-repeat-auto-fill-min-max gap-10">
-        {selectedTableInfo.tableName !== "" && userData.length === 0 ? (
+        {selectedTableInfo.tableName !== "" && fetching ? (
           <>
             {Array.from({ length: count }).map((_, index) => (
               <Fragment key={index}>
@@ -172,7 +206,7 @@ function Grid() {
           </>
         ) : null}
 
-        {selectedTableInfo.tableName !== ""
+        {selectedTableInfo.tableName !== "" && !fetching
           ? userDataFiltered.map((item: { [key: string]: string }, index) => {
               // if (index > 10) return null;
               return (

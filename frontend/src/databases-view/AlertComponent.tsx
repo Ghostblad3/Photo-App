@@ -1,9 +1,9 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Check, Loader } from "lucide-react";
-import modifyOperationStore from "./stores/modifyOperationStore";
+import operationStore from "./stores/operationStore";
 
 function AlertComponent() {
-  const { status, operation } = modifyOperationStore((state) => ({
+  const { status, operation } = operationStore((state) => ({
     status: state.status,
     operation: state.operation,
   }));

@@ -41,7 +41,7 @@ const dayNumberType = z.string().min(1).max(10);
 
 const screenshotType = z.object({
   type: z.literal("Buffer"),
-  data: z.array(z.number()),
+  data: z.array(z.number()).max(100_000),
 });
 
 const columnNamesType = z

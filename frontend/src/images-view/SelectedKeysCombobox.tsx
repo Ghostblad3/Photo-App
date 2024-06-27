@@ -8,7 +8,6 @@ import {
   Command,
   CommandEmpty,
   CommandGroup,
-  CommandInput,
   CommandItem,
 } from "@/components/ui/command";
 import {
@@ -18,11 +17,13 @@ import {
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import useAvailableKeysStore from "./stores/availableKeysStore";
 import { Label } from "@/components/ui/label";
+import useAvailableKeysStore from "./stores/availableKeysStore";
+import userDataStore from "./stores/userDataStore";
 
 function SelectedKeysCombobox() {
   const [open, setOpen] = useState(false);
+  const fetching = userDataStore((state) => state.fetching);
   const {
     availableKeys,
     selectedKeys,
@@ -53,120 +54,112 @@ function SelectedKeysCombobox() {
     );
   }, [availableKeys]);
 
+  if (fetching) {
+    return (
+      <div className="p-2.5">
+        <Skeleton className="h-[40px] w-full" />
+      </div>
+    );
+  }
+
   return (
     <div className="p-2.5">
-      {availableKeys.length === 0 ? (
-        <Skeleton className="h-[40px] w-full" />
-      ) : null}
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-[100%] justify-between"
+          >
+            {"Select fields..."}
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="p-0">
+          <Command>
+            {/* <CommandInput placeholder="Search fields..." /> */}
+            <CommandEmpty>No field found.</CommandEmpty>
+            <ScrollArea className="max-h-[300px]">
+              <CommandGroup>
+                {values.map((item) => (
+                  <div key={item.label} className="flex items-center">
+                    <CommandItem
+                      className="w-full"
+                      value={item.label}
+                      onSelect={() => {
+                        if (
+                          selectedKeys.some((selKey) => selKey === item.label)
+                        ) {
+                          setSelectedKeys(
+                            selectedKeys.filter(
+                              (selKey) => selKey !== item.label
+                            )
+                          );
 
-      {availableKeys.length !== 0 ? (
-        <>
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={open}
-                className="w-[100%] justify-between"
-              >
-                {"Select fields..."}
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="p-0">
-              <Command>
-                {/* <CommandInput placeholder="Search fields..." /> */}
-                <CommandEmpty>No field found.</CommandEmpty>
-                <ScrollArea className="max-h-[300px]">
-                  <CommandGroup>
-                    {values.map((item) => (
-                      <div key={item.label} className="flex items-center">
-                        <CommandItem
-                          className="w-full"
-                          value={item.label}
-                          onSelect={() => {
-                            if (
-                              selectedKeys.some(
-                                (selKey) => selKey === item.label
-                              )
-                            ) {
-                              setSelectedKeys(
-                                selectedKeys.filter(
-                                  (selKey) => selKey !== item.label
-                                )
-                              );
+                          return;
+                        }
 
-                              return;
-                            }
+                        setSelectedKeys([...selectedKeys, item.label]);
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          selectedKeys.some((selKey) => selKey === item.label)
+                            ? "opacity-100"
+                            : "opacity-0"
+                        )}
+                      />
+                      {item.label}
+                    </CommandItem>
+                    <div className="flex">
+                      <ArrowUp
+                        className="h-4 w-4 text-slate-400"
+                        onClick={() => {
+                          const index = availableKeys.indexOf(item.label);
 
-                            setSelectedKeys([...selectedKeys, item.label]);
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              selectedKeys.some(
-                                (selKey) => selKey === item.label
-                              )
-                                ? "opacity-100"
-                                : "opacity-0"
-                            )}
-                          />
-                          {item.label}
-                        </CommandItem>
-                        <div className="flex">
-                          <ArrowUp
-                            className="h-4 w-4 text-slate-400"
-                            onClick={() => {
-                              const index = availableKeys.indexOf(item.label);
+                          if (index === 0) return;
 
-                              if (index === 0) return;
+                          const otherKey = availableKeys[index - 1];
+                          const newKeys = [...availableKeys];
 
-                              const otherKey = availableKeys[index - 1];
-                              const newKeys = [...availableKeys];
+                          newKeys[index - 1] = item.label;
+                          newKeys[index] = otherKey;
 
-                              newKeys[index - 1] = item.label;
-                              newKeys[index] = otherKey;
+                          setAvailableKeys(newKeys);
+                          setSelectedKeys(
+                            newKeys.filter((key) => selectedKeys.includes(key))
+                          );
+                        }}
+                      />
+                      <ArrowDown
+                        className="h-4 w-4 text-slate-400"
+                        onClick={() => {
+                          const index = availableKeys.indexOf(item.label);
 
-                              setAvailableKeys(newKeys);
-                              setSelectedKeys(
-                                newKeys.filter((key) =>
-                                  selectedKeys.includes(key)
-                                )
-                              );
-                            }}
-                          />
-                          <ArrowDown
-                            className="h-4 w-4 text-slate-400"
-                            onClick={() => {
-                              const index = availableKeys.indexOf(item.label);
+                          if (index === availableKeys.length - 1) return;
 
-                              if (index === availableKeys.length - 1) return;
+                          const otherKey = availableKeys[index + 1];
+                          const newKeys = [...availableKeys];
 
-                              const otherKey = availableKeys[index + 1];
-                              const newKeys = [...availableKeys];
+                          newKeys[index + 1] = item.label;
+                          newKeys[index] = otherKey;
 
-                              newKeys[index + 1] = item.label;
-                              newKeys[index] = otherKey;
-
-                              setAvailableKeys(newKeys);
-                              setSelectedKeys(
-                                newKeys.filter((key) =>
-                                  selectedKeys.includes(key)
-                                )
-                              );
-                            }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </CommandGroup>
-                </ScrollArea>
-              </Command>
-            </PopoverContent>
-          </Popover>
-        </>
-      ) : null}
+                          setAvailableKeys(newKeys);
+                          setSelectedKeys(
+                            newKeys.filter((key) => selectedKeys.includes(key))
+                          );
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </CommandGroup>
+            </ScrollArea>
+          </Command>
+        </PopoverContent>
+      </Popover>
 
       {selectedKeys.length !== 0 ? (
         <div className="flex flex-wrap gap-2 mt-5">
