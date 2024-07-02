@@ -6,7 +6,9 @@ import selectedTableInfoStore from "./stores/selectedTableInfoStore";
 
 function Cards() {
   const [showCards, setShowCards] = useState(true);
-  const { selectedTableInfo } = selectedTableInfoStore();
+  //const { selectedTableInfo } = selectedTableInfoStore();
+  const { columnNames, userNumber, screenshotNumber, screenshotAverageSize } =
+    selectedTableInfoStore((state) => state.props);
 
   return (
     <>
@@ -19,34 +21,32 @@ function Cards() {
       </div>
       {showCards ? (
         <div className="grid lg:grid-cols-4 gap-5 auto-rows-fr p-2.5">
-          {selectedTableInfo.columnNames.length !== 0 ? (
+          {columnNames.length !== 0 ? (
             <>
               <Card>
                 <span className="text-center text-xl mb-5">
                   User properties
                 </span>
-                {selectedTableInfo.columnNames.map((item) => (
+                {columnNames.map((item) => (
                   <Label key={item}>{item}</Label>
                 ))}
               </Card>
               <Card>
                 <span className="text-center text-xl mb-5">User number</span>
-                <Label>{selectedTableInfo.userNumber}</Label>
+                <Label>{userNumber}</Label>
               </Card>
               <Card>
                 <span className="text-center text-xl mb-5">
                   Screenshot number
                 </span>
-                <Label>{selectedTableInfo.screenshotNumber}</Label>
+                <Label>{screenshotNumber}</Label>
               </Card>
               <Card>
                 <span className="text-center text-xl mb-5">
                   Average screenshot size
                 </span>
                 <Label>
-                  {`${(
-                    parseFloat(selectedTableInfo.screenshotAverageSize) * 0.001
-                  ).toFixed(2)}`}
+                  {`${(parseFloat(screenshotAverageSize) * 0.001).toFixed(2)}`}
                   {" KB"}
                 </Label>
               </Card>

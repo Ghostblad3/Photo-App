@@ -13,13 +13,25 @@ import searchStore from "./stores/searchStore";
 import operationStore from "../global-stores/operationStore";
 
 function Databases() {
+  // const {
+  //   selectedTableInfo,
+  //   setSelectedTableInfo,
+  //   resetSelectedTableInfoStore,
+  // } = selectedTableInfoStore();
+  const tableName = selectedTableInfoStore((state) => state.props.tableName);
+  const actions = selectedTableInfoStore((state) => state.actions);
   const {
-    selectedTableInfo,
-    setSelectedTableInfo,
+    setColumnNames,
+    setUserNumber,
+    setScreenshotNumber,
+    setScreenshotAverageSize,
     resetSelectedTableInfoStore,
-  } = selectedTableInfoStore();
+  } = actions;
+
   const { setUserData, setUserKeys, resetUserData } = userDataStore();
-  const { resetSearch } = searchStore();
+  //const { resetSearch } = searchStore();
+  const resetSearch = searchStore((state) => state.actions.resetSeachStore);
+
   const { showQueue, addOperation, changeOperationStatus, removeOperation } =
     operationStore();
 
@@ -45,10 +57,11 @@ function Databases() {
     setTableInfoFetchStatus("nop");
     setUserRecordsFetchStatus("nop");
     resetUserData();
-  }, [selectedTableInfo.tableName]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tableName]);
 
   useQuery({
-    queryKey: ["table-info", selectedTableInfo.tableName],
+    queryKey: ["table-info", tableName],
     queryFn: async () => {
       addOperation(
         fetchersHashRef.current,
@@ -73,7 +86,7 @@ function Databases() {
         new Promise((res, rej) => {
           const asyncOperation = async () => {
             const response = await genericFetch(
-              `http://localhost:3000/table/table-column-names/{"tableName":"${selectedTableInfo.tableName}"}`
+              `http://localhost:3000/table/table-column-names/{"tableName":"${tableName}"}`
             );
 
             if (response === "error") {
@@ -98,7 +111,7 @@ function Databases() {
         new Promise((res, rej) => {
           const asyncOperation = async () => {
             const response = await genericFetch(
-              `http://localhost:3000/table/count-records/{"tableName":"${selectedTableInfo.tableName}"}`
+              `http://localhost:3000/table/count-records/{"tableName":"${tableName}"}`
             );
 
             if (response === "error") {
@@ -123,7 +136,7 @@ function Databases() {
         new Promise((res, rej) => {
           const asyncOperation = async () => {
             const response = await genericFetch(
-              `http://localhost:3000/table/count-screenshots/{"tableName":"${selectedTableInfo.tableName}"}`
+              `http://localhost:3000/table/count-screenshots/{"tableName":"${tableName}"}`
             );
 
             if (response === "error") {
@@ -148,7 +161,7 @@ function Databases() {
         new Promise((res, rej) => {
           const asyncOperation = async () => {
             const response = await genericFetch(
-              `http://localhost:3000/table/screenshots-size/{"tableName":"${selectedTableInfo.tableName}"}`
+              `http://localhost:3000/table/screenshots-size/{"tableName":"${tableName}"}`
             );
 
             if (response === "error") {
@@ -217,20 +230,17 @@ function Databases() {
       );
       remove(fetchersHashRef.current);
 
-      setSelectedTableInfo({
-        ...selectedTableInfo,
-        columnNames: tableColumnNamesResult.data as string[],
-        userNumber: (countRecordsResult.data as number).toString(),
-        screenshotNumber: (countScreenshotsResult.data as number).toString(),
-        screenshotAverageSize: (
-          averageScreenshotSizeResult.data as number
-        ).toString(),
-      });
+      setColumnNames(tableColumnNamesResult.data as string[]);
+      setUserNumber((countRecordsResult.data as number).toString());
+      setScreenshotNumber((countScreenshotsResult.data as number).toString());
+      setScreenshotAverageSize(
+        (averageScreenshotSizeResult.data as number).toString()
+      );
       setTableInfoFetchStatus("success");
 
       return {};
     },
-    enabled: selectedTableInfo.tableName !== "",
+    enabled: tableName !== "",
   });
 
   async function genericFetch(url: string): Promise<
@@ -264,7 +274,7 @@ function Databases() {
   }
 
   const { refetch: fetchTableRecords } = useQuery({
-    queryKey: ["tableRecords", selectedTableInfo.tableName],
+    queryKey: ["tableRecords", tableName],
     queryFn: async () => {
       addOperation(
         userRecordsHashRef.current,
@@ -275,7 +285,7 @@ function Databases() {
       );
 
       let response = await fetch(
-        `http://localhost:3000/record/get-user-data/{"tableName":"${selectedTableInfo.tableName}"}`,
+        `http://localhost:3000/record/get-user-data/{"tableName":"${tableName}"}`,
         {
           cache: "no-store",
         }
@@ -303,7 +313,7 @@ function Databases() {
       const { data } = receivedObject;
 
       response = await fetch(
-        `http://localhost:3000/screenshot/retrieve-user-data-with-screenshots/{"tableName":"${selectedTableInfo.tableName}"}`,
+        `http://localhost:3000/screenshot/retrieve-user-data-with-screenshots/{"tableName":"${tableName}"}`,
         {
           cache: "no-store",
         }
@@ -410,13 +420,11 @@ function Databases() {
         </>
       ) : null}
 
-      {tableInfoFetchStatus === "success" &&
-      selectedTableInfo.tableName.length !== 0 ? (
+      {tableInfoFetchStatus === "success" && tableName.length !== 0 ? (
         <Cards />
       ) : null}
 
-      {tableInfoFetchStatus === "success" &&
-      selectedTableInfo.tableName.length !== 0 ? (
+      {tableInfoFetchStatus === "success" && tableName.length !== 0 ? (
         <Button className="m-2" onClick={() => throttledOperation()}>
           Show records
         </Button>
@@ -432,8 +440,7 @@ function Databases() {
         </div>
       ) : null}
 
-      {userRecordsFetchStatus === "success" &&
-      selectedTableInfo.tableName.length !== 0 ? (
+      {userRecordsFetchStatus === "success" && tableName.length !== 0 ? (
         <DataTable />
       ) : null}
 

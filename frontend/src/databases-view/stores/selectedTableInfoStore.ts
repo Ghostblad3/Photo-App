@@ -1,20 +1,27 @@
 import { create } from "zustand";
 
-interface TableInfo {
-  tableName: string;
-  columnNames: string[];
-  userNumber: string;
-  screenshotNumber: string;
-  screenshotAverageSize: string;
+interface SelectTableInfoProps {
+  props: {
+    tableName: string;
+    columnNames: string[];
+    userNumber: string;
+    screenshotNumber: string;
+    screenshotAverageSize: string;
+  };
 }
 
-interface SelectedTableInfo {
-  selectedTableInfo: TableInfo;
-  setSelectedTableInfo: (selectedTableInfo: TableInfo) => void;
-  resetSelectedTableInfoStore: () => void;
+interface SelectedTableInfoActions {
+  actions: {
+    setTableName: (tableName: string) => void;
+    setColumnNames: (columnNames: string[]) => void;
+    setUserNumber: (userNumber: string) => void;
+    setScreenshotNumber: (screenshotNumber: string) => void;
+    setScreenshotAverageSize: (screenshotAverageSize: string) => void;
+    resetSelectedTableInfoStore: () => void;
+  };
 }
 
-const initialState: TableInfo = {
+const initialState = {
   tableName: "",
   columnNames: [],
   userNumber: "",
@@ -22,12 +29,48 @@ const initialState: TableInfo = {
   screenshotAverageSize: "",
 };
 
-const selectedTableInfoStore = create<SelectedTableInfo>((set) => ({
-  selectedTableInfo: initialState,
-  setSelectedTableInfo: (selectedTableInfo: TableInfo) =>
-    set(() => ({ selectedTableInfo: selectedTableInfo })),
-  resetSelectedTableInfoStore: () =>
-    set(() => ({ selectedTableInfo: initialState })),
+const selectedTableInfoStore = create<
+  SelectTableInfoProps & SelectedTableInfoActions
+>((set) => ({
+  props: initialState,
+  actions: {
+    setTableName: (value: string) =>
+      set((state) => ({
+        props: {
+          ...state.props,
+          tableName: value,
+        },
+      })),
+    setColumnNames: (value: string[]) =>
+      set((state) => ({
+        props: {
+          ...state.props,
+          columnNames: value,
+        },
+      })),
+    setUserNumber: (value: string) =>
+      set((state) => ({
+        props: {
+          ...state.props,
+          userNumber: value,
+        },
+      })),
+    setScreenshotNumber: (value: string) =>
+      set((state) => ({
+        props: {
+          ...state.props,
+          screenshotNumber: value,
+        },
+      })),
+    setScreenshotAverageSize: (value: string) =>
+      set((state) => ({
+        props: {
+          ...state.props,
+          screenshotAverageSize: value,
+        },
+      })),
+    resetSelectedTableInfoStore: () => set(() => ({ props: initialState })),
+  },
 }));
 
 export default selectedTableInfoStore;

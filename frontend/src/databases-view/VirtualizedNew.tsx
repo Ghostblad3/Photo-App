@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   ColumnDef,
   flexRender,
@@ -36,17 +36,24 @@ import addNewScreenshotStore from "./stores/addNewScreenshotStore";
 
 export function DataTable<TData, TValue>() {
   const { userData, resetUserData } = userDataStore();
-  const { searchField, searchValue, setSearchValue } = searchStore();
+  // const { searchField, searchValue, setSearchValue } = searchStore();
+  const searchField = searchStore((state) => state.props.searchField);
+  const searchValue = searchStore((state) => state.props.searchValue);
+  const setSearchValue = searchStore((state) => state.actions.setSearchValue);
+
   const {
     screenshotAsBase64Props: { displayDialog },
     setDisplayDialog,
     setParams,
   } = screenshotAsBase64Store();
-  const {
-    addNewScreenshotStoreProps: { addNewScreenshotShowDialog },
-    setAddNewScreenshotStoreProps,
-  } = addNewScreenshotStore();
-  const { selectedTableInfo } = selectedTableInfoStore();
+
+  const showDialog = addNewScreenshotStore((state) => state.props.showDialog);
+  const actions = addNewScreenshotStore((state) => state.actions);
+  const { setTableName, setUserIdName, setUserId, setShowDialog } = actions;
+
+  //const { selectedTableInfo } = selectedTableInfoStore();
+  const tableName = selectedTableInfoStore((state) => state.props.tableName);
+
   const {
     addNewUserStoreProps: { addNewUserShowDialog },
     setAddNewUserStoreProps,
@@ -130,7 +137,7 @@ export function DataTable<TData, TValue>() {
         <SearchFieldCombobox />
       </div>
 
-      {addNewScreenshotShowDialog ? <AddNewScreenshotDialog /> : null}
+      {showDialog ? <AddNewScreenshotDialog /> : null}
 
       {updateUserInfoStoreShowDialog ? <UpdateUserDialog /> : null}
 
@@ -211,7 +218,7 @@ export function DataTable<TData, TValue>() {
                             return;
                           }
 
-                          setParams(user, selectedTableInfo.tableName, keys[0]);
+                          setParams(user, tableName, keys[0]);
                           setDisplayDialog(true);
                         }}
                       >
@@ -237,17 +244,16 @@ export function DataTable<TData, TValue>() {
 
                                 const [firstKey] = keys;
 
-                                setAddNewScreenshotStoreProps({
-                                  addNewScreenshotShowDialog: true,
-                                  tableName: selectedTableInfo.tableName,
-                                  userIdName: firstKey,
-                                  userId: (
+                                setTableName(tableName);
+                                setShowDialog(true);
+                                setUserIdName(firstKey);
+                                setUserId(
+                                  (
                                     userData[row.id as unknown as number] as {
                                       [key: string]: string;
                                     }
-                                  )[firstKey],
-                                  screenshotAsBase64: "",
-                                });
+                                  )[firstKey]
+                                );
                               }}
                             >
                               Add screenshot to user
@@ -257,7 +263,7 @@ export function DataTable<TData, TValue>() {
                               onClick={() => {
                                 setAddNewUserStoreProps({
                                   addNewUserShowDialog: true,
-                                  tableName: selectedTableInfo.tableName,
+                                  tableName: tableName,
                                 });
                               }}
                             >
@@ -280,7 +286,7 @@ export function DataTable<TData, TValue>() {
                                     }
                                   )[firstKey],
                                   userIndex: row.id,
-                                  tableName: selectedTableInfo.tableName,
+                                  tableName: tableName,
                                 });
                               }}
                             >
@@ -310,7 +316,7 @@ export function DataTable<TData, TValue>() {
                                     }
                                   )[firstKey],
                                   userIdName: firstKey,
-                                  tableName: selectedTableInfo.tableName,
+                                  tableName: tableName,
                                 });
                               }}
                             >

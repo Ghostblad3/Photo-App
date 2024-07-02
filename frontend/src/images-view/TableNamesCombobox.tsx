@@ -23,7 +23,7 @@ import operationStore from "../global-stores/operationStore";
 function TableNamesCombobox() {
   const [open, setOpen] = useState(false);
   const tableNamesFetchRef = useRef(crypto.randomUUID());
-  const { tableNames } = tableNamesStore();
+  const tableNames = tableNamesStore((state) => state.tableNames);
   const {
     selectedTableInfo,
     setSelectedTableInfo,

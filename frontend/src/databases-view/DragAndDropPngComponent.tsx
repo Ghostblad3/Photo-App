@@ -4,13 +4,10 @@ import { Label } from "@radix-ui/react-context-menu";
 import addNewScreenshotStore from "./stores/addNewScreenshotStore";
 
 function DragAndDropPngComponent() {
-  // const [image, setImage] = useState<string>("");
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const { addNewScreenshotStoreProps, setAddNewScreenshotStoreProps } =
-    addNewScreenshotStore((state) => ({
-      addNewScreenshotStoreProps: state.addNewScreenshotStoreProps,
-      setAddNewScreenshotStoreProps: state.setAddNewScreenshotStoreProps,
-    }));
+
+  const actions = addNewScreenshotStore((state) => state.actions);
+  const { setScreenshotAsBase64 } = actions;
 
   function handleDragOver(event: React.DragEvent<HTMLDivElement>) {
     event.preventDefault();
@@ -36,10 +33,7 @@ function DragAndDropPngComponent() {
     reader.onload = (e) => {
       if (e.target && typeof e.target.result === "string") {
         // setImage(e.target?.result);
-        setAddNewScreenshotStoreProps({
-          ...addNewScreenshotStoreProps,
-          screenshotAsBase64: e.target?.result,
-        });
+        setScreenshotAsBase64(e.target?.result);
       }
     };
 

@@ -2,21 +2,26 @@ import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import ReactCrop, { Crop, PixelCrop } from "react-image-crop";
 import { Button } from "@/components/ui/button";
-import "react-image-crop/dist/ReactCrop.css";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Label } from "@/components/ui/label";
 import userDataStore from "./stores/userDataStore";
 import operationStore from "../global-stores/operationStore";
 import addNewScreenshotStore from "./stores/addNewScreenshotStore";
+import "react-image-crop/dist/ReactCrop.css";
 
 const aspect = 16 / 9;
 
 function ImageCrop() {
-  const { addNewScreenshotStoreProps, setAddNewScreenshotShowDialog } =
-    addNewScreenshotStore();
-  const { tableName, userIdName, userId, screenshotAsBase64 } =
-    addNewScreenshotStoreProps;
+  const tableName = addNewScreenshotStore((state) => state.props.tableName);
+  const userIdName = addNewScreenshotStore((state) => state.props.userIdName);
+  const userId = addNewScreenshotStore((state) => state.props.userId);
+  const screenshotAsBase64 = addNewScreenshotStore(
+    (state) => state.props.screenshotAsBase64
+  );
+  const actions = addNewScreenshotStore((state) => state.actions);
+  const { setShowDialog } = actions;
+
   const { updateUser } = userDataStore();
   const { addOperation, changeOperationStatus, removeOperation } =
     operationStore();
@@ -197,7 +202,7 @@ function ImageCrop() {
           "Error creating new screenshot"
         );
         remove(hashRef.current);
-        setAddNewScreenshotShowDialog(false);
+        setShowDialog(false);
 
         return {};
       }
@@ -248,12 +253,12 @@ function ImageCrop() {
       updateUser(userId, {
         has_screenshot: "yes",
         screenshot_day: inputRef.current,
-        photo_timestamp,
+        photo_timestamp: new Date(photo_timestamp).toLocaleString("it-IT"),
       });
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      setAddNewScreenshotShowDialog(false);
+      setShowDialog(false);
 
       return {};
     },

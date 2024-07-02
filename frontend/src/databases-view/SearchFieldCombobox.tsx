@@ -20,7 +20,10 @@ import userDataStore from "./stores/userDataStore";
 
 function SearchFieldCombobox() {
   const [open, setOpen] = useState(false);
-  const { searchField, setSearchField } = searchStore();
+  // const { searchField, setSearchField } = searchStore();
+  const searchField = searchStore((state) => state.props.searchField);
+  const setSearchField = searchStore((state) => state.actions.setSearchField);
+
   const { userData } = userDataStore();
   const [values] = useState(
     Object.keys((userData as { [key: string]: string }[])[0]).map((key) => {

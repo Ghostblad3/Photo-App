@@ -25,10 +25,21 @@ import operationStore from "../global-stores/operationStore";
 
 function TableNamesCombobox() {
   const [open, setOpen] = useState(false);
-  const { tableNames, setTableNames, resetTableNames } = tableNamesStore();
+  const tableNames = tableNamesStore((state) => state.tableNames);
+  const actions = tableNamesStore((state) => state.actions);
+  const { setTableNames, resetTableNamesStore: resetTableNames } = actions;
   const { resetUserData } = userDataStore();
-  const { resetSearch } = searchStore();
-  const { selectedTableInfo, setSelectedTableInfo } = selectedTableInfoStore();
+  // const { resetSearch } = searchStore();
+  const resetSearch = searchStore((state) => state.actions.resetSeachStore);
+
+  // const { selectedTableInfo, setSelectedTableInfo } = selectedTableInfoStore();
+  const setSelectedTableName = selectedTableInfoStore(
+    (state) => state.actions.setTableName
+  );
+  const selectedTableName = selectedTableInfoStore(
+    (state) => state.props.tableName
+  );
+
   const { addOperation, changeOperationStatus, removeOperation } =
     operationStore();
   const hashRef = useRef(crypto.randomUUID());
@@ -122,10 +133,8 @@ function TableNamesCombobox() {
                 className="w-[100%] justify-between"
                 disabled={tableNames.length == 0}
               >
-                {selectedTableInfo.tableName !== ""
-                  ? tableNames.find(
-                      (tableName) => tableName === selectedTableInfo.tableName
-                    )
+                {selectedTableName !== ""
+                  ? tableNames.find((item) => item === selectedTableName)
                   : "Select table..."}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
@@ -137,23 +146,20 @@ function TableNamesCombobox() {
                 <ScrollArea className="max-h-[300px]">
                   <div>
                     <CommandGroup>
-                      {tableNames.map((tableName) => (
+                      {tableNames.map((item) => (
                         <CommandItem
-                          key={tableName}
-                          value={tableName}
+                          key={item}
+                          value={item}
                           onSelect={(currentValue) => {
-                            if (currentValue !== selectedTableInfo.tableName) {
+                            if (currentValue !== selectedTableName) {
                               resetSearch();
                               resetUserData();
                             }
 
-                            setSelectedTableInfo(
-                              currentValue === selectedTableInfo.tableName
-                                ? { ...selectedTableInfo, tableName: "" }
-                                : {
-                                    ...selectedTableInfo,
-                                    tableName: currentValue,
-                                  }
+                            setSelectedTableName(
+                              currentValue === selectedTableName
+                                ? ""
+                                : currentValue
                             );
 
                             setOpen(false);
@@ -162,12 +168,12 @@ function TableNamesCombobox() {
                           <Check
                             className={cn(
                               "mr-2 h-4 w-4",
-                              selectedTableInfo.tableName === tableName
+                              selectedTableName === item
                                 ? "opacity-100"
                                 : "opacity-0"
                             )}
                           />
-                          {tableName}
+                          {item}
                         </CommandItem>
                       ))}
                     </CommandGroup>

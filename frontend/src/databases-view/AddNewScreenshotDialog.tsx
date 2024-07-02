@@ -10,14 +10,12 @@ import ImageCrop from "./ImageCrop";
 import addNewScreenshotStore from "./stores/addNewScreenshotStore";
 
 function AddNewScreenshotDialog() {
-  const {
-    addNewScreenshotStoreProps: {
-      screenshotAsBase64,
-      addNewScreenshotShowDialog,
-    },
-    setAddNewScreenshotShowDialog,
-    resetAddNewScreenshotStore,
-  } = addNewScreenshotStore();
+  const screenshotAsBase64 = addNewScreenshotStore(
+    (state) => state.props.screenshotAsBase64
+  );
+  const showDialog = addNewScreenshotStore((state) => state.props.showDialog);
+  const actions = addNewScreenshotStore((state) => state.actions);
+  const { setShowDialog, resetAddNewScreenshotStore } = actions;
 
   useEffect(() => {
     return () => {
@@ -27,11 +25,11 @@ function AddNewScreenshotDialog() {
   }, []);
 
   return (
-    <Dialog open={addNewScreenshotShowDialog}>
+    <Dialog open={showDialog}>
       <DialogContent
         className="sm:max-w-[825px]"
         onPointerDownOutside={() => {
-          setAddNewScreenshotShowDialog(false);
+          setShowDialog(false);
         }}
       >
         <DialogHeader>
