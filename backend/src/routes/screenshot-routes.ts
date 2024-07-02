@@ -45,7 +45,10 @@ screenshotRouter.post(
 
     try {
       columnNames = sqlite
-        .prepare(`select name from pragma_table_info(?)`)
+        .prepare(
+          `select name
+          from pragma_table_info(?)`
+        )
         .all(tableName) as { name: string }[];
     } catch (e) {
       return next(new Error((e as Error).toString()));
@@ -116,32 +119,13 @@ screenshotRouter.post(
       }
     }
 
-    const buffer = Buffer.from(screenshot.data);
-    let hash;
-
-    try {
-      hash = crypto.createHash("md5").update(buffer).digest("hex");
-    } catch (e) {
-      return next(new Error((e as Error).toString()));
-    }
-
-    const screenshotFilePath = `./screenshots/${tableName}/${hash}.png`;
-
-    try {
-      await fs.writeFile(screenshotFilePath, buffer, {
-        encoding: "utf8",
-      });
-    } catch (e) {
-      return next(new Error((e as Error).toString()));
-    }
-
     let idResult;
 
     try {
       idResult = sqlite
         .prepare(
           `select rec_id
-          from "${tableName}"
+          from ${tableName}
           where ${userIdName} = ?`
         )
         .get(userId) as { rec_id: string };
@@ -150,21 +134,83 @@ screenshotRouter.post(
     }
 
     const { rec_id } = idResult;
-
+    let countResult;
     try {
-      sqlite
+      countResult = sqlite
         .prepare(
-          `insert into "${tableName}_photos"
-          (dayNumber, path, photo_timestamp, rec_id) values (?, ?, ?, ?)`
+          `select count(*) as count, path
+          from ${tableName}_photos
+          where rec_id = ?`
         )
-        .run(dayNumber, screenshotFilePath, new Date().toISOString(), rec_id);
+        .get(rec_id) as { count: number; path: string };
     } catch (e) {
       return next(new Error((e as Error).toString()));
     }
 
+    const buffer = Buffer.from(screenshot.data);
+    let hash;
+
+    try {
+      hash = `${crypto
+        .createHash("md5")
+        .update(buffer)
+        .digest("hex")}${Date.now()}`;
+    } catch (e) {
+      return next(new Error((e as Error).toString()));
+    }
+
+    const screenshotFilePath = `./screenshots/${tableName}/${hash}.png`;
+    const photo_timestamp = new Date().toISOString();
+    const { count: photoCount, path } = countResult;
+
+    if (photoCount === 0) {
+      try {
+        await fs.writeFile(screenshotFilePath, buffer, {
+          encoding: "utf8",
+        });
+      } catch (e) {
+        return next(new Error((e as Error).toString()));
+      }
+
+      try {
+        sqlite
+          .prepare(
+            `insert into ${tableName}_photos
+            (dayNumber, path, photo_timestamp, rec_id) values (?, ?, ?, ?)`
+          )
+          .run(dayNumber, screenshotFilePath, photo_timestamp, rec_id);
+      } catch (e) {
+        return next(new Error((e as Error).toString()));
+      }
+    } else {
+      try {
+        try {
+          await fs.unlink(path);
+        } catch (e) {}
+
+        try {
+          await fs.writeFile(screenshotFilePath, buffer, {
+            encoding: "utf8",
+          });
+        } catch (e) {
+          return next(new Error((e as Error).toString()));
+        }
+
+        sqlite
+          .prepare(
+            `update ${tableName}_photos
+            set dayNumber = ?, path = ?, photo_timestamp = ?
+            where rec_id = ?`
+          )
+          .run(dayNumber, screenshotFilePath, new Date().toISOString(), rec_id);
+      } catch (e) {
+        return next(new Error((e as Error).toString()));
+      }
+    }
+
     return res.status(201).send({
       status: "success",
-      data: {},
+      data: { photo_timestamp },
       error: { message: "" },
     });
   }
@@ -223,7 +269,7 @@ screenshotRouter.delete(
       exists = sqlite
         .prepare(
           `select count(*) as count
-          from "${tableName}"
+          from ${tableName}
           where ${userIdName} = ?`
         )
         .get(userId) as { count: number };
@@ -544,7 +590,7 @@ screenshotRouter.get(
     try {
       columnNames = sqlite
         .prepare(
-          `select name 
+          `select name
           from pragma_table_info(?)`
         )
         .all(tableName) as { name: string }[];

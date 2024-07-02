@@ -20,11 +20,7 @@ import userDataStore from "./stores/userDataStore";
 
 function SearchValueCombobox() {
   const [open, setOpen] = useState(false);
-  const { searchField, searchValue, setSearchValue } = searchStore((state) => ({
-    searchField: state.searchField,
-    searchValue: state.searchValue,
-    setSearchValue: state.setSearchValue,
-  }));
+  const { searchField, searchValue, setSearchValue } = searchStore();
   const userData = userDataStore((state) => state.userData);
   const [values, setValues] = useState<{ value: string; label: string }[]>([]);
 
@@ -46,7 +42,7 @@ function SearchValueCombobox() {
       })
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchField]);
+  }, [searchField, userData]);
 
   return (
     <div className="p-2.5 flex gap-2 w-[300px]">

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -18,24 +18,23 @@ import tableNamesStore from "./stores/tableNamesStore";
 import selectedTableInfoStore from "./stores/selectedTableInfoStore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
+import operationStore from "../global-stores/operationStore";
 
 function TableNamesCombobox() {
   const [open, setOpen] = useState(false);
-  const tableNames = tableNamesStore((state) => state.tableNames);
+  const tableNamesFetchRef = useRef(crypto.randomUUID());
+  const { tableNames } = tableNamesStore();
   const {
     selectedTableInfo,
     setSelectedTableInfo,
     resetSelectedTableInfoStore,
-  } = selectedTableInfoStore((state) => ({
-    selectedTableInfo: state.selectedTableInfo,
-    setSelectedTableInfo: state.setSelectedTableInfo,
-    resetSelectedTableInfoStore: state.resetSelectedTableInfoStore,
-  }));
-
-  const { setTableNames, resetTableNames } = tableNamesStore((state) => ({
-    setTableNames: state.setTableNames,
-    resetTableNames: state.resetTableNames,
-  }));
+  } = selectedTableInfoStore();
+  const { addOperation, changeOperationStatus, removeOperation } =
+    operationStore();
+  const { setTableNames, resetTableNames } = tableNamesStore();
+  const [tableNamesFetchStatus, setTableNamesFetchStatus] = useState<
+    "pending" | "success" | "error"
+  >("pending");
 
   useEffect(() => {
     return () => {
@@ -48,13 +47,31 @@ function TableNamesCombobox() {
   useQuery({
     queryKey: ["tableNames"],
     queryFn: async () => {
+      addOperation(
+        tableNamesFetchRef.current,
+        "pending",
+        "fetch",
+        "Fetching table names",
+        true
+      );
+
       const startTime = Date.now();
 
       const response = await fetch("http://localhost:3000/table/names", {
         cache: "no-store",
       });
 
-      if (!response.ok) return {};
+      if (!response.ok) {
+        setTableNamesFetchStatus("error");
+        changeOperationStatus(
+          tableNamesFetchRef.current,
+          "error",
+          "Table names fetch failed"
+        );
+        remove(tableNamesFetchRef.current);
+
+        return {};
+      }
 
       const receivedObject: {
         status: string;
@@ -62,10 +79,7 @@ function TableNamesCombobox() {
         error: { message: string };
       } = await response.json();
 
-      const { status, data } = receivedObject;
-
-      if (status === "error") return {};
-
+      const { data } = receivedObject;
       const timeTaken = Date.now() - startTime;
 
       if (timeTaken < 500)
@@ -73,21 +87,34 @@ function TableNamesCombobox() {
           setTimeout(resolve, 500 - timeTaken);
         });
 
+      changeOperationStatus(
+        tableNamesFetchRef.current,
+        "success",
+        "Table names fetch succeeded"
+      );
+      remove(tableNamesFetchRef.current);
       setTableNames(data.map((item: { name: string }) => item.name));
+      setTableNamesFetchStatus("success");
 
       return receivedObject;
     },
   });
 
+  async function remove(hash: string) {
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+    removeOperation(hash);
+  }
+
   return (
     <div className="p-2.5">
-      {tableNames.length === 0 ? (
+      {tableNamesFetchStatus === "pending" ? (
         <>
           <Skeleton className="h-[24px] w-[46px] mb-2" />
           <Skeleton className="h-[40px] w-full" />
         </>
       ) : null}
-      {tableNames.length !== 0 ? (
+
+      {tableNamesFetchStatus !== "pending" ? (
         <>
           <h1 className="mb-2">Tables</h1>
           <Popover open={open} onOpenChange={setOpen}>
@@ -97,6 +124,7 @@ function TableNamesCombobox() {
                 role="combobox"
                 aria-expanded={open}
                 className="w-[100%] justify-between"
+                disabled={tableNamesFetchStatus === "error"}
               >
                 {selectedTableInfo.tableName !== ""
                   ? tableNames.find(

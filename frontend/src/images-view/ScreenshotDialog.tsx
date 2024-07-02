@@ -10,10 +10,7 @@ import singleUserStore from "./stores/singleUserStore";
 import { useEffect } from "react";
 
 function ScreenshotDialog({ children }: { children: React.ReactNode }) {
-  const { singleUserData, resetSingleUserData } = singleUserStore((state) => ({
-    singleUserData: state.singleUserData,
-    resetSingleUserData: state.resetSingleUserData,
-  }));
+  const { singleUserData, resetSingleUserData } = singleUserStore();
 
   useEffect(() => {
     return () => {

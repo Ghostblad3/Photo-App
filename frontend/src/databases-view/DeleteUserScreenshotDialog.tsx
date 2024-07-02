@@ -11,12 +11,10 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import userDataStore from "./stores/userDataStore";
 import deleteUserScreenshotStore from "./stores/deleteUserScreenshotStore";
-import operationStore from "./stores/operationStore";
+import operationStore from "../global-stores/operationStore";
 
 function DeleteUserScreenshotDialog() {
-  const deleteUserScreenshot = userDataStore(
-    (state) => state.deleteUserScreenshot
-  );
+  const { deleteUserScreenshot } = userDataStore();
   const {
     deleteUserScreenshotStoreProps: {
       userId,
@@ -26,17 +24,11 @@ function DeleteUserScreenshotDialog() {
     },
     setDeleteUserScreenshotShowDialog,
     resetDeleteUserScreenshotStore,
-  } = deleteUserScreenshotStore((state) => ({
-    deleteUserScreenshotStoreProps: state.deleteUserScreenshotStoreProps,
-    setDeleteUserScreenshotShowDialog: state.setDeleteUserScreenshotShowDialog,
-    resetDeleteUserScreenshotStore: state.resetDeleteUserScreenshotStore,
-  }));
-  const { setStatus, setOperation } = operationStore((state) => ({
-    setStatus: state.setStatus,
-    setOperation: state.setOperation,
-  }));
-
+  } = deleteUserScreenshotStore();
   const checkedBoxIsCheckedRef = useRef(false);
+  const { addOperation, changeOperationStatus, removeOperation } =
+    operationStore();
+  const hashRef = useRef(crypto.randomUUID());
 
   useEffect(() => {
     return () => {
@@ -54,10 +46,15 @@ function DeleteUserScreenshotDialog() {
         tableName,
       };
 
-      setOperation("delete");
-      setStatus("pending");
-
       setDeleteUserScreenshotShowDialog(false);
+
+      addOperation(
+        hashRef.current,
+        "pending",
+        "delete",
+        "Deleting user screenshot",
+        true
+      );
 
       const response = await fetch(
         `http://localhost:3000/screenshot/delete-user-screenshot/${JSON.stringify(
@@ -69,30 +66,33 @@ function DeleteUserScreenshotDialog() {
       );
 
       if (!response.ok) {
-        setStatus("error");
+        changeOperationStatus(
+          hashRef.current,
+          "error",
+          "Error deleting user screenshot"
+        );
+        remove(hashRef.current);
+
         return {};
       }
 
-      const result: {
-        status: string;
-        data: [];
-        error: { message: string };
-      } = await response.json();
-
-      const { status } = result;
-
-      if (status !== "success") {
-        setStatus("error");
-        return {};
-      }
-
-      setStatus("success");
+      changeOperationStatus(
+        hashRef.current,
+        "success",
+        "User screenshot deleted successfully"
+      );
+      remove(hashRef.current);
       deleteUserScreenshot(userIdName, userId);
 
       return {};
     },
     enabled: false,
   });
+
+  async function remove(hash: string) {
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+    removeOperation(hash);
+  }
 
   function deleteUserScreenshotButtonHandler() {
     if (!checkedBoxIsCheckedRef.current) return;

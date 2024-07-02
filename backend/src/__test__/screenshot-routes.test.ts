@@ -920,39 +920,76 @@ describe("Retrieve user data for users that have screenshot for table that doesn
   });
 });
 
-// describe("Retrieve user screenshots for all days", () => {
-//   beforeAll(async () => {
-//     createUserTable();
-//     createPhotoTable();
-//     insertUser();
-//     insertPhoto();
-//     await movePhotoToFolder();
-//   });
+describe("Retrieve user screenshots for all days", () => {
+  beforeAll(async () => {
+    createUserTable();
+    createPhotoTable();
+    insertUser();
+    insertPhoto();
+    await movePhotoToFolder();
+  });
 
-//   test("Should return success", async () => {
-//     const paramsObj = {
-//       tableName: "test_table_2024",
-//     };
+  test("Should return success", async () => {
+    const paramsObj = {
+      tableName: "test_table_2024",
+    };
 
-//     const res = await request(server).get(
-//       `screenshot/retrieve-user-screenshots-all-days/${JSON.stringify(
-//         paramsObj
-//       )}`
-//     );
+    const res = await request(server).get(
+      `/screenshot/retrieve-user-screenshots-all-days/${JSON.stringify(
+        paramsObj
+      )}`
+    );
 
-//     expect(res.statusCode).toEqual(200);
-//     expect(res.body).toEqual({
-//       status: "success",
-//       data: expect.any(Array),
-//       error: { message: "" },
-//     });
-//   });
+    expect(res.statusCode).toEqual(200);
+    expect(res.body).toEqual({
+      status: "success",
+      data: expect.any(Array),
+      error: { message: "" },
+    });
+  });
 
-//   afterAll(async () => {
-//     deleteUser();
-//     dropTables();
-//     await deletePhotoFromFolder();
+  afterAll(async () => {
+    deleteUser();
+    dropTables();
+    await deletePhotoFromFolder();
 
-//     server.close();
-//   });
-// });
+    server.close();
+  });
+});
+
+describe("Retrieve user screenshots for all days for table that doesn't exist", () => {
+  beforeAll(async () => {
+    createUserTable();
+    createPhotoTable();
+    insertUser();
+    insertPhoto();
+    await movePhotoToFolder();
+  });
+
+  test("Should return error", async () => {
+    const paramsObj = {
+      tableName: "test_2024",
+    };
+
+    const res = await request(server).get(
+      `/screenshot/retrieve-user-screenshots-all-days/${JSON.stringify(
+        paramsObj
+      )}`
+    );
+
+    expect(res.statusCode).toEqual(404);
+    expect(res.body).toEqual({
+      status: "error",
+      data: {},
+      error: { message: "table not found" },
+    });
+  });
+
+  afterAll(async () => {
+    deleteUser();
+    dropTables();
+    await deletePhotoFromFolder();
+
+    server.close();
+  });
+});

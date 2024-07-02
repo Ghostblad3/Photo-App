@@ -17,26 +17,13 @@ import {
 import searchStore from "./stores/searchStore";
 import userDataStore from "./stores/userDataStore";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Skeleton } from "@/components/ui/skeleton";
 
 function SearchValueCombobox() {
   const [open, setOpen] = useState(false);
-  const { searchField, searchValue, setSearchValue, resetSearch } = searchStore(
-    (state) => ({
-      searchField: state.searchField,
-      searchValue: state.searchValue,
-      setSearchValue: state.setSearchValue,
-      resetSearch: state.resetSearch,
-    })
-  );
-  const { userData, fetching, setUserDataFiltered } = userDataStore(
-    (state) => ({
-      userData: state.userData,
-      fetching: state.fetching,
-      setUserDataFiltered: state.setUserDataFiltered,
-    })
-  );
   const [values, setValues] = useState<{ value: string; label: string }[]>([]);
+  const { searchField, searchValue, setSearchValue, resetSearch } =
+    searchStore();
+  const { userData, setUserDataFiltered } = userDataStore();
 
   useEffect(() => {
     return () => {
@@ -80,15 +67,6 @@ function SearchValueCombobox() {
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchValue]);
-
-  if (fetching)
-    return (
-      <div className="p-2.5 flex gap-2 w-[300px]">
-        <div className="flex gap-2 mb-2.5 ">
-          <Skeleton className="h-[40px] w-[200px]" />
-        </div>
-      </div>
-    );
 
   return (
     <div className="p-2.5 flex gap-2 w-[300px]">

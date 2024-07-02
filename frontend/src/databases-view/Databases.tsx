@@ -1,36 +1,37 @@
-import { useEffect } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { DataTable } from "./DatatableVirtualized";
+// import { DataTable } from "./DatatableVirtualized";
+import { DataTable } from "./VirtualizedNew";
 import { Skeleton } from "@/components/ui/skeleton";
+import MultiAlertComponent from "../global-components/MultiAlertComponet";
 import TableNamesCombobox from "./TableNamesCombobox";
 import Cards from "./Cards";
 import userDataStore from "./stores/userDataStore";
 import selectedTableInfoStore from "./stores/selectedTableInfoStore";
 import searchStore from "./stores/searchStore";
+import operationStore from "../global-stores/operationStore";
 
 function Databases() {
   const {
     selectedTableInfo,
     setSelectedTableInfo,
     resetSelectedTableInfoStore,
-  } = selectedTableInfoStore((state) => ({
-    selectedTableInfo: state.selectedTableInfo,
-    setSelectedTableInfo: state.setSelectedTableInfo,
-    resetSelectedTableInfoStore: state.resetSelectedTableInfoStore,
-  }));
+  } = selectedTableInfoStore();
+  const { setUserData, setUserKeys, resetUserData } = userDataStore();
+  const { resetSearch } = searchStore();
+  const { showQueue, addOperation, changeOperationStatus, removeOperation } =
+    operationStore();
 
-  const { userData, setUserData, setUserKeys, resetUserData } = userDataStore(
-    (state) => ({
-      userData: state.userData,
-      userKeys: state.userKeys,
-      setUserData: state.setUserData,
-      setUserKeys: state.setUserKeys,
-      resetUserData: state.resetUserData,
-    })
-  );
+  const fetchersHashRef = useRef(crypto.randomUUID());
+  const userRecordsHashRef = useRef(crypto.randomUUID());
 
-  const resetSearch = searchStore((state) => state.resetSearch);
+  const [tableInfoFetchStatus, setTableInfoFetchStatus] = useState<
+    "nop" | "pending" | "success" | "error"
+  >("nop");
+  const [userRecordsFetchStatus, setUserRecordsFetchStatus] = useState<
+    "nop" | "pending" | "success" | "error"
+  >("nop");
 
   useEffect(() => {
     return () => {
@@ -40,10 +41,28 @@ function Databases() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    setTableInfoFetchStatus("nop");
+    setUserRecordsFetchStatus("nop");
+    resetUserData();
+  }, [selectedTableInfo.tableName]);
+
   useQuery({
     queryKey: ["table-info", selectedTableInfo.tableName],
     queryFn: async () => {
-      const fetches: Promise<
+      addOperation(
+        fetchersHashRef.current,
+        "pending",
+        "fetch",
+        "Fetching selected table information",
+        false
+      );
+
+      setTableInfoFetchStatus("pending");
+
+      const startTime = Date.now();
+
+      const fetchers: Promise<
         | {
             status: string;
             data: unknown;
@@ -153,40 +172,61 @@ function Databases() {
         }),
       ];
 
-      try {
-        const results = await Promise.all(fetches);
-        const [
-          tableColumnNamesResult,
-          countRecordsResult,
-          countScreenshotsResult,
-          averageScreenshotSizeResult,
-        ] = results as {
-          status: string;
-          data: unknown;
-          error: { message: string };
-        }[];
+      const timeTaken = Date.now() - startTime;
 
-        if (
-          tableColumnNamesResult.status === "error" ||
-          countRecordsResult.status === "error" ||
-          countScreenshotsResult.status === "error" ||
-          averageScreenshotSizeResult.status === "error"
-        ) {
-          return {};
-        }
-
-        setSelectedTableInfo({
-          ...selectedTableInfo,
-          columnNames: tableColumnNamesResult.data as string[],
-          userNumber: (countRecordsResult.data as number).toString(),
-          screenshotNumber: (countScreenshotsResult.data as number).toString(),
-          screenshotAverageSize: (
-            averageScreenshotSizeResult.data as number
-          ).toString(),
+      if (timeTaken < 500) {
+        await new Promise((resolve) => {
+          setTimeout(resolve, 500 - timeTaken);
         });
-      } catch (e) {
-        throw new Error("Something went wrong");
       }
+
+      const results = await Promise.all(fetchers);
+
+      const [
+        tableColumnNamesResult,
+        countRecordsResult,
+        countScreenshotsResult,
+        averageScreenshotSizeResult,
+      ] = results as {
+        status: string;
+        data: unknown;
+        error: { message: string };
+      }[];
+
+      if (
+        tableColumnNamesResult.status === "error" ||
+        countRecordsResult.status === "error" ||
+        countScreenshotsResult.status === "error" ||
+        averageScreenshotSizeResult.status === "error"
+      ) {
+        changeOperationStatus(
+          fetchersHashRef.current,
+          "error",
+          "Fetching the selected table info failed"
+        );
+        remove(fetchersHashRef.current);
+        setTableInfoFetchStatus("error");
+
+        return {};
+      }
+
+      changeOperationStatus(
+        fetchersHashRef.current,
+        "success",
+        "Selected table info fetch succeeded"
+      );
+      remove(fetchersHashRef.current);
+
+      setSelectedTableInfo({
+        ...selectedTableInfo,
+        columnNames: tableColumnNamesResult.data as string[],
+        userNumber: (countRecordsResult.data as number).toString(),
+        screenshotNumber: (countScreenshotsResult.data as number).toString(),
+        screenshotAverageSize: (
+          averageScreenshotSizeResult.data as number
+        ).toString(),
+      });
+      setTableInfoFetchStatus("success");
 
       return {};
     },
@@ -201,35 +241,39 @@ function Databases() {
       }
     | "error"
   > {
-    let response;
-    let receivedObject: {
-      status: string;
-      data: unknown;
-      error: { message: string };
-    } = { status: "", data: [], error: { message: "" } };
-
     try {
-      response = await fetch(url, {
+      const response = await fetch(url, {
         cache: "no-store",
       });
 
-      if (!response.ok) return "error";
+      const result = (await response.json()) as {
+        status: string;
+        data: unknown;
+        error: { message: string };
+      };
 
-      receivedObject = await response.json();
-
-      const { status } = receivedObject;
-
-      if (status === "error") return "error";
+      return result;
     } catch (e) {
       return "error";
     }
-
-    return receivedObject;
   }
 
-  const { refetch: fetchTableRecords, isFetching } = useQuery({
+  async function remove(hash: string) {
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+    removeOperation(hash);
+  }
+
+  const { refetch: fetchTableRecords } = useQuery({
     queryKey: ["tableRecords", selectedTableInfo.tableName],
     queryFn: async () => {
+      addOperation(
+        userRecordsHashRef.current,
+        "pending",
+        "fetch",
+        "Fetching user records",
+        false
+      );
+
       let response = await fetch(
         `http://localhost:3000/record/get-user-data/{"tableName":"${selectedTableInfo.tableName}"}`,
         {
@@ -238,6 +282,14 @@ function Databases() {
       );
 
       if (!response.ok) {
+        changeOperationStatus(
+          userRecordsHashRef.current,
+          "error",
+          "Fetching user records failed"
+        );
+        remove(userRecordsHashRef.current);
+        setUserRecordsFetchStatus("error");
+
         resetUserData();
         return {};
       }
@@ -248,12 +300,7 @@ function Databases() {
         error: { message: string };
       } = await response.json();
 
-      const { status, data } = receivedObject;
-
-      if (status === "error") {
-        resetUserData();
-        return {};
-      }
+      const { data } = receivedObject;
 
       response = await fetch(
         `http://localhost:3000/screenshot/retrieve-user-data-with-screenshots/{"tableName":"${selectedTableInfo.tableName}"}`,
@@ -263,19 +310,21 @@ function Databases() {
       );
 
       if (!response.ok) {
+        changeOperationStatus(
+          userRecordsHashRef.current,
+          "error",
+          "Fetching user records failed"
+        );
+        remove(userRecordsHashRef.current);
+        setUserRecordsFetchStatus("error");
+
         resetUserData();
         return {};
       }
 
       receivedObject = await response.json();
 
-      const { status: secondRequestStatus, data: secondRequestData } =
-        receivedObject;
-
-      if (secondRequestStatus === "error") {
-        resetUserData();
-        return {};
-      }
+      const { data: secondRequestData } = receivedObject;
 
       const userDataUpdated = data;
       const [firstUser] = data;
@@ -306,6 +355,14 @@ function Databases() {
       resetSearch();
       resetUserData();
 
+      changeOperationStatus(
+        userRecordsHashRef.current,
+        "success",
+        "User records fetch succeeded"
+      );
+      remove(userRecordsHashRef.current);
+      setUserRecordsFetchStatus("success");
+
       setUserKeys(keys);
       setUserData(userDataUpdated);
 
@@ -313,19 +370,59 @@ function Databases() {
     },
     enabled: false,
   });
+  //eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function throttle(this: any, mainFunction: () => void, delay: number) {
+    let allow: boolean = false;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (...args: any) => {
+      if (allow === false) {
+        mainFunction.apply(this, args);
+        allow = true;
+        setTimeout(() => {
+          allow = false; // Clear the timerFlag to allow the main function to be executed again
+        }, delay);
+      }
+    };
+  }
+
+  const throttledOperation = useMemo(() => {
+    return throttle(() => fetchTableRecords(), 1000);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="flex flex-col min-h-full">
       <TableNamesCombobox />
 
-      {selectedTableInfo.tableName !== "" ? <Cards /> : null}
-      {selectedTableInfo.tableName !== "" ? (
-        <Button className="m-2" onClick={() => fetchTableRecords()}>
+      {tableInfoFetchStatus === "pending" ? (
+        <>
+          <div className="my-2 pl-2.5 flex items-center gap-2.5">
+            <Skeleton className="rounded-lg h-[24px] w-[44px] shadow-lg" />
+            <Skeleton className="h-[14px] w-[148px] shadow-lg" />
+          </div>
+          <div className="grid lg:grid-cols-4 gap-5 auto-rows-fr p-2.5">
+            <Skeleton className="rounded-lg h-[110px] shadow-lg" />
+            <Skeleton className="rounded-lg h-[110px] shadow-lg" />
+            <Skeleton className="rounded-lg h-[110px] shadow-lg" />
+            <Skeleton className="rounded-lg h-[110px] shadow-lg" />
+          </div>
+        </>
+      ) : null}
+
+      {tableInfoFetchStatus === "success" &&
+      selectedTableInfo.tableName.length !== 0 ? (
+        <Cards />
+      ) : null}
+
+      {tableInfoFetchStatus === "success" &&
+      selectedTableInfo.tableName.length !== 0 ? (
+        <Button className="m-2" onClick={() => throttledOperation()}>
           Show records
         </Button>
       ) : null}
 
-      {isFetching && userData.length === 0 ? (
+      {userRecordsFetchStatus === "pending" ? (
         <div className="h-full mx-2.5">
           <div className="flex gap-2 mb-2.5 ">
             <Skeleton className="h-[40px] w-[200px]" />
@@ -335,9 +432,18 @@ function Databases() {
         </div>
       ) : null}
 
-      {selectedTableInfo.tableName !== "" && userData.length !== 0 ? (
+      {userRecordsFetchStatus === "success" &&
+      selectedTableInfo.tableName.length !== 0 ? (
         <DataTable />
       ) : null}
+
+      <div className="fixed bottom-4 right-4 z-50">
+        {showQueue.map((item) => (
+          <div key={item.hash}>
+            <MultiAlertComponent item={item} />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

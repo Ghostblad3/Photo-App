@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useEffect, useState } from "react";
-
 import { Check, ChevronsUpDown, ArrowUp, ArrowDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -16,27 +14,18 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
 import useAvailableKeysStore from "./stores/availableKeysStore";
-import userDataStore from "./stores/userDataStore";
 
 function SelectedKeysCombobox() {
   const [open, setOpen] = useState(false);
-  const fetching = userDataStore((state) => state.fetching);
   const {
     availableKeys,
     selectedKeys,
     setAvailableKeys,
     setSelectedKeys,
     resetAvailableKeysStore,
-  } = useAvailableKeysStore((state) => ({
-    availableKeys: state.availableKeys,
-    selectedKeys: state.selectedKeys,
-    setAvailableKeys: state.setAvailableKeys,
-    setSelectedKeys: state.setSelectedKeys,
-    resetAvailableKeysStore: state.resetAvailableKeysStore,
-  }));
+  } = useAvailableKeysStore();
   const [values, setValues] = useState<{ value: string; label: string }[]>([]);
 
   useEffect(() => {
@@ -53,14 +42,6 @@ function SelectedKeysCombobox() {
       })
     );
   }, [availableKeys]);
-
-  if (fetching) {
-    return (
-      <div className="p-2.5">
-        <Skeleton className="h-[40px] w-full" />
-      </div>
-    );
-  }
 
   return (
     <div className="p-2.5">

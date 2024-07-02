@@ -12,6 +12,7 @@ export function columns(cols: Data[]) {
   const tableCols: ColumnDef<Data>[] = keys.map((val) => {
     return {
       accessorKey: val,
+      enableResizing: true,
       header: ({ column }) => {
         return (
           <Button

@@ -1,44 +1,30 @@
+import { Fragment, useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Fragment, useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import ScreenshotDialog from "./ScreenshotDialog";
 import SelectedKeysCombobox from "./SelectedKeysCombobox";
+import SearchValueCombobox from "./SearchValueCombobox";
+import SearchFieldCombobox from "./SearchFieldCombobox";
 import selectedTableInfoStore from "./stores/selectedTableInfoStore";
 import userDataStore from "./stores/userDataStore";
 import singleUserStore from "./stores/singleUserStore";
 import useAvailableKeysStore from "./stores/availableKeysStore";
-import SearchValueCombobox from "./SearchValueCombobox";
-import SearchFieldCombobox from "./SearchFieldCombobox";
+import operationStore from "../global-stores/operationStore";
 
 function Grid() {
   const [count, setCount] = useState(0);
-  const { selectedKeys, setAvailableKeys } = useAvailableKeysStore((state) => ({
-    selectedKeys: state.selectedKeys,
-    setAvailableKeys: state.setAvailableKeys,
-  }));
-
-  const selectedTableInfo = selectedTableInfoStore(
-    (state) => state.selectedTableInfo
-  );
-  const {
-    userData,
-    userDataFiltered,
-    userKeys,
-    fetching,
-    setUserData,
-    resetUserData,
-    setFetching,
-  } = userDataStore((state) => ({
-    userData: state.userData,
-    userDataFiltered: state.userDataFiltered,
-    userKeys: state.userKeys,
-    fetching: state.fetching,
-    setUserData: state.setUserData,
-    setFetching: state.setFetching,
-    resetUserData: state.resetUserData,
-  }));
-  const setSingleUserData = singleUserStore((state) => state.setSingleUserData);
+  const userDataFetchRef = useRef(crypto.randomUUID());
+  const { selectedKeys, setAvailableKeys } = useAvailableKeysStore();
+  const { selectedTableInfo } = selectedTableInfoStore();
+  const { userData, userDataFiltered, userKeys, setUserData, resetUserData } =
+    userDataStore();
+  const { setSingleUserData } = singleUserStore();
+  const { addOperation, changeOperationStatus, removeOperation } =
+    operationStore();
+  const [fetchUserDataStatus, setFetchUserDataStatus] = useState<
+    "pending" | "success" | "error"
+  >("pending");
 
   useEffect(() => {
     return () => {
@@ -50,7 +36,13 @@ function Grid() {
   useQuery({
     queryKey: ["user-data", selectedTableInfo.tableName],
     queryFn: async () => {
-      setFetching(true);
+      addOperation(
+        userDataFetchRef.current,
+        "pending",
+        "fetch",
+        "Fetching user data",
+        true
+      );
 
       const paramsObj = JSON.stringify({
         tableName: selectedTableInfo.tableName,
@@ -66,6 +58,14 @@ function Grid() {
       );
 
       if (!countResponse.ok) {
+        changeOperationStatus(
+          userDataFetchRef.current,
+          "error",
+          "Failed to fetch user data"
+        );
+        remove(userDataFetchRef.current);
+        setFetchUserDataStatus("error");
+
         resetUserData();
         return {};
       }
@@ -76,12 +76,7 @@ function Grid() {
         error: { message: string };
       } = await countResponse.json();
 
-      const { status: countStatus, data: countData } = countResult;
-
-      if (countStatus === "error") {
-        resetUserData();
-        return {};
-      }
+      const { data: countData } = countResult;
 
       setCount(countData);
 
@@ -93,6 +88,14 @@ function Grid() {
       );
 
       if (!response.ok) {
+        changeOperationStatus(
+          userDataFetchRef.current,
+          "error",
+          "Failed to fetch user data"
+        );
+        remove(userDataFetchRef.current);
+        setFetchUserDataStatus("error");
+
         resetUserData();
         return {};
       }
@@ -103,17 +106,19 @@ function Grid() {
         error: { message: string };
       } = await response.json();
 
-      const { status, data } = result;
-
-      if (status === "error") {
-        resetUserData();
-        return {};
-      }
+      const { data } = result;
 
       const timeTaken = Date.now() - startTime;
 
       if (timeTaken < 500)
         await new Promise((resolve) => setTimeout(resolve, 500 - timeTaken));
+
+      changeOperationStatus(
+        userDataFetchRef.current,
+        "success",
+        "Fetched user data successfully"
+      );
+      remove(userDataFetchRef.current);
 
       if (data.length === 0) {
         resetUserData();
@@ -125,14 +130,19 @@ function Grid() {
 
       setUserData(data);
       setAvailableKeys(keys);
-      setFetching(false);
+      setFetchUserDataStatus("success");
 
       return {};
     },
     enabled: selectedTableInfo.tableName !== "",
   });
 
-  if (!fetching && userData.length === 0) {
+  async function remove(hash: string) {
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+    removeOperation(hash);
+  }
+
+  if (fetchUserDataStatus === "error") {
     return (
       <div className="flex flex-shrink-0 m-2.5">
         <span className="mx-auto tx-xl">
@@ -144,7 +154,27 @@ function Grid() {
 
   return (
     <>
-      {selectedTableInfo.tableName !== "" && fetching ? (
+      {fetchUserDataStatus === "pending" ? (
+        <>
+          <div className="p-2.5">
+            <Skeleton className="h-[40px] w-full" />
+          </div>
+          <div className="flex flex-wrap gap-2 mb-2.5">
+            <div className="p-2.5 flex gap-2 w-[300px]">
+              <div className="flex gap-2 mb-2.5 ">
+                <Skeleton className="h-[40px] w-[200px]" />
+              </div>
+            </div>
+            <div className="p-2.5 flex gap-2 w-[300px]">
+              <div className="flex gap-2 mb-2.5 ">
+                <Skeleton className="h-[40px] w-[200px]" />
+              </div>
+            </div>
+          </div>
+        </>
+      ) : null}
+
+      {fetchUserDataStatus === "success" ? (
         <>
           <SelectedKeysCombobox />
           <div className="flex flex-wrap gap-2 mb-2.5">
@@ -155,7 +185,7 @@ function Grid() {
       ) : null}
 
       <div className="m-2.5 grid grid-repeat-auto-fill-min-max gap-10">
-        {selectedTableInfo.tableName !== "" && fetching ? (
+        {fetchUserDataStatus === "pending" ? (
           <>
             {Array.from({ length: count }).map((_, index) => (
               <Fragment key={index}>
@@ -206,7 +236,7 @@ function Grid() {
           </>
         ) : null}
 
-        {selectedTableInfo.tableName !== "" && !fetching
+        {fetchUserDataStatus === "success"
           ? userDataFiltered.map((item: { [key: string]: string }, index) => {
               // if (index > 10) return null;
               return (

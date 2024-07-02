@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { CircleX } from "lucide-react";
 import updateUserInfoStore from "./stores/updateUserInfoStore";
 import userDataStore from "./stores/userDataStore";
-import operationStore from "./stores/operationStore";
+import operationStore from "../global-stores/operationStore";
 
 function UpdateUserDialog() {
   const {
@@ -25,22 +25,11 @@ function UpdateUserDialog() {
     },
     setUpdateUserInfoShowDialog,
     resetUpdateUserInfoStore,
-  } = updateUserInfoStore((state) => ({
-    updateUserInfoStoreProps: state.updateUserInfoStoreProps,
-    setUpdateUserInfoShowDialog: state.setUpdateUserInfoShowDialog,
-    resetUpdateUserInfoStore: state.resetUpdateUserInfoStore,
-  }));
-
-  const { userData, userKeys, updateUser } = userDataStore((state) => ({
-    userData: state.userData,
-    userKeys: state.userKeys,
-    updateUser: state.updateUser,
-  }));
-
-  const { setStatus, setOperation } = operationStore((state) => ({
-    setStatus: state.setStatus,
-    setOperation: state.setOperation,
-  }));
+  } = updateUserInfoStore();
+  const { userData, userKeys, updateUser } = userDataStore();
+  const { addOperation, changeOperationStatus, removeOperation } =
+    operationStore();
+  const hashRef = useRef(crypto.randomUUID());
 
   const userToUpdateRef = useRef<{ [key: string]: string }>({});
   const userObjRef = useRef<{ [key: string]: string }>(
@@ -82,10 +71,15 @@ function UpdateUserDialog() {
   const { refetch: updateUserInfo } = useQuery({
     queryKey: ["updateUser", userToUpdateRef.current[keysRef.current[0]]],
     queryFn: async () => {
-      setOperation("update");
-      setStatus("pending");
-
       setUpdateUserInfoShowDialog(false);
+
+      addOperation(
+        hashRef.current,
+        "pending",
+        "update",
+        "Updating user information",
+        true
+      );
 
       const result = await fetch("http://localhost:3000/record/update-user", {
         method: "POST",
@@ -99,25 +93,34 @@ function UpdateUserDialog() {
         }),
       });
 
-      console.log(result);
-
       if (!result.ok) {
-        setStatus("error");
+        changeOperationStatus(
+          hashRef.current,
+          "error",
+          "Updating user information failed"
+        );
+        remove(hashRef.current);
+
         return {};
       }
 
-      if (result.status !== 204) {
-        setStatus("error");
-        return {};
-      }
-
-      setStatus("success");
+      changeOperationStatus(
+        hashRef.current,
+        "success",
+        "Updating user information successful"
+      );
+      remove(hashRef.current);
       updateUser(userId, userToUpdateRef.current);
 
       return {};
     },
     enabled: false,
   });
+
+  async function remove(hash: string) {
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+    removeOperation(hash);
+  }
 
   function updateUserButtonHandler() {
     const propsToUpdate: { [key: string]: string } = {};
@@ -141,60 +144,54 @@ function UpdateUserDialog() {
     userToUpdateRef.current = propsToUpdate;
 
     updateUserInfo();
-    // setUserUpdateStatus({
-    //   id: userObjRef.current[keysRef.current[0]],
-    //   status: "pending",
-    // });
   }
 
   return (
-    <>
-      <Dialog open={updateUserInfoStoreShowDialog}>
-        <DialogContent
-          className="sm:max-w-[425px]"
-          onPointerDownOutside={() => {
-            setUpdateUserInfoShowDialog(false);
-          }}
-        >
-          <DialogHeader>
-            <DialogTitle>Update user information</DialogTitle>
-          </DialogHeader>
-          {keysRef.current.map((key) => {
-            return (
-              <div key={key} className="mx-4">
-                <Label className="space-y-1 font-semibold block text-sm">
-                  {key}
-                </Label>
-                <Input
-                  className="mt-1"
-                  defaultValue={userObjRef.current[key]}
-                  onChange={(e) => {
-                    setFieldsModified((prev) => ({ ...prev, [key]: true }));
-                    userRef.current[key] = e.target.value;
-                  }}
-                />
-                {(fieldsModified[key] && userRef.current[key].length === 0) ||
-                userRef.current[key].length > 50 ? (
-                  <div className="flex items-center mt-2">
-                    <CircleX className="text-red-500 mr-1 h-5 w-5" />
-                    <Label className="text-red-500">
-                      Field must be between 1 and 50 characters
-                    </Label>
-                  </div>
-                ) : null}
-              </div>
-            );
-          })}
+    <Dialog open={updateUserInfoStoreShowDialog}>
+      <DialogContent
+        className="sm:max-w-[425px]"
+        onPointerDownOutside={() => {
+          setUpdateUserInfoShowDialog(false);
+        }}
+      >
+        <DialogHeader>
+          <DialogTitle>Update user information</DialogTitle>
+        </DialogHeader>
+        {keysRef.current.map((key) => {
+          return (
+            <div key={key} className="mx-4">
+              <Label className="space-y-1 font-semibold block text-sm">
+                {key}
+              </Label>
+              <Input
+                className="mt-1"
+                defaultValue={userObjRef.current[key]}
+                onChange={(e) => {
+                  setFieldsModified((prev) => ({ ...prev, [key]: true }));
+                  userRef.current[key] = e.target.value;
+                }}
+              />
+              {(fieldsModified[key] && userRef.current[key].length === 0) ||
+              userRef.current[key].length > 50 ? (
+                <div className="flex items-center mt-2">
+                  <CircleX className="text-red-500 mr-1 h-5 w-5" />
+                  <Label className="text-red-500">
+                    Field must be between 1 and 50 characters
+                  </Label>
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
 
-          <Button
-            className="w-[calc(100%_-_2rem)] mx-4"
-            onClick={updateUserButtonHandler}
-          >
-            Update
-          </Button>
-        </DialogContent>
-      </Dialog>
-    </>
+        <Button
+          className="w-[calc(100%_-_2rem)] mx-4"
+          onClick={updateUserButtonHandler}
+        >
+          Update
+        </Button>
+      </DialogContent>
+    </Dialog>
   );
 }
 

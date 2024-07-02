@@ -8,10 +8,8 @@ interface UserDataStore {
   userData: UserData[];
   userDataFiltered: UserData[];
   userKeys: string[];
-  fetching: boolean;
   setUserData: (data: UserData[]) => void;
   setUserDataFiltered: (data: UserData[]) => void;
-  setFetching: (value: boolean) => void;
   resetUserData: () => void;
 }
 
@@ -27,9 +25,8 @@ const userDataStore = create<UserDataStore>((set) => ({
       userKeys: Object.keys(data[0]),
     }),
   setUserDataFiltered: (data: UserData[]) => set({ userDataFiltered: data }),
-  setFetching: (value: boolean) => set({ fetching: value }),
   resetUserData: () =>
-    set({ userData: [], userDataFiltered: [], userKeys: [], fetching: false }),
+    set({ userData: [], userDataFiltered: [], userKeys: [] }),
 }));
 
 export default userDataStore;

@@ -17,19 +17,11 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import searchStore from "./stores/searchStore";
 import userDataStore from "./stores/userDataStore";
-import { Skeleton } from "@/components/ui/skeleton";
 
 function SearchFieldCombobox() {
   const [open, setOpen] = useState(false);
-  const { searchField, setSearchField, resetSearch } = searchStore((state) => ({
-    searchField: state.searchField,
-    setSearchField: state.setSearchField,
-    resetSearch: state.resetSearch,
-  }));
-  const { userData, fetching } = userDataStore((state) => ({
-    userData: state.userData,
-    fetching: state.fetching,
-  }));
+  const { searchField, setSearchField, resetSearch } = searchStore();
+  const { userData } = userDataStore();
   const [values, setValues] = useState<
     {
       value: string;
@@ -55,15 +47,6 @@ function SearchFieldCombobox() {
 
     setValues(values);
   }, [userData]);
-
-  if (fetching)
-    return (
-      <div className="p-2.5 flex gap-2 w-[300px]">
-        <div className="flex gap-2 mb-2.5 ">
-          <Skeleton className="h-[40px] w-[200px]" />
-        </div>
-      </div>
-    );
 
   return (
     <div className="p-2.5 w-[300px]">

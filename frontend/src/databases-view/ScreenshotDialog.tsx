@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import screenshotAsBase64Store from "./stores/screenshotAsBase64Store";
+import operationStore from "../global-stores/operationStore";
 
 function ScreenshotDialog() {
   const {
@@ -22,19 +23,19 @@ function ScreenshotDialog() {
     setDisplayDialog,
     setScreenshot,
     resetScreenshotAsBase64Store,
-  } = screenshotAsBase64Store((state) => ({
-    screenshotAsBase64Props: state.screenshotAsBase64Props,
-    setDisplayDialog: state.setDisplayDialog,
-    setScreenshot: state.setScreenshot,
-    resetScreenshotAsBase64Store: state.resetScreenshotAsBase64Store,
-  }));
-  // const { status, setOperation, setStatus, resetModifyOpeation } =
-  //   modifyOperationStore((state) => ({
-  //     status: state.status,
-  //     setOperation: state.setOperation,
-  //     setStatus: state.setStatus,
-  //     resetModifyOpeation: state.resetModifyOpeation,
-  //   }));
+  } = screenshotAsBase64Store();
+  const { addOperation, changeOperationStatus, removeOperation } =
+    operationStore();
+  const hashRef = useRef(crypto.randomUUID());
+  const [userScreenshotFetchStatus, setUserScreenshotFetchStatus] = useState<
+    "pending" | "success" | "error"
+  >("pending");
+
+  useEffect(() => {
+    if (userScreenshotFetchStatus === "error") {
+      setDisplayDialog(false);
+    }
+  }, [userScreenshotFetchStatus, setDisplayDialog]);
 
   useEffect(() => {
     return () => {
@@ -54,6 +55,14 @@ function ScreenshotDialog() {
 
       const timeNow = new Date();
 
+      addOperation(
+        hashRef.current,
+        "pending",
+        "fetch",
+        "Fetching user screenshot",
+        false
+      );
+
       const response = await fetch(
         `http://localhost:3000/screenshot/retrieve-user-screenshot/${JSON.stringify(
           paramObj
@@ -64,6 +73,24 @@ function ScreenshotDialog() {
       );
 
       if (!response.ok) {
+        const timeTaken = Date.now() - timeNow.getTime();
+
+        if (timeTaken < 2000) {
+          await new Promise((resolve) => {
+            setTimeout(() => {
+              resolve("");
+            }, 2000 - timeTaken);
+          });
+        }
+
+        changeOperationStatus(
+          hashRef.current,
+          "error",
+          "User screenshot fetch failed"
+        );
+        remove(hashRef.current);
+        setUserScreenshotFetchStatus("error");
+
         resetScreenshotAsBase64Store();
         return {};
       }
@@ -74,20 +101,7 @@ function ScreenshotDialog() {
         error: { message: string };
       } = await response.json();
 
-      const { status, data } = receivedObject;
-
-      if (status === "error") {
-        if (response.status === 404) {
-          //
-        } else if (response.status === 400) {
-          //
-        } else {
-          //
-        }
-
-        resetScreenshotAsBase64Store();
-        return {};
-      }
+      const { data } = receivedObject;
 
       const timeTaken = Date.now() - timeNow.getTime();
 
@@ -99,11 +113,23 @@ function ScreenshotDialog() {
         });
       }
 
+      changeOperationStatus(
+        hashRef.current,
+        "success",
+        "User screenshot fetch succeeded"
+      );
+      remove(hashRef.current);
+      setUserScreenshotFetchStatus("success");
       setScreenshot(data);
 
       return {};
     },
   });
+
+  async function remove(hash: string) {
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+    removeOperation(hash);
+  }
 
   return (
     <Dialog open={displayDialog}>
@@ -117,7 +143,7 @@ function ScreenshotDialog() {
           <DialogTitle>User screenshot</DialogTitle>
         </DialogHeader>
         <>
-          {screenshot.length === 0 ? (
+          {userScreenshotFetchStatus === "pending" ? (
             <div className="bg-slate-100 p-4">
               <Skeleton className="h-[100px] w-[105px] mx-auto rounded-lg bg-slate-200 shadow-custom">
                 <div className="w-full h-full flex justify-center items-center bg-slate-200">

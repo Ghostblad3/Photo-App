@@ -1,15 +1,12 @@
 import { useState } from "react";
 import { Switch } from "../components/ui/switch";
 import { Label } from "../components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
 import Card from "./Card";
 import selectedTableInfoStore from "./stores/selectedTableInfoStore";
 
 function Cards() {
   const [showCards, setShowCards] = useState(true);
-  const selectedTableInfo = selectedTableInfoStore(
-    (state) => state.selectedTableInfo
-  );
+  const { selectedTableInfo } = selectedTableInfoStore();
 
   return (
     <>
@@ -22,14 +19,6 @@ function Cards() {
       </div>
       {showCards ? (
         <div className="grid lg:grid-cols-4 gap-5 auto-rows-fr p-2.5">
-          {selectedTableInfo.columnNames.length === 0 ? (
-            <>
-              <Skeleton className="rounded-lg h-[110px] shadow-lg" />
-              <Skeleton className="rounded-lg h-[110px] shadow-lg" />
-              <Skeleton className="rounded-lg h-[110px] shadow-lg" />
-              <Skeleton className="rounded-lg h-[110px] shadow-lg" />
-            </>
-          ) : null}
           {selectedTableInfo.columnNames.length !== 0 ? (
             <>
               <Card>

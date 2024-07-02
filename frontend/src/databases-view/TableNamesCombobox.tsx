@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -21,23 +21,19 @@ import tableNamesStore from "./stores/tableNamesStore";
 import userDataStore from "./stores/userDataStore";
 import searchStore from "./stores/searchStore";
 import selectedTableInfoStore from "./stores/selectedTableInfoStore";
+import operationStore from "../global-stores/operationStore";
 
 function TableNamesCombobox() {
   const [open, setOpen] = useState(false);
-  const { tableNames, setTableNames, resetTableNames } = tableNamesStore(
-    (state) => ({
-      tableNames: state.tableNames,
-      setTableNames: state.setTableNames,
-      resetTableNames: state.resetTableNames,
-    })
-  );
-  const resetUserData = userDataStore((state) => state.resetUserData);
-  const resetSearch = searchStore((state) => state.resetSearch);
-  const { selectedTableInfo, setSelectedTableInfo } = selectedTableInfoStore(
-    (state) => ({
-      selectedTableInfo: state.selectedTableInfo,
-      setSelectedTableInfo: state.setSelectedTableInfo,
-    })
+  const { tableNames, setTableNames, resetTableNames } = tableNamesStore();
+  const { resetUserData } = userDataStore();
+  const { resetSearch } = searchStore();
+  const { selectedTableInfo, setSelectedTableInfo } = selectedTableInfoStore();
+  const { addOperation, changeOperationStatus, removeOperation } =
+    operationStore();
+  const hashRef = useRef(crypto.randomUUID());
+  const [fetchStatus, setFetchStatus] = useState<"pending" | "success">(
+    "pending"
   );
 
   useEffect(() => {
@@ -50,6 +46,14 @@ function TableNamesCombobox() {
   useQuery({
     queryKey: ["tableNames"],
     queryFn: async () => {
+      addOperation(
+        hashRef.current,
+        "pending",
+        "fetch",
+        "Fetching table names",
+        false
+      );
+
       const startTime = Date.now();
 
       const response = await fetch("http://localhost:3000/table/names", {
@@ -58,10 +62,15 @@ function TableNamesCombobox() {
 
       const timeTaken = Date.now() - startTime;
 
+      if (timeTaken < 500) {
+        await new Promise((resolve) => {
+          setTimeout(resolve, 500 - timeTaken);
+        });
+      }
+
       if (!response.ok) {
-        switch (response.status) {
-          case 500:
-        }
+        changeOperationStatus(hashRef.current, "error", "fetch failed");
+        remove(hashRef.current);
 
         return {};
       }
@@ -74,28 +83,34 @@ function TableNamesCombobox() {
 
       const { data } = receivedObject;
 
-      if (timeTaken < 500) {
-        await new Promise((resolve) => {
-          setTimeout(resolve, 500 - timeTaken);
-        });
-      }
-
+      changeOperationStatus(
+        hashRef.current,
+        "success",
+        "Table names fetch succeeded"
+      );
+      remove(hashRef.current);
       setTableNames(data.map((item: { name: string }) => item.name));
+      setFetchStatus("success");
 
       return {};
     },
   });
 
+  async function remove(hash: string) {
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+    removeOperation(hash);
+  }
+
   return (
     <div className="p-2.5">
-      {tableNames.length === 0 ? (
+      {fetchStatus === "pending" ? (
         <>
           <Skeleton className="h-[24px] w-[46px] mb-2" />
           <Skeleton className="h-[40px] w-full" />
         </>
       ) : null}
 
-      {tableNames.length !== 0 ? (
+      {fetchStatus === "success" ? (
         <>
           <h1 className="mb-2">Tables</h1>
           <Popover open={open} onOpenChange={setOpen}>
@@ -105,7 +120,7 @@ function TableNamesCombobox() {
                 role="combobox"
                 aria-expanded={open}
                 className="w-[100%] justify-between"
-                disabled={true}
+                disabled={tableNames.length == 0}
               >
                 {selectedTableInfo.tableName !== ""
                   ? tableNames.find(

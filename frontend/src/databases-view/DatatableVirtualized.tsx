@@ -24,7 +24,6 @@ import SearchValueCombobox from "./SearchValueCombobox";
 import SearchFieldCombobox from "./SearchFieldCombobox";
 import DeleteUserScreenshotDialog from "./DeleteUserScreenshotDialog";
 import UpdateUserDialog from "./UpdateUserDialog";
-import AlertComponent from "./AlertComponent";
 import userDataStore from "./stores/userDataStore";
 import searchStore from "./stores/searchStore";
 import screenshotAsBase64Store from "./stores/screenshotAsBase64Store";
@@ -34,7 +33,6 @@ import ScreenshotDialog from "./ScreenshotDialog";
 import AddNewUserDialog from "./AddNewUserDialog";
 import deleteUserScreenshotStore from "./stores/deleteUserScreenshotStore";
 import updateUserInfoStore from "./stores/updateUserInfoStore";
-import operationStore from "./stores/operationStore";
 
 const TableComponent = forwardRef<
   HTMLTableElement,
@@ -47,6 +45,8 @@ const TableComponent = forwardRef<
   />
 ));
 TableComponent.displayName = "TableComponent";
+
+//DataTable.whyDidYouRender = true;
 
 export function DataTable<TData, TValue>() {
   const { userData, resetUserData } = userDataStore((state) => ({
@@ -92,36 +92,13 @@ export function DataTable<TData, TValue>() {
     updateUserInfoStoreProps: state.updateUserInfoStoreProps,
     setUpdateUserInfoStoreProps: state.setUpdateUserInfoStoreProps,
   }));
-  const { status, setStatus, resetOperationStore } = operationStore(
-    (state) => ({
-      status: state.status,
-      setStatus: state.setStatus,
-      resetOperationStore: state.resetOperationStore,
-    })
-  );
 
   useEffect(() => {
     return () => {
-      resetOperationStore();
       resetUserData();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    let timeout: NodeJS.Timeout;
-
-    if (status === "success") {
-      timeout = setTimeout(() => {
-        setStatus("nop");
-      }, 5000);
-    }
-
-    return () => {
-      clearTimeout(timeout);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status]);
 
   useEffect(() => {
     if (searchField === "") {
@@ -161,8 +138,6 @@ export function DataTable<TData, TValue>() {
     },
   });
 
-  const { rows } = table.getRowModel();
-
   return (
     <div className="h-full">
       <div className="flex flex-wrap gap-2 mb-2.5">
@@ -170,7 +145,77 @@ export function DataTable<TData, TValue>() {
         <SearchFieldCombobox />
       </div>
 
-      {status !== "nop" ? <AlertComponent /> : null}
+      <div className="h-[100px] w-[100px] bg-red-500">
+        <ContextMenu>
+          <ContextMenuTrigger>Click me</ContextMenuTrigger>
+          <ContextMenuContent className="w-64">
+            <ContextMenuItem
+              inset
+              onClick={() => {
+                setAddNewUserStoreProps({
+                  addNewUserShowDialog: true,
+                  tableName: selectedTableInfo.tableName,
+                });
+              }}
+            >
+              Add new user
+            </ContextMenuItem>
+            <ContextMenuItem
+              inset
+              onClick={() => {
+                const keys: string[] = table
+                  .getHeaderGroups()[0]
+                  .headers.map((header) => header.id);
+
+                const [firstKey] = keys;
+
+                setUpdateUserInfoStoreProps({
+                  updateUserInfoStoreShowDialog: true,
+                  userId: (
+                    userData[0] as {
+                      [key: string]: string;
+                    }
+                  )[firstKey],
+                  userIndex: firstKey,
+                  tableName: selectedTableInfo.tableName,
+                });
+              }}
+            >
+              Modify user information
+            </ContextMenuItem>
+            <ContextMenuItem
+              inset
+              disabled={
+                (
+                  userData[0] as {
+                    [key: string]: string;
+                  }
+                )["has_screenshot"] === "no"
+              }
+              onClick={() => {
+                const keys: string[] = table
+                  .getHeaderGroups()[0]
+                  .headers.map((header) => header.id);
+
+                const [firstKey] = keys;
+
+                setDeleteUserScreenshotStoreProps({
+                  deleteUserScreenshotShowDialog: true,
+                  userId: (
+                    userData[0] as {
+                      [key: string]: string;
+                    }
+                  )[firstKey],
+                  userIdName: firstKey,
+                  tableName: selectedTableInfo.tableName,
+                });
+              }}
+            >
+              Delete user screenshot
+            </ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
+      </div>
 
       {updateUserInfoStoreShowDialog ? <UpdateUserDialog /> : null}
 
@@ -184,13 +229,13 @@ export function DataTable<TData, TValue>() {
         <div className="h-[calc(400px-10px)] px-2.5 overflow-y-auto">
           <TableVirtuoso
             className="overflow-y-auto bg-white border-[1px] rounded-md"
-            totalCount={rows.length}
+            totalCount={table.getRowModel().rows.length}
             components={{
               Table: TableComponent,
               TableRow: (props: HTMLAttributes<HTMLTableRowElement>) => {
                 // @ts-expect-error data-index is a valid attribute
                 const index = props["data-index"];
-                const row = rows[index];
+                const row = table.getRowModel().rows[index];
 
                 if (!row) return null;
 

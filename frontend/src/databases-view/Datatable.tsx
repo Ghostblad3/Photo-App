@@ -38,7 +38,6 @@ import ScreenshotDialog from "./ScreenshotDialog";
 import AddNewUserDialog from "./AddNewUserDialog";
 import deleteUserScreenshotStore from "./stores/deleteUserScreenshotStore";
 import updateUserInfoStore from "./stores/updateUserInfoStore";
-import operationStore from "./stores/operationStore";
 
 export function DataTable<TData, TValue>() {
   const { userData, resetUserData } = userDataStore((state) => ({
@@ -84,13 +83,6 @@ export function DataTable<TData, TValue>() {
     updateUserInfoStoreProps: state.updateUserInfoStoreProps,
     setUpdateUserInfoStoreProps: state.setUpdateUserInfoStoreProps,
   }));
-  const { status, setStatus, resetOperationStore } = operationStore(
-    (state) => ({
-      status: state.status,
-      setStatus: state.setStatus,
-      resetOperationStore: state.resetOperationStore,
-    })
-  );
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -111,7 +103,6 @@ export function DataTable<TData, TValue>() {
 
   useEffect(() => {
     return () => {
-      resetOperationStore();
       resetUserData();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -121,9 +112,7 @@ export function DataTable<TData, TValue>() {
     let timeout: NodeJS.Timeout;
 
     if (status === "success") {
-      timeout = setTimeout(() => {
-        setStatus("nop");
-      }, 5000);
+      timeout = setTimeout(() => {}, 5000);
     }
 
     return () => {
