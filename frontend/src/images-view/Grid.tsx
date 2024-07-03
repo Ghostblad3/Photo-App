@@ -6,35 +6,45 @@ import ScreenshotDialog from "./ScreenshotDialog";
 import SelectedKeysCombobox from "./SelectedKeysCombobox";
 import SearchValueCombobox from "./SearchValueCombobox";
 import SearchFieldCombobox from "./SearchFieldCombobox";
-import selectedTableInfoStore from "./stores/selectedTableInfoStore";
+import selectedTableStore from "./stores/selectedTableStore";
 import userDataStore from "./stores/userDataStore";
 import singleUserStore from "./stores/singleUserStore";
 import useAvailableKeysStore from "./stores/availableKeysStore";
 import operationStore from "../global-stores/operationStore";
 
 function Grid() {
+  const selectedKeys = useAvailableKeysStore(
+    (state) => state.props.selectedKeys
+  );
+  const { setAvailableKeys } = useAvailableKeysStore((state) => state.actions);
+  const tableName = selectedTableStore((state) => state.props.tableName);
+  const userData = userDataStore((state) => state.props.userData);
+  const userDataFiltered = userDataStore(
+    (state) => state.props.userDataFiltered
+  );
+  const userKeys = userDataStore((state) => state.props.userKeys);
+  const { setUserData, resetUserDataStore } = userDataStore(
+    (state) => state.actions
+  );
+  const { setSingleUserData } = singleUserStore((state) => state.actions);
+  const { addOperation, changeOperationStatus, removeOperation } =
+    operationStore((state) => state.actions);
+
   const [count, setCount] = useState(0);
   const userDataFetchRef = useRef(crypto.randomUUID());
-  const { selectedKeys, setAvailableKeys } = useAvailableKeysStore();
-  const { selectedTableInfo } = selectedTableInfoStore();
-  const { userData, userDataFiltered, userKeys, setUserData, resetUserData } =
-    userDataStore();
-  const { setSingleUserData } = singleUserStore();
-  const { addOperation, changeOperationStatus, removeOperation } =
-    operationStore();
   const [fetchUserDataStatus, setFetchUserDataStatus] = useState<
     "pending" | "success" | "error"
   >("pending");
 
   useEffect(() => {
     return () => {
-      resetUserData();
+      resetUserDataStore();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useQuery({
-    queryKey: ["user-data", selectedTableInfo.tableName],
+    queryKey: ["user-data", tableName],
     queryFn: async () => {
       addOperation(
         userDataFetchRef.current,
@@ -45,13 +55,13 @@ function Grid() {
       );
 
       const paramsObj = JSON.stringify({
-        tableName: selectedTableInfo.tableName,
+        tableName,
       });
 
       const startTime = Date.now();
 
       const countResponse = await fetch(
-        `http://localhost:3000/table/count-screenshots/{"tableName":"${selectedTableInfo.tableName}"}`,
+        `http://localhost:3000/table/count-screenshots/${paramsObj}`,
         {
           cache: "no-store",
         }
@@ -66,7 +76,7 @@ function Grid() {
         remove(userDataFetchRef.current);
         setFetchUserDataStatus("error");
 
-        resetUserData();
+        resetUserDataStore();
         return {};
       }
 
@@ -96,7 +106,7 @@ function Grid() {
         remove(userDataFetchRef.current);
         setFetchUserDataStatus("error");
 
-        resetUserData();
+        resetUserDataStore();
         return {};
       }
 
@@ -116,12 +126,12 @@ function Grid() {
       changeOperationStatus(
         userDataFetchRef.current,
         "success",
-        "Fetched user data successfully"
+        "Successfully fetched user data"
       );
       remove(userDataFetchRef.current);
 
       if (data.length === 0) {
-        resetUserData();
+        resetUserDataStore();
         return {};
       }
 
@@ -134,7 +144,7 @@ function Grid() {
 
       return {};
     },
-    enabled: selectedTableInfo.tableName !== "",
+    enabled: tableName !== "",
   });
 
   async function remove(hash: string) {
@@ -242,7 +252,7 @@ function Grid() {
               return (
                 <ScreenshotDialog key={item[userKeys[0]]}>
                   <div
-                    className="bg-white rounded-lg flex flex-col p-2.5  cursor-pointer"
+                    className="bg-white rounded-lg flex flex-col cursor-pointer"
                     onClick={() => {
                       setSingleUserData(userData[index]);
                     }}

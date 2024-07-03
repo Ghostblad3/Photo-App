@@ -1,16 +1,29 @@
 import { create } from "zustand";
 
-interface TableNames {
-  tableNames: string[];
-  setTableNames: (tableNames: string[]) => void;
-  resetTableNames: () => void;
+interface TableNamesProps {
+  props: {
+    tableNames: string[];
+  };
 }
 
-const tableNamesStore = create<TableNames>((set) => ({
+interface TableNamesActions {
+  actions: {
+    setTableNames: (tableNames: string[]) => void;
+    resetTableNamesStore: () => void;
+  };
+}
+
+const initProps: { tableNames: string[] } = {
   tableNames: [],
-  setTableNames: (tableNames: string[]) =>
-    set(() => ({ tableNames: tableNames })),
-  resetTableNames: () => set(() => ({ tableNames: [] })),
+};
+
+const tableNamesStore = create<TableNamesProps & TableNamesActions>((set) => ({
+  props: initProps,
+  actions: {
+    setTableNames: (tableNames: string[]) =>
+      set(() => ({ props: { tableNames } })),
+    resetTableNamesStore: () => set(() => ({ props: initProps })),
+  },
 }));
 
 export default tableNamesStore;

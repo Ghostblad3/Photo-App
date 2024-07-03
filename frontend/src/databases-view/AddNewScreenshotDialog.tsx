@@ -14,8 +14,9 @@ function AddNewScreenshotDialog() {
     (state) => state.props.screenshotAsBase64
   );
   const showDialog = addNewScreenshotStore((state) => state.props.showDialog);
-  const actions = addNewScreenshotStore((state) => state.actions);
-  const { setShowDialog, resetAddNewScreenshotStore } = actions;
+  const { setShowDialog, resetAddNewScreenshotStore } = addNewScreenshotStore(
+    (state) => state.actions
+  );
 
   useEffect(() => {
     return () => {

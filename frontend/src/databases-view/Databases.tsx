@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-// import { DataTable } from "./DatatableVirtualized";
 import { DataTable } from "./VirtualizedNew";
 import { Skeleton } from "@/components/ui/skeleton";
 import MultiAlertComponent from "../global-components/MultiAlertComponet";
@@ -19,21 +18,26 @@ function Databases() {
   //   resetSelectedTableInfoStore,
   // } = selectedTableInfoStore();
   const tableName = selectedTableInfoStore((state) => state.props.tableName);
-  const actions = selectedTableInfoStore((state) => state.actions);
   const {
     setColumnNames,
     setUserNumber,
     setScreenshotNumber,
     setScreenshotAverageSize,
     resetSelectedTableInfoStore,
-  } = actions;
+  } = selectedTableInfoStore((state) => state.actions);
 
-  const { setUserData, setUserKeys, resetUserData } = userDataStore();
+  const { setUserData, setUserKeys, resetUserData } = userDataStore(
+    (state) => state.actions
+  );
+
   //const { resetSearch } = searchStore();
-  const resetSearch = searchStore((state) => state.actions.resetSeachStore);
+  const resetSearchStore = searchStore(
+    (state) => state.actions.resetSearchStore
+  );
 
-  const { showQueue, addOperation, changeOperationStatus, removeOperation } =
-    operationStore();
+  const showQueue = operationStore((state) => state.props.showQueue);
+  const { addOperation, changeOperationStatus, removeOperation } =
+    operationStore((state) => state.actions);
 
   const fetchersHashRef = useRef(crypto.randomUUID());
   const userRecordsHashRef = useRef(crypto.randomUUID());
@@ -67,7 +71,7 @@ function Databases() {
         fetchersHashRef.current,
         "pending",
         "fetch",
-        "Fetching selected table information",
+        "Fetching the selected table information.",
         false
       );
 
@@ -215,7 +219,7 @@ function Databases() {
         changeOperationStatus(
           fetchersHashRef.current,
           "error",
-          "Fetching the selected table info failed"
+          "Failed to fetch the selected table information"
         );
         remove(fetchersHashRef.current);
         setTableInfoFetchStatus("error");
@@ -226,7 +230,7 @@ function Databases() {
       changeOperationStatus(
         fetchersHashRef.current,
         "success",
-        "Selected table info fetch succeeded"
+        "Successfully fetched the selected table information"
       );
       remove(fetchersHashRef.current);
 
@@ -295,7 +299,7 @@ function Databases() {
         changeOperationStatus(
           userRecordsHashRef.current,
           "error",
-          "Fetching user records failed"
+          "Failed to fetch user records"
         );
         remove(userRecordsHashRef.current);
         setUserRecordsFetchStatus("error");
@@ -323,7 +327,7 @@ function Databases() {
         changeOperationStatus(
           userRecordsHashRef.current,
           "error",
-          "Fetching user records failed"
+          "Failed to fetch user records"
         );
         remove(userRecordsHashRef.current);
         setUserRecordsFetchStatus("error");
@@ -362,13 +366,13 @@ function Databases() {
       const [user] = userDataUpdated;
       const keys = Object.keys(user);
 
-      resetSearch();
+      resetSearchStore();
       resetUserData();
 
       changeOperationStatus(
         userRecordsHashRef.current,
         "success",
-        "User records fetch succeeded"
+        "Successfully fetched user records"
       );
       remove(userRecordsHashRef.current);
       setUserRecordsFetchStatus("success");

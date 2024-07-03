@@ -19,12 +19,13 @@ import searchStore from "./stores/searchStore";
 import userDataStore from "./stores/userDataStore";
 
 function SearchFieldCombobox() {
-  const [open, setOpen] = useState(false);
-  // const { searchField, setSearchField } = searchStore();
   const searchField = searchStore((state) => state.props.searchField);
-  const setSearchField = searchStore((state) => state.actions.setSearchField);
+  const { setSearchField, setSearchValue } = searchStore(
+    (state) => state.actions
+  );
+  const userData = userDataStore((state) => state.props.userData);
 
-  const { userData } = userDataStore();
+  const [open, setOpen] = useState(false);
   const [values] = useState(
     Object.keys((userData as { [key: string]: string }[])[0]).map((key) => {
       return { value: key.toLowerCase(), label: key };
@@ -59,6 +60,8 @@ function SearchFieldCombobox() {
                       key={item.label}
                       value={item.label}
                       onSelect={(currentValue) => {
+                        setSearchValue("");
+
                         if (searchField.toLowerCase() === currentValue) {
                           setSearchField("");
                           setOpen(false);

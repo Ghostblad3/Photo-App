@@ -1,39 +1,46 @@
 import { create } from "zustand";
 
-interface UpdateUserInfoStoreProps {
-  updateUserInfoStoreShowDialog: boolean;
-  userId: string;
-  userIndex: string;
-  tableName: string;
+interface UpdateUserInfoProps {
+  props: {
+    showDialog: boolean;
+    userId: string;
+    userIndex: string;
+    tableName: string;
+  };
 }
 
-interface UpdateUserInfoStore {
-  updateUserInfoStoreProps: UpdateUserInfoStoreProps;
-  setUpdateUserInfoStoreProps: (value: UpdateUserInfoStoreProps) => void;
-  setUpdateUserInfoShowDialog: (value: boolean) => void;
-  resetUpdateUserInfoStore: () => void;
+interface UpdateUserInfoActions {
+  actions: {
+    setShowDialog: (showDialog: boolean) => void;
+    setUserId: (userId: string) => void;
+    setUserIndex: (userIndex: string) => void;
+    setTableName: (tableName: string) => void;
+    resetUpdateUserInfoStore: () => void;
+  };
 }
 
-const initialState: UpdateUserInfoStoreProps = {
-  updateUserInfoStoreShowDialog: false,
+const initialProps = {
+  showDialog: false,
   userId: "",
   userIndex: "",
   tableName: "",
 };
 
-const updateUserInfoStore = create<UpdateUserInfoStore>((set) => ({
-  updateUserInfoStoreProps: initialState,
-  setUpdateUserInfoStoreProps: (value) =>
-    set({ updateUserInfoStoreProps: value }),
-  setUpdateUserInfoShowDialog: (value) =>
-    set((state) => ({
-      updateUserInfoStoreProps: {
-        ...state.updateUserInfoStoreProps,
-        updateUserInfoStoreShowDialog: value,
-      },
-    })),
-  resetUpdateUserInfoStore: () =>
-    set({ updateUserInfoStoreProps: initialState }),
-}));
+const updateUserInfoStore = create<UpdateUserInfoProps & UpdateUserInfoActions>(
+  (set) => ({
+    props: initialProps,
+    actions: {
+      setShowDialog: (showDialog: boolean) =>
+        set((state) => ({ props: { ...state.props, showDialog } })),
+      setUserId: (userId: string) =>
+        set((state) => ({ props: { ...state.props, userId } })),
+      setUserIndex: (userIndex: string) =>
+        set((state) => ({ props: { ...state.props, userIndex } })),
+      setTableName: (tableName: string) =>
+        set((state) => ({ props: { ...state.props, tableName } })),
+      resetUpdateUserInfoStore: () => set(() => ({ props: initialProps })),
+    },
+  })
+);
 
 export default updateUserInfoStore;

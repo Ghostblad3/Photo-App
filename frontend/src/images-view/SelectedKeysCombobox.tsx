@@ -18,14 +18,16 @@ import { Label } from "@/components/ui/label";
 import useAvailableKeysStore from "./stores/availableKeysStore";
 
 function SelectedKeysCombobox() {
+  const selectedKeys = useAvailableKeysStore(
+    (state) => state.props.selectedKeys
+  );
+  const availableKeys = useAvailableKeysStore(
+    (state) => state.props.availableKeys
+  );
+  const { setAvailableKeys, setSelectedKeys, resetAvailableKeysStore } =
+    useAvailableKeysStore((state) => state.actions);
+
   const [open, setOpen] = useState(false);
-  const {
-    availableKeys,
-    selectedKeys,
-    setAvailableKeys,
-    setSelectedKeys,
-    resetAvailableKeysStore,
-  } = useAvailableKeysStore();
   const [values, setValues] = useState<{ value: string; label: string }[]>([]);
 
   useEffect(() => {

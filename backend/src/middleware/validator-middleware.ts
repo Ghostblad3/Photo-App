@@ -16,7 +16,7 @@ export default function schemaValidator(schema: z.ZodObject<any, any>) {
     }
 
     if (validationResult.error) {
-      return res.send({
+      return res.status(400).send({
         status: "error",
         data: {},
         error: {

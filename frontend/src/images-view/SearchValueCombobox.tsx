@@ -19,15 +19,20 @@ import userDataStore from "./stores/userDataStore";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 function SearchValueCombobox() {
+  const { setSearchValue, resetSearchStore } = searchStore(
+    (state) => state.actions
+  );
+  const searchField = searchStore((state) => state.props.searchField);
+  const searchValue = searchStore((state) => state.props.searchValue);
+  const userData = userDataStore((state) => state.props.userData);
+  const { setUserDataFiltered } = userDataStore((state) => state.actions);
+
   const [open, setOpen] = useState(false);
   const [values, setValues] = useState<{ value: string; label: string }[]>([]);
-  const { searchField, searchValue, setSearchValue, resetSearch } =
-    searchStore();
-  const { userData, setUserDataFiltered } = userDataStore();
 
   useEffect(() => {
     return () => {
-      resetSearch();
+      resetSearchStore();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

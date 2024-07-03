@@ -1,13 +1,13 @@
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@radix-ui/react-context-menu";
 import addNewScreenshotStore from "./stores/addNewScreenshotStore";
 
 function DragAndDropPngComponent() {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const actions = addNewScreenshotStore((state) => state.actions);
-  const { setScreenshotAsBase64 } = actions;
+  const setScreenshotAsBase64 = addNewScreenshotStore(
+    (state) => state.actions.setScreenshotAsBase64
+  );
 
   function handleDragOver(event: React.DragEvent<HTMLDivElement>) {
     event.preventDefault();
@@ -55,9 +55,9 @@ function DragAndDropPngComponent() {
         ref={inputRef}
       />
 
-      <Label className="text-3xl text-slate-400">Drag and a png here</Label>
+      <h1 className="text-3xl text-slate-400">Drag and a png here</h1>
 
-      <Label className="text-lg text-slate-400">Or, if you prefer...</Label>
+      <h3 className="text-lg text-slate-400">Or, if you prefer...</h3>
 
       <Button onClick={() => inputRef!.current!.click()}>
         Select a png from your computer

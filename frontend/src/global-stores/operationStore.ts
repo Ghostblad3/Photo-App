@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 type Status = "nop" | "pending" | "success" | "error";
 type Operation = "nop" | "fetch" | "create" | "update" | "delete";
+
 export type OperationObject = {
   hash: string;
   status: Status;
@@ -9,72 +10,105 @@ export type OperationObject = {
   message: string;
 };
 
-interface OperationStore {
-  operations: OperationObject[];
-  showQueue: OperationObject[];
-  addOperation: (
-    hash: string,
-    status: Status,
-    operation: Operation,
-    message: string,
-    show: boolean
-  ) => void;
-  changeOperationStatus: (
-    hash: string,
-    status: Status,
-    message: string
-  ) => void;
-  removeOperation: (hash: string) => void;
-  resetOperationStore: () => void;
+interface OperationStoreProps {
+  props: {
+    operations: OperationObject[];
+    showQueue: OperationObject[];
+  };
 }
 
-const operationStore = create<OperationStore>((set) => ({
+interface OperationStoreActions {
+  actions: {
+    addOperation: (
+      hash: string,
+      status: Status,
+      operation: Operation,
+      message: string,
+      show: boolean
+    ) => void;
+    changeOperationStatus: (
+      hash: string,
+      status: Status,
+      message: string
+    ) => void;
+    removeOperation: (hash: string) => void;
+    resetOperationStore: () => void;
+  };
+}
+
+const initProps: {
+  operations: OperationObject[];
+  showQueue: OperationObject[];
+} = {
   operations: [],
   showQueue: [],
-  addOperation(hash, status, operation, message, show) {
-    set((state) => ({
-      operations: [...state.operations, { hash, status, operation, message }],
-      showQueue: show
-        ? [...state.showQueue, { hash, status, operation, message }]
-        : state.showQueue,
-    }));
-  },
-  changeOperationStatus(hash, status, message) {
-    set((state) => ({
-      operations: state.operations.map((item) => {
-        if (item.hash === hash) {
-          return {
-            ...item,
-            status,
-            message,
-          };
-        }
+};
 
-        return item;
-      }),
-      showQueue: state.showQueue.some((item) => item.hash === hash)
-        ? state.showQueue.map((item) =>
-            item.hash === hash ? { ...item, status, message } : item
-          )
-        : [
-            ...state.showQueue,
-            {
-              hash,
-              status,
-              operation: state.operations.find((item) => item.hash === hash)!
-                .operation,
-              message,
-            },
-          ],
-    }));
-  },
-  removeOperation(hash) {
-    set((state) => ({
-      operations: state.operations.filter((item) => item.hash !== hash),
-      showQueue: state.showQueue.filter((item) => item.hash !== hash),
-    }));
-  },
-  resetOperationStore: () => set({ operations: [], showQueue: [] }),
-}));
+const operationStore = create<OperationStoreProps & OperationStoreActions>(
+  (set) => ({
+    props: initProps,
+    actions: {
+      addOperation(hash, status, operation, message, show) {
+        set((state) => ({
+          props: {
+            ...state.props,
+            operations: [
+              ...state.props.operations,
+              { hash, status, operation, message },
+            ],
+            showQueue: show
+              ? [...state.props.showQueue, { hash, status, operation, message }]
+              : state.props.showQueue,
+          },
+        }));
+      },
+      changeOperationStatus(hash, status, message) {
+        set((state) => ({
+          props: {
+            operations: state.props.operations.map((item) => {
+              if (item.hash === hash) {
+                return {
+                  ...item,
+                  status,
+                  message,
+                };
+              }
+
+              return item;
+            }),
+            showQueue: state.props.showQueue.some((item) => item.hash === hash)
+              ? state.props.showQueue.map((item) =>
+                  item.hash === hash ? { ...item, status, message } : item
+                )
+              : [
+                  ...state.props.showQueue,
+                  {
+                    hash,
+                    status,
+                    operation: state.props.operations.find(
+                      (item) => item.hash === hash
+                    )!.operation,
+                    message,
+                  },
+                ],
+          },
+        }));
+      },
+      removeOperation(hash) {
+        set((state) => ({
+          props: {
+            operations: state.props.operations.filter(
+              (item) => item.hash !== hash
+            ),
+            showQueue: state.props.showQueue.filter(
+              (item) => item.hash !== hash
+            ),
+          },
+        }));
+      },
+      resetOperationStore: () => set({ props: initProps }),
+    },
+  })
+);
 
 export default operationStore;

@@ -35,37 +35,51 @@ import updateUserInfoStore from "./stores/updateUserInfoStore";
 import addNewScreenshotStore from "./stores/addNewScreenshotStore";
 
 export function DataTable<TData, TValue>() {
-  const { userData, resetUserData } = userDataStore();
-  // const { searchField, searchValue, setSearchValue } = searchStore();
+  const userData = userDataStore((state) => state.props.userData);
+  const { resetUserData } = userDataStore((state) => state.actions);
   const searchField = searchStore((state) => state.props.searchField);
   const searchValue = searchStore((state) => state.props.searchValue);
   const setSearchValue = searchStore((state) => state.actions.setSearchValue);
-
+  const screenshowAsBase64ShowDialog = screenshotAsBase64Store(
+    (state) => state.props.showDialog
+  );
   const {
-    screenshotAsBase64Props: { displayDialog },
-    setDisplayDialog,
-    setParams,
-  } = screenshotAsBase64Store();
-
-  const showDialog = addNewScreenshotStore((state) => state.props.showDialog);
-  const actions = addNewScreenshotStore((state) => state.actions);
-  const { setTableName, setUserIdName, setUserId, setShowDialog } = actions;
-
-  //const { selectedTableInfo } = selectedTableInfoStore();
+    setShowDialog: setScreenshowAsBase64ShowDialog,
+    setUserInfo: setScreenshowAsBase64UserInfo,
+    setTableName: setScreenshowAsBase64TableName,
+    setKeyName: setScreenshotAsBase64KeyName,
+  } = screenshotAsBase64Store((state) => state.actions);
+  const addNewScreenshotShowDialog = addNewScreenshotStore(
+    (state) => state.props.showDialog
+  );
+  const { setTableName, setUserIdName, setUserId, setShowDialog } =
+    addNewScreenshotStore((state) => state.actions);
   const tableName = selectedTableInfoStore((state) => state.props.tableName);
-
+  const addNewUserShowDialog = addNewUserStore(
+    (state) => state.props.showDialog
+  );
   const {
-    addNewUserStoreProps: { addNewUserShowDialog },
-    setAddNewUserStoreProps,
-  } = addNewUserStore();
+    setShowDialog: setAddNewUserShowDialog,
+    setTableName: setAddNewUserTableName,
+  } = addNewUserStore((state) => state.actions);
+  const deleteUserScreenshotShowDialog = deleteUserScreenshotStore(
+    (state) => state.props.showDialog
+  );
   const {
-    deleteUserScreenshotStoreProps: { deleteUserScreenshotShowDialog },
-    setDeleteUserScreenshotStoreProps,
-  } = deleteUserScreenshotStore();
+    setShowDialog: setDeleteUserScreenshotShowDialog,
+    setUserId: setDeleteUserScreenshotUserId,
+    setUserIdName: setDeleteUserScreenshotUserIdName,
+    setTableName: setDeleteUserScreenshotTableName,
+  } = deleteUserScreenshotStore((state) => state.actions);
+  const updateUserInfoShowDialog = updateUserInfoStore(
+    (state) => state.props.showDialog
+  );
   const {
-    updateUserInfoStoreProps: { updateUserInfoStoreShowDialog },
-    setUpdateUserInfoStoreProps,
-  } = updateUserInfoStore();
+    setShowDialog: setUpdateUserInfoShowDialog,
+    setTableName: setUpdateUserInfoTableName,
+    setUserId: setUpdateUserInfoUserId,
+    setUserIndex: setUpdateUserInfoUserIndex,
+  } = updateUserInfoStore((state) => state.actions);
 
   useEffect(() => {
     return () => {
@@ -137,15 +151,15 @@ export function DataTable<TData, TValue>() {
         <SearchFieldCombobox />
       </div>
 
-      {showDialog ? <AddNewScreenshotDialog /> : null}
+      {addNewScreenshotShowDialog ? <AddNewScreenshotDialog /> : null}
 
-      {updateUserInfoStoreShowDialog ? <UpdateUserDialog /> : null}
+      {updateUserInfoShowDialog ? <UpdateUserDialog /> : null}
 
       {deleteUserScreenshotShowDialog ? <DeleteUserScreenshotDialog /> : null}
 
       {addNewUserShowDialog ? <AddNewUserDialog /> : null}
 
-      {displayDialog ? <ScreenshotDialog /> : null}
+      {screenshowAsBase64ShowDialog ? <ScreenshotDialog /> : null}
 
       <div ref={parentRef} className="px-2.5 w-full overflow-auto h-[400px]">
         <table className="w-full">
@@ -218,8 +232,11 @@ export function DataTable<TData, TValue>() {
                             return;
                           }
 
-                          setParams(user, tableName, keys[0]);
-                          setDisplayDialog(true);
+                          setScreenshowAsBase64UserInfo(user);
+                          setScreenshowAsBase64TableName(tableName);
+                          setScreenshotAsBase64KeyName(keys[0]);
+
+                          setScreenshowAsBase64ShowDialog(true);
                         }}
                       >
                         <ContextMenu>
@@ -261,10 +278,8 @@ export function DataTable<TData, TValue>() {
                             <ContextMenuItem
                               inset
                               onClick={() => {
-                                setAddNewUserStoreProps({
-                                  addNewUserShowDialog: true,
-                                  tableName: tableName,
-                                });
+                                setAddNewUserTableName(tableName);
+                                setAddNewUserShowDialog(true);
                               }}
                             >
                               Add new user
@@ -278,16 +293,16 @@ export function DataTable<TData, TValue>() {
 
                                 const [firstKey] = keys;
 
-                                setUpdateUserInfoStoreProps({
-                                  updateUserInfoStoreShowDialog: true,
-                                  userId: (
+                                setUpdateUserInfoTableName(tableName);
+                                setUpdateUserInfoUserId(
+                                  (
                                     userData[row.id as unknown as number] as {
                                       [key: string]: string;
                                     }
-                                  )[firstKey],
-                                  userIndex: row.id,
-                                  tableName: tableName,
-                                });
+                                  )[firstKey]
+                                );
+                                setUpdateUserInfoUserIndex(row.id);
+                                setUpdateUserInfoShowDialog(true);
                               }}
                             >
                               Modify user information
@@ -308,16 +323,16 @@ export function DataTable<TData, TValue>() {
 
                                 const [firstKey] = keys;
 
-                                setDeleteUserScreenshotStoreProps({
-                                  deleteUserScreenshotShowDialog: true,
-                                  userId: (
+                                setDeleteUserScreenshotUserId(
+                                  (
                                     userData[row.id as unknown as number] as {
                                       [key: string]: string;
                                     }
-                                  )[firstKey],
-                                  userIdName: firstKey,
-                                  tableName: tableName,
-                                });
+                                  )[firstKey]
+                                );
+                                setDeleteUserScreenshotTableName(tableName);
+                                setDeleteUserScreenshotUserIdName(firstKey);
+                                setDeleteUserScreenshotShowDialog(true);
                               }}
                             >
                               Delete user screenshot

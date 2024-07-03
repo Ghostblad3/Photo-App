@@ -1,21 +1,36 @@
 import { create } from "zustand";
 
-// type AvailableKey = { key: string; id: string };
-
-interface AvailableKeysStore {
-  availableKeys: string[];
-  selectedKeys: string[];
-  setAvailableKeys: (selectedKeys: string[]) => void;
-  setSelectedKeys: (selectedKeys: string[]) => void;
-  resetAvailableKeysStore: () => void;
+interface AvailableKeysProps {
+  props: {
+    availableKeys: string[];
+    selectedKeys: string[];
+  };
 }
 
-const useAvailableKeysStore = create<AvailableKeysStore>((set) => ({
+interface AvailableKeysActions {
+  actions: {
+    setAvailableKeys: (availableKeys: string[]) => void;
+    setSelectedKeys: (selectedKeys: string[]) => void;
+    resetAvailableKeysStore: () => void;
+  };
+}
+
+const initialProps: { availableKeys: string[]; selectedKeys: string[] } = {
   availableKeys: [],
   selectedKeys: [],
-  setAvailableKeys: (availableKeys) => set({ availableKeys }),
-  setSelectedKeys: (selectedKeys) => set({ selectedKeys }),
-  resetAvailableKeysStore: () => set({ availableKeys: [], selectedKeys: [] }),
-}));
+};
 
-export default useAvailableKeysStore;
+const availableKeysStore = create<AvailableKeysProps & AvailableKeysActions>(
+  (set) => ({
+    props: initialProps,
+    actions: {
+      setAvailableKeys: (availableKeys) =>
+        set((state) => ({ props: { ...state.props, availableKeys } })),
+      setSelectedKeys: (selectedKeys) =>
+        set((state) => ({ props: { ...state.props, selectedKeys } })),
+      resetAvailableKeysStore: () => set({ props: initialProps }),
+    },
+  })
+);
+
+export default availableKeysStore;

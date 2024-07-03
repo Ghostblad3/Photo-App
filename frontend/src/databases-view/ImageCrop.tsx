@@ -4,7 +4,6 @@ import ReactCrop, { Crop, PixelCrop } from "react-image-crop";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { Label } from "@/components/ui/label";
 import userDataStore from "./stores/userDataStore";
 import operationStore from "../global-stores/operationStore";
 import addNewScreenshotStore from "./stores/addNewScreenshotStore";
@@ -19,12 +18,13 @@ function ImageCrop() {
   const screenshotAsBase64 = addNewScreenshotStore(
     (state) => state.props.screenshotAsBase64
   );
-  const actions = addNewScreenshotStore((state) => state.actions);
-  const { setShowDialog } = actions;
-
-  const { updateUser } = userDataStore();
+  const setShowDialog = addNewScreenshotStore(
+    (state) => state.actions.setShowDialog
+  );
+  const { updateUser } = userDataStore((state) => state.actions);
   const { addOperation, changeOperationStatus, removeOperation } =
-    operationStore();
+    operationStore((state) => state.actions);
+
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const [crop, setCrop] = useState<Crop>();
@@ -199,7 +199,7 @@ function ImageCrop() {
         changeOperationStatus(
           hashRef.current,
           "error",
-          "Error creating new screenshot"
+          "Failed to create a new screenshot"
         );
         remove(hashRef.current);
         setShowDialog(false);
@@ -246,7 +246,7 @@ function ImageCrop() {
       changeOperationStatus(
         hashRef.current,
         "success",
-        "Successfully created the new screenshot"
+        "Successfully created a new screenshot"
       );
       remove(hashRef.current);
       setUploadStatus("success");
@@ -359,10 +359,10 @@ function ImageCrop() {
       )}
       {(uploadStatus === "pending" || uploadStatus === "success") && (
         <div className="flex flex-col justify-center items-center h-[200px]">
-          <Label className="text-xl">Uploading</Label>
+          <h1 className="text-xl">Uploading</h1>
           <div className="flex justify-center items-center gap-2.5 w-full mt-10">
             <Progress value={progress} className="w-[60%] h-2.5 mt-[3px]" />
-            <Label className="">{progress} %</Label>
+            <p className="">{progress} %</p>
           </div>
         </div>
       )}

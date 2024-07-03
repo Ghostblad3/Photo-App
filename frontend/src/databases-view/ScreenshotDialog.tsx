@@ -5,27 +5,24 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import screenshotAsBase64Store from "./stores/screenshotAsBase64Store";
 import operationStore from "../global-stores/operationStore";
 
 function ScreenshotDialog() {
-  const {
-    screenshotAsBase64Props: {
-      displayDialog,
-      userInfo,
-      keyName,
-      tableName,
-      screenshot,
-    },
-    setDisplayDialog,
-    setScreenshot,
-    resetScreenshotAsBase64Store,
-  } = screenshotAsBase64Store();
+  const showDialog = screenshotAsBase64Store((state) => state.props.showDialog);
+  const userInfo = screenshotAsBase64Store((state) => state.props.userInfo);
+  const keyName = screenshotAsBase64Store((state) => state.props.keyName);
+  const tableName = screenshotAsBase64Store((state) => state.props.tableName);
+  const screenshotAsBase64 = screenshotAsBase64Store(
+    (state) => state.props.screenshotAsBase64
+  );
+  const { setShowDialog, setScreenshotAsBase64, resetScreenshotAsBase64Store } =
+    screenshotAsBase64Store((state) => state.actions);
   const { addOperation, changeOperationStatus, removeOperation } =
-    operationStore();
+    operationStore((state) => state.actions);
+
   const hashRef = useRef(crypto.randomUUID());
   const [userScreenshotFetchStatus, setUserScreenshotFetchStatus] = useState<
     "pending" | "success" | "error"
@@ -33,9 +30,10 @@ function ScreenshotDialog() {
 
   useEffect(() => {
     if (userScreenshotFetchStatus === "error") {
-      setDisplayDialog(false);
+      setShowDialog(false);
     }
-  }, [userScreenshotFetchStatus, setDisplayDialog]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userScreenshotFetchStatus]);
 
   useEffect(() => {
     return () => {
@@ -53,8 +51,6 @@ function ScreenshotDialog() {
         tableName: tableName,
       };
 
-      const timeNow = new Date();
-
       addOperation(
         hashRef.current,
         "pending",
@@ -62,6 +58,8 @@ function ScreenshotDialog() {
         "Fetching user screenshot",
         false
       );
+
+      const timeNow = new Date();
 
       const response = await fetch(
         `http://localhost:3000/screenshot/retrieve-user-screenshot/${JSON.stringify(
@@ -86,7 +84,7 @@ function ScreenshotDialog() {
         changeOperationStatus(
           hashRef.current,
           "error",
-          "User screenshot fetch failed"
+          "Failed to fetch user screenshot"
         );
         remove(hashRef.current);
         setUserScreenshotFetchStatus("error");
@@ -116,11 +114,11 @@ function ScreenshotDialog() {
       changeOperationStatus(
         hashRef.current,
         "success",
-        "User screenshot fetch succeeded"
+        "Successfully fetched user screenshot"
       );
       remove(hashRef.current);
       setUserScreenshotFetchStatus("success");
-      setScreenshot(data);
+      setScreenshotAsBase64(data);
 
       return {};
     },
@@ -132,11 +130,11 @@ function ScreenshotDialog() {
   }
 
   return (
-    <Dialog open={displayDialog}>
+    <Dialog open={showDialog}>
       <DialogContent
         className="sm:max-w-[425px]"
         onInteractOutside={() => {
-          setDisplayDialog(false);
+          setShowDialog(false);
         }}
       >
         <DialogHeader>
@@ -188,17 +186,17 @@ function ScreenshotDialog() {
             <div className="bg-slate-100 p-4">
               <img
                 className="h-[100px] w-[105px] mx-auto rounded-lg "
-                src={`data:image/png;base64,${screenshot}`}
+                src={`data:image/png;base64,${screenshotAsBase64}`}
               />
             </div>
           )}
 
           {Object.keys(userInfo).map((key) => (
             <div key={key} className="mx-4">
-              <Label className="font-semibold block text-sm">{key}</Label>
-              <Label className="text-gray-700 dark:text-gray-300 text-base">
+              <p className="font-semibold block text-sm">{key}</p>
+              <p className="text-gray-700 dark:text-gray-300 text-base">
                 {userInfo[key]}
-              </Label>
+              </p>
               <hr className="my-2" />
             </div>
           ))}

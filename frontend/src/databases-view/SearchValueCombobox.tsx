@@ -19,13 +19,12 @@ import searchStore from "./stores/searchStore";
 import userDataStore from "./stores/userDataStore";
 
 function SearchValueCombobox() {
-  const [open, setOpen] = useState(false);
-  // const { searchField, searchValue, setSearchValue } = searchStore();
   const searchField = searchStore((state) => state.props.searchField);
   const searchValue = searchStore((state) => state.props.searchValue);
   const setSearchValue = searchStore((state) => state.actions.setSearchValue);
+  const userData = userDataStore((state) => state.props.userData);
 
-  const userData = userDataStore((state) => state.userData);
+  const [open, setOpen] = useState(false);
   const [values, setValues] = useState<{ value: string; label: string }[]>([]);
 
   useEffect(() => {

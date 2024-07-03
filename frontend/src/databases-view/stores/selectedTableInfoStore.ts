@@ -21,7 +21,7 @@ interface SelectedTableInfoActions {
   };
 }
 
-const initialState = {
+const initialProps = {
   tableName: "",
   columnNames: [],
   userNumber: "",
@@ -32,44 +32,44 @@ const initialState = {
 const selectedTableInfoStore = create<
   SelectTableInfoProps & SelectedTableInfoActions
 >((set) => ({
-  props: initialState,
+  props: initialProps,
   actions: {
-    setTableName: (value: string) =>
+    setTableName: (tableName: string) =>
       set((state) => ({
         props: {
           ...state.props,
-          tableName: value,
+          tableName,
         },
       })),
-    setColumnNames: (value: string[]) =>
+    setColumnNames: (columnNames: string[]) =>
       set((state) => ({
         props: {
           ...state.props,
-          columnNames: value,
+          columnNames,
         },
       })),
-    setUserNumber: (value: string) =>
+    setUserNumber: (userNumber: string) =>
       set((state) => ({
         props: {
           ...state.props,
-          userNumber: value,
+          userNumber,
         },
       })),
-    setScreenshotNumber: (value: string) =>
+    setScreenshotNumber: (screenshotNumber: string) =>
       set((state) => ({
         props: {
           ...state.props,
-          screenshotNumber: value,
+          screenshotNumber,
         },
       })),
-    setScreenshotAverageSize: (value: string) =>
+    setScreenshotAverageSize: (screenshotAverageSize: string) =>
       set((state) => ({
         props: {
           ...state.props,
-          screenshotAverageSize: value,
+          screenshotAverageSize,
         },
       })),
-    resetSelectedTableInfoStore: () => set(() => ({ props: initialState })),
+    resetSelectedTableInfoStore: () => set(() => ({ props: initialProps })),
   },
 }));
 

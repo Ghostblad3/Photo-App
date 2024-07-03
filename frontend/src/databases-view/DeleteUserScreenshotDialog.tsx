@@ -14,20 +14,33 @@ import deleteUserScreenshotStore from "./stores/deleteUserScreenshotStore";
 import operationStore from "../global-stores/operationStore";
 
 function DeleteUserScreenshotDialog() {
-  const { deleteUserScreenshot } = userDataStore();
-  const {
-    deleteUserScreenshotStoreProps: {
-      userId,
-      userIdName,
-      tableName,
-      deleteUserScreenshotShowDialog,
-    },
-    setDeleteUserScreenshotShowDialog,
-    resetDeleteUserScreenshotStore,
-  } = deleteUserScreenshotStore();
+  const { deleteUserScreenshot } = userDataStore((state) => state.actions);
+  // const {
+  //   deleteUserScreenshotStoreProps: {
+  //     userId,
+  //     userIdName,
+  //     tableName,
+  //     deleteUserScreenshotShowDialog,
+  //   },
+  //   setDeleteUserScreenshotShowDialog,
+  //   resetDeleteUserScreenshotStore,
+  // } = deleteUserScreenshotStore();
+
+  const showDialog = deleteUserScreenshotStore(
+    (state) => state.props.showDialog
+  );
+  const userId = deleteUserScreenshotStore((state) => state.props.userId);
+  const tableName = deleteUserScreenshotStore((state) => state.props.tableName);
+  const userIdName = deleteUserScreenshotStore(
+    (state) => state.props.userIdName
+  );
+
+  const { setShowDialog, resetDeleteUserScreenshotStore } =
+    deleteUserScreenshotStore((state) => state.actions);
+
   const checkedBoxIsCheckedRef = useRef(false);
   const { addOperation, changeOperationStatus, removeOperation } =
-    operationStore();
+    operationStore((state) => state.actions);
   const hashRef = useRef(crypto.randomUUID());
 
   useEffect(() => {
@@ -46,7 +59,7 @@ function DeleteUserScreenshotDialog() {
         tableName,
       };
 
-      setDeleteUserScreenshotShowDialog(false);
+      setShowDialog(false);
 
       addOperation(
         hashRef.current,
@@ -69,7 +82,7 @@ function DeleteUserScreenshotDialog() {
         changeOperationStatus(
           hashRef.current,
           "error",
-          "Error deleting user screenshot"
+          "Failed to delete user screenshot"
         );
         remove(hashRef.current);
 
@@ -79,7 +92,7 @@ function DeleteUserScreenshotDialog() {
       changeOperationStatus(
         hashRef.current,
         "success",
-        "User screenshot deleted successfully"
+        "Successfully deleted user screenshot"
       );
       remove(hashRef.current);
       deleteUserScreenshot(userIdName, userId);
@@ -102,20 +115,20 @@ function DeleteUserScreenshotDialog() {
 
   return (
     <>
-      <Dialog open={deleteUserScreenshotShowDialog}>
+      <Dialog open={showDialog}>
         <DialogContent
           className="sm:max-w-[425px]"
           onPointerDownOutside={() => {
-            setDeleteUserScreenshotShowDialog(false);
+            setShowDialog(false);
           }}
         >
           <DialogHeader>
             <DialogTitle>Delete user screenshot</DialogTitle>
           </DialogHeader>
 
-          <Label className="mx-4">
+          <p className="mx-4">
             Are you sure you want to delete this user screenshot?
-          </Label>
+          </p>
 
           <div className="flex items-center space-x-2 mx-4">
             <Checkbox

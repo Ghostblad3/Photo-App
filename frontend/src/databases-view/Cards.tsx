@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Switch } from "../components/ui/switch";
-import { Label } from "../components/ui/label";
+import { Label } from "@/components/ui/label";
 import Card from "./Card";
 import selectedTableInfoStore from "./stores/selectedTableInfoStore";
 
@@ -28,27 +28,27 @@ function Cards() {
                   User properties
                 </span>
                 {columnNames.map((item) => (
-                  <Label key={item}>{item}</Label>
+                  <p key={item}>{item}</p>
                 ))}
               </Card>
               <Card>
                 <span className="text-center text-xl mb-5">User number</span>
-                <Label>{userNumber}</Label>
+                <p>{userNumber}</p>
               </Card>
               <Card>
                 <span className="text-center text-xl mb-5">
                   Screenshot number
                 </span>
-                <Label>{screenshotNumber}</Label>
+                <p>{screenshotNumber}</p>
               </Card>
               <Card>
                 <span className="text-center text-xl mb-5">
                   Average screenshot size
                 </span>
-                <Label>
+                <p>
                   {`${(parseFloat(screenshotAverageSize) * 0.001).toFixed(2)}`}
                   {" KB"}
-                </Label>
+                </p>
               </Card>
             </>
           ) : null}

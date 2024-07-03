@@ -24,24 +24,23 @@ import selectedTableInfoStore from "./stores/selectedTableInfoStore";
 import operationStore from "../global-stores/operationStore";
 
 function TableNamesCombobox() {
-  const [open, setOpen] = useState(false);
   const tableNames = tableNamesStore((state) => state.tableNames);
-  const actions = tableNamesStore((state) => state.actions);
-  const { setTableNames, resetTableNamesStore: resetTableNames } = actions;
-  const { resetUserData } = userDataStore();
-  // const { resetSearch } = searchStore();
-  const resetSearch = searchStore((state) => state.actions.resetSeachStore);
-
-  // const { selectedTableInfo, setSelectedTableInfo } = selectedTableInfoStore();
+  const { setTableNames, resetTableNamesStore: resetTableNames } =
+    tableNamesStore((state) => state.actions);
+  const { resetUserData } = userDataStore((state) => state.actions);
+  const resetSearchStore = searchStore(
+    (state) => state.actions.resetSearchStore
+  );
   const setSelectedTableName = selectedTableInfoStore(
     (state) => state.actions.setTableName
   );
   const selectedTableName = selectedTableInfoStore(
     (state) => state.props.tableName
   );
-
   const { addOperation, changeOperationStatus, removeOperation } =
-    operationStore();
+    operationStore((state) => state.actions);
+
+  const [open, setOpen] = useState(false);
   const hashRef = useRef(crypto.randomUUID());
   const [fetchStatus, setFetchStatus] = useState<"pending" | "success">(
     "pending"
@@ -80,7 +79,11 @@ function TableNamesCombobox() {
       }
 
       if (!response.ok) {
-        changeOperationStatus(hashRef.current, "error", "fetch failed");
+        changeOperationStatus(
+          hashRef.current,
+          "error",
+          "Failed to fetch table names"
+        );
         remove(hashRef.current);
 
         return {};
@@ -97,7 +100,7 @@ function TableNamesCombobox() {
       changeOperationStatus(
         hashRef.current,
         "success",
-        "Table names fetch succeeded"
+        "Successfully fetched table names"
       );
       remove(hashRef.current);
       setTableNames(data.map((item: { name: string }) => item.name));
@@ -152,7 +155,7 @@ function TableNamesCombobox() {
                           value={item}
                           onSelect={(currentValue) => {
                             if (currentValue !== selectedTableName) {
-                              resetSearch();
+                              resetSearchStore();
                               resetUserData();
                             }
 

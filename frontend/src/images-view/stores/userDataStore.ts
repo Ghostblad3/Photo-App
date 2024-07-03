@@ -1,32 +1,48 @@
 import { create } from "zustand";
 
-type UserData = {
-  [key: string]: string;
-};
-
-interface UserDataStore {
-  userData: UserData[];
-  userDataFiltered: UserData[];
-  userKeys: string[];
-  setUserData: (data: UserData[]) => void;
-  setUserDataFiltered: (data: UserData[]) => void;
-  resetUserData: () => void;
+interface UserDataProps {
+  props: {
+    userData: { [key: string]: string }[];
+    userDataFiltered: { [key: string]: string }[];
+    userKeys: string[];
+  };
 }
 
-const userDataStore = create<UserDataStore>((set) => ({
+interface UserDataActions {
+  actions: {
+    setUserData: (userData: { [key: string]: string }[]) => void;
+    setUserDataFiltered: (
+      userDataFiltered: { [key: string]: string }[]
+    ) => void;
+    resetUserDataStore: () => void;
+  };
+}
+
+const initProps: {
+  userData: { [key: string]: string }[];
+  userDataFiltered: { [key: string]: string }[];
+  userKeys: string[];
+} = {
   userData: [],
   userDataFiltered: [],
   userKeys: [],
-  fetching: false,
-  setUserData: (data: UserData[]) =>
-    set({
-      userData: data,
-      userDataFiltered: data,
-      userKeys: Object.keys(data[0]),
-    }),
-  setUserDataFiltered: (data: UserData[]) => set({ userDataFiltered: data }),
-  resetUserData: () =>
-    set({ userData: [], userDataFiltered: [], userKeys: [] }),
+};
+
+const userDataStore = create<UserDataProps & UserDataActions>((set) => ({
+  props: initProps,
+  actions: {
+    setUserData: (userData: { [key: string]: string }[]) =>
+      set(() => ({
+        props: {
+          userData,
+          userDataFiltered: userData,
+          userKeys: Object.keys(userData[0]),
+        },
+      })),
+    setUserDataFiltered: (userDataFiltered: { [key: string]: string }[]) =>
+      set((state) => ({ props: { ...state.props, userDataFiltered } })),
+    resetUserDataStore: () => set({ props: initProps }),
+  },
 }));
 
 export default userDataStore;

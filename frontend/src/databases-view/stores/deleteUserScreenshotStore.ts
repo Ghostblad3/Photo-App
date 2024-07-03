@@ -1,43 +1,74 @@
 import { create } from "zustand";
 
-interface DeleteUserScreenshotStoreProps {
-  deleteUserScreenshotShowDialog: boolean;
-  userId: string;
-  userIdName: string;
-  tableName: string;
+interface DeleteUserScreenshotProps {
+  props: {
+    showDialog: boolean;
+    userId: string;
+    userIdName: string;
+    tableName: string;
+  };
 }
 
-interface DeleteUserScreenshotStore {
-  deleteUserScreenshotStoreProps: DeleteUserScreenshotStoreProps;
-  setDeleteUserScreenshotShowDialog: (value: boolean) => void;
-  setDeleteUserScreenshotStoreProps: (
-    value: DeleteUserScreenshotStoreProps
-  ) => void;
-  resetDeleteUserScreenshotStore: () => void;
+interface DeleteUserScreenshotActions {
+  actions: {
+    setShowDialog(showDialog: boolean): void;
+    setUserId(userId: string): void;
+    setUserIdName(userIdName: string): void;
+    setTableName(tableName: string): void;
+    resetDeleteUserScreenshotStore(): void;
+  };
 }
 
-const initialProps: DeleteUserScreenshotStoreProps = {
-  deleteUserScreenshotShowDialog: false,
+const initialProps = {
+  showDialog: false,
   userId: "",
   userIdName: "",
   tableName: "",
 };
 
-const deleteUserScreenshotStore = create<DeleteUserScreenshotStore>((set) => ({
-  deleteUserScreenshotStoreProps: initialProps,
-  setDeleteUserScreenshotShowDialog: (value: boolean) =>
-    set((state) => ({
-      deleteUserScreenshotStoreProps: {
-        ...state.deleteUserScreenshotStoreProps,
-        deleteUserScreenshotShowDialog: value,
-      },
-    })),
-  setDeleteUserScreenshotStoreProps: (value: DeleteUserScreenshotStoreProps) =>
-    set(() => ({ deleteUserScreenshotStoreProps: value })),
-  resetDeleteUserScreenshotStore: () =>
-    set(() => ({
-      deleteUserScreenshotStoreProps: initialProps,
-    })),
+const deleteUserScreenshotStore = create<
+  DeleteUserScreenshotProps & DeleteUserScreenshotActions
+>((set) => ({
+  props: initialProps,
+  actions: {
+    setShowDialog(showDialog) {
+      set((state) => ({
+        props: {
+          ...state.props,
+          showDialog,
+        },
+      }));
+    },
+    setUserId(userId) {
+      set((state) => ({
+        props: {
+          ...state.props,
+          userId,
+        },
+      }));
+    },
+    setUserIdName(userIdName) {
+      set((state) => ({
+        props: {
+          ...state.props,
+          userIdName,
+        },
+      }));
+    },
+    setTableName(tableName) {
+      set((state) => ({
+        props: {
+          ...state.props,
+          tableName,
+        },
+      }));
+    },
+    resetDeleteUserScreenshotStore() {
+      set(() => ({
+        props: initialProps,
+      }));
+    },
+  },
 }));
 
 export default deleteUserScreenshotStore;

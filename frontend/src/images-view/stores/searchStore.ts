@@ -1,19 +1,34 @@
 import { create } from "zustand";
 
-interface SearchStore {
-  searchField: string;
-  searchValue: string;
-  setSearchField: (value: string) => void;
-  setSearchValue: (value: string) => void;
-  resetSearch: () => void;
+interface SearchStoreProps {
+  props: {
+    searchField: string;
+    searchValue: string;
+  };
 }
 
-const searchStore = create<SearchStore>((set) => ({
+interface SearchStoreActions {
+  actions: {
+    setSearchField: (searchField: string) => void;
+    setSearchValue: (searchValue: string) => void;
+    resetSearchStore: () => void;
+  };
+}
+
+const initialProps = {
   searchField: "",
   searchValue: "",
-  setSearchField: (value) => set(() => ({ searchField: value })),
-  setSearchValue: (value) => set(() => ({ searchValue: value })),
-  resetSearch: () => set(() => ({ searchField: "", searchValue: "" })),
+};
+
+const searchStore = create<SearchStoreProps & SearchStoreActions>((set) => ({
+  props: initialProps,
+  actions: {
+    setSearchField: (searchField) =>
+      set((state) => ({ props: { ...state.props, searchField } })),
+    setSearchValue: (searchValue) =>
+      set((state) => ({ props: { ...state.props, searchValue } })),
+    resetSearchStore: () => set(() => ({ props: initialProps })),
+  },
 }));
 
 export default searchStore;

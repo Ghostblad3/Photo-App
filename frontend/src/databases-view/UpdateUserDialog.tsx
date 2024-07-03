@@ -16,26 +16,24 @@ import userDataStore from "./stores/userDataStore";
 import operationStore from "../global-stores/operationStore";
 
 function UpdateUserDialog() {
-  const {
-    updateUserInfoStoreProps: {
-      updateUserInfoStoreShowDialog,
-      userId,
-      userIndex,
-      tableName,
-    },
-    setUpdateUserInfoShowDialog,
-    resetUpdateUserInfoStore,
-  } = updateUserInfoStore();
-  const { userData, userKeys, updateUser } = userDataStore();
+  const showDialog = updateUserInfoStore((state) => state.props.showDialog);
+  const userId = updateUserInfoStore((state) => state.props.userId);
+  const userIndex = updateUserInfoStore((state) => state.props.userIndex);
+  const tableName = updateUserInfoStore((state) => state.props.tableName);
+  const { setShowDialog, resetUpdateUserInfoStore } = updateUserInfoStore(
+    (state) => state.actions
+  );
+  const userData = userDataStore((state) => state.props.userData);
+  const userKeys = userDataStore((state) => state.props.userKeys);
+  const { updateUser } = userDataStore((state) => state.actions);
   const { addOperation, changeOperationStatus, removeOperation } =
-    operationStore();
-  const hashRef = useRef(crypto.randomUUID());
+    operationStore((state) => state.actions);
 
+  const hashRef = useRef(crypto.randomUUID());
   const userToUpdateRef = useRef<{ [key: string]: string }>({});
   const userObjRef = useRef<{ [key: string]: string }>(
     userData[parseInt(userIndex)]
   );
-
   const keysRef = useRef<string[]>(
     userKeys.filter(
       (key) =>
@@ -44,14 +42,12 @@ function UpdateUserDialog() {
         key !== "photo_timestamp"
     )
   );
-
   const userRef = useRef<{ [key: string]: string }>(
     keysRef.current.reduce((acc: { [key: string]: string }, key) => {
       acc[key] = "";
       return acc;
     }, {})
   );
-
   const [fieldsModified, setFieldsModified] = useState<{
     [key: string]: boolean;
   }>(
@@ -71,7 +67,7 @@ function UpdateUserDialog() {
   const { refetch: updateUserInfo } = useQuery({
     queryKey: ["updateUser", userToUpdateRef.current[keysRef.current[0]]],
     queryFn: async () => {
-      setUpdateUserInfoShowDialog(false);
+      setShowDialog(false);
 
       addOperation(
         hashRef.current,
@@ -97,7 +93,7 @@ function UpdateUserDialog() {
         changeOperationStatus(
           hashRef.current,
           "error",
-          "Updating user information failed"
+          "Failed to update user information"
         );
         remove(hashRef.current);
 
@@ -107,7 +103,7 @@ function UpdateUserDialog() {
       changeOperationStatus(
         hashRef.current,
         "success",
-        "Updating user information successful"
+        "Successfully updated user information"
       );
       remove(hashRef.current);
       updateUser(userId, userToUpdateRef.current);
@@ -147,11 +143,11 @@ function UpdateUserDialog() {
   }
 
   return (
-    <Dialog open={updateUserInfoStoreShowDialog}>
+    <Dialog open={showDialog}>
       <DialogContent
         className="sm:max-w-[425px]"
         onPointerDownOutside={() => {
-          setUpdateUserInfoShowDialog(false);
+          setShowDialog(false);
         }}
       >
         <DialogHeader>
@@ -160,9 +156,7 @@ function UpdateUserDialog() {
         {keysRef.current.map((key) => {
           return (
             <div key={key} className="mx-4">
-              <Label className="space-y-1 font-semibold block text-sm">
-                {key}
-              </Label>
+              <p className="space-y-1 font-semibold block text-sm">{key}</p>
               <Input
                 className="mt-1"
                 defaultValue={userObjRef.current[key]}

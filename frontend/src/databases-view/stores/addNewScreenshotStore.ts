@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-interface AddNewScreenshotState {
+interface AddNewScreenshotProps {
   props: {
     showDialog: boolean;
     tableName: string;
@@ -12,11 +12,11 @@ interface AddNewScreenshotState {
 
 interface AddNewScreenshotActions {
   actions: {
-    setTableName: (value: string) => void;
-    setUserIdName: (value: string) => void;
-    setUserId: (value: string) => void;
-    setScreenshotAsBase64: (value: string) => void;
-    setShowDialog: (value: boolean) => void;
+    setTableName: (tableName: string) => void;
+    setUserIdName: (userIdName: string) => void;
+    setUserId: (userId: string) => void;
+    setScreenshotAsBase64: (screenshotAsBase64: string) => void;
+    setShowDialog: (showDialog: boolean) => void;
     resetAddNewScreenshotStore: () => void;
   };
 }
@@ -30,29 +30,29 @@ const initialProps = {
 };
 
 const addNewScreesnotStore = create<
-  AddNewScreenshotState & AddNewScreenshotActions
+  AddNewScreenshotProps & AddNewScreenshotActions
 >((set) => ({
   props: initialProps,
   actions: {
-    setTableName: (value: string) =>
+    setTableName: (tableName: string) =>
       set((state) => ({
-        props: { ...state.props, tableName: value },
+        props: { ...state.props, tableName },
       })),
-    setUserIdName: (value: string) =>
+    setUserIdName: (userIdName: string) =>
       set((state) => ({
-        props: { ...state.props, userIdName: value },
+        props: { ...state.props, userIdName },
       })),
-    setUserId: (value: string) =>
+    setUserId: (userId: string) =>
       set((state) => ({
-        props: { ...state.props, userId: value },
+        props: { ...state.props, userId },
       })),
-    setScreenshotAsBase64: (value: string) =>
+    setScreenshotAsBase64: (screenshotAsBase64: string) =>
       set((state) => ({
-        props: { ...state.props, screenshotAsBase64: value },
+        props: { ...state.props, screenshotAsBase64 },
       })),
-    setShowDialog: (value: boolean) =>
+    setShowDialog: (showDialog: boolean) =>
       set((state) => ({
-        props: { ...state.props, showDialog: value },
+        props: { ...state.props, showDialog },
       })),
     resetAddNewScreenshotStore: () =>
       set(() => ({

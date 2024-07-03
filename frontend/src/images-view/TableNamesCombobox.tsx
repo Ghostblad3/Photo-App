@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -14,32 +15,33 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import tableNamesStore from "./stores/tableNamesStore";
-import selectedTableInfoStore from "./stores/selectedTableInfoStore";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useQuery } from "@tanstack/react-query";
+import tableNamesStore from "./stores/tableNamesStore";
+import selectedTableStore from "./stores/selectedTableStore";
 import operationStore from "../global-stores/operationStore";
 
 function TableNamesCombobox() {
+  const tableName = selectedTableStore((state) => state.props.tableName);
+  const { setTableName, resetSelectedTableStore } = selectedTableStore(
+    (state) => state.actions
+  );
+  const { addOperation, changeOperationStatus, removeOperation } =
+    operationStore((state) => state.actions);
+  const tableNames = tableNamesStore((state) => state.props.tableNames);
+  const { setTableNames, resetTableNamesStore } = tableNamesStore(
+    (state) => state.actions
+  );
+
   const [open, setOpen] = useState(false);
   const tableNamesFetchRef = useRef(crypto.randomUUID());
-  const tableNames = tableNamesStore((state) => state.tableNames);
-  const {
-    selectedTableInfo,
-    setSelectedTableInfo,
-    resetSelectedTableInfoStore,
-  } = selectedTableInfoStore();
-  const { addOperation, changeOperationStatus, removeOperation } =
-    operationStore();
-  const { setTableNames, resetTableNames } = tableNamesStore();
   const [tableNamesFetchStatus, setTableNamesFetchStatus] = useState<
     "pending" | "success" | "error"
   >("pending");
 
   useEffect(() => {
     return () => {
-      resetSelectedTableInfoStore();
-      resetTableNames();
+      resetSelectedTableStore();
+      resetTableNamesStore();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -66,7 +68,7 @@ function TableNamesCombobox() {
         changeOperationStatus(
           tableNamesFetchRef.current,
           "error",
-          "Table names fetch failed"
+          "Failed to fetch table names"
         );
         remove(tableNamesFetchRef.current);
 
@@ -90,7 +92,7 @@ function TableNamesCombobox() {
       changeOperationStatus(
         tableNamesFetchRef.current,
         "success",
-        "Table names fetch succeeded"
+        "Successfully fetched table names"
       );
       remove(tableNamesFetchRef.current);
       setTableNames(data.map((item: { name: string }) => item.name));
@@ -126,10 +128,8 @@ function TableNamesCombobox() {
                 className="w-[100%] justify-between"
                 disabled={tableNamesFetchStatus === "error"}
               >
-                {selectedTableInfo.tableName !== ""
-                  ? tableNames.find(
-                      (tableName) => tableName === selectedTableInfo.tableName
-                    )
+                {tableName !== ""
+                  ? tableNames.find((item) => item === tableName)
                   : "Select table..."}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
@@ -139,19 +139,13 @@ function TableNamesCombobox() {
                 <CommandInput placeholder="Search table..." />
                 <CommandEmpty>No table found.</CommandEmpty>
                 <CommandGroup>
-                  {tableNames.map((tableName) => (
+                  {tableNames.map((item) => (
                     <CommandItem
-                      key={tableName}
-                      value={tableName}
+                      key={item}
+                      value={item}
                       onSelect={(currentValue) => {
-                        if (currentValue !== selectedTableInfo.tableName) {
-                          // resetUserData();
-                        }
-
-                        setSelectedTableInfo(
-                          currentValue === selectedTableInfo.tableName
-                            ? { ...selectedTableInfo, tableName: "" }
-                            : { ...selectedTableInfo, tableName: currentValue }
+                        setTableName(
+                          currentValue === tableName ? "" : currentValue
                         );
 
                         setOpen(false);
@@ -160,12 +154,10 @@ function TableNamesCombobox() {
                       <Check
                         className={cn(
                           "mr-2 h-4 w-4",
-                          selectedTableInfo.tableName === tableName
-                            ? "opacity-100"
-                            : "opacity-0"
+                          tableName === item ? "opacity-100" : "opacity-0"
                         )}
                       />
-                      {tableName}
+                      {item}
                     </CommandItem>
                   ))}
                 </CommandGroup>

@@ -19,9 +19,13 @@ import searchStore from "./stores/searchStore";
 import userDataStore from "./stores/userDataStore";
 
 function SearchFieldCombobox() {
+  const searchField = searchStore((state) => state.props.searchField);
+  const { setSearchField, resetSearchStore } = searchStore(
+    (state) => state.actions
+  );
+  const userData = userDataStore((state) => state.props.userData);
+
   const [open, setOpen] = useState(false);
-  const { searchField, setSearchField, resetSearch } = searchStore();
-  const { userData } = userDataStore();
   const [values, setValues] = useState<
     {
       value: string;
@@ -31,7 +35,7 @@ function SearchFieldCombobox() {
 
   useEffect(() => {
     return () => {
-      resetSearch();
+      resetSearchStore();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

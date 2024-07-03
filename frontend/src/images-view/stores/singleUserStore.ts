@@ -1,22 +1,36 @@
 import { create } from "zustand";
 
-type SingleUserData = {
-  [key: string]: string;
-};
-
-interface SingleUserStore {
-  singleUserData: SingleUserData;
-  singleUserKeys: string[];
-  setSingleUserData: (data: SingleUserData) => void;
-  resetSingleUserData: () => void;
+interface SingleUserProps {
+  props: {
+    singleUserData: { [key: string]: string };
+    singleUserKeys: string[];
+  };
 }
 
-const singleUserStore = create<SingleUserStore>((set) => ({
+interface SingleUserActions {
+  actions: {
+    setSingleUserData: (singleUserData: { [key: string]: string }) => void;
+    resetSingleUserDataStore: () => void;
+  };
+}
+
+const initProps: {
+  singleUserData: { [key: string]: string };
+  singleUserKeys: string[];
+} = {
   singleUserData: {},
   singleUserKeys: [],
-  setSingleUserData: (data) =>
-    set({ singleUserData: data, singleUserKeys: Object.keys(data) }),
-  resetSingleUserData: () => set({ singleUserData: {}, singleUserKeys: [] }),
+};
+
+const singleUserStore = create<SingleUserProps & SingleUserActions>((set) => ({
+  props: initProps,
+  actions: {
+    setSingleUserData: (singleUserData) =>
+      set({
+        props: { singleUserData, singleUserKeys: Object.keys(singleUserData) },
+      }),
+    resetSingleUserDataStore: () => set({ props: initProps }),
+  },
 }));
 
 export default singleUserStore;

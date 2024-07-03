@@ -10,11 +10,14 @@ import singleUserStore from "./stores/singleUserStore";
 import { useEffect } from "react";
 
 function ScreenshotDialog({ children }: { children: React.ReactNode }) {
-  const { singleUserData, resetSingleUserData } = singleUserStore();
+  const singleUserData = singleUserStore((state) => state.props.singleUserData);
+  const { resetSingleUserDataStore } = singleUserStore(
+    (state) => state.actions
+  );
 
   useEffect(() => {
     return () => {
-      resetSingleUserData();
+      resetSingleUserDataStore();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

@@ -14,8 +14,7 @@ interface TableNamesActions {
 const tableNamesStore = create<TableNamesProps & TableNamesActions>((set) => ({
   tableNames: [],
   actions: {
-    setTableNames: (tableNames: string[]) =>
-      set(() => ({ tableNames: tableNames })),
+    setTableNames: (tableNames: string[]) => set(() => ({ tableNames })),
     resetTableNamesStore: () => set(() => ({ tableNames: [] })),
   },
 }));

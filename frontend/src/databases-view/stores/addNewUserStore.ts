@@ -1,37 +1,38 @@
 import { create } from "zustand";
 
-interface AddNewUserStoreProps {
-  addNewUserShowDialog: boolean;
-  tableName: string;
+interface AddNewUserProps {
+  props: {
+    showDialog: boolean;
+    tableName: string;
+  };
 }
 
-interface AddNewUserStore {
-  addNewUserStoreProps: AddNewUserStoreProps;
-  setAddNewUserStoreProps: (value: AddNewUserStoreProps) => void;
-  setAddNewUserShowDialog: (value: boolean) => void;
-  resetAddNewUserStore: () => void;
+interface AddNewUserActions {
+  actions: {
+    setShowDialog: (showDialog: boolean) => void;
+    setTableName: (tableName: string) => void;
+    resetAddNewUserStore: () => void;
+  };
 }
 
-const initialProps: AddNewUserStoreProps = {
-  addNewUserShowDialog: false,
+const initialProps = {
+  showDialog: false,
   tableName: "",
 };
 
-const addNewUserStore = create<AddNewUserStore>((set) => ({
-  addNewUserStoreProps: initialProps,
-  setAddNewUserStoreProps: (value: AddNewUserStoreProps) =>
-    set(() => ({ addNewUserStoreProps: value })),
-  setAddNewUserShowDialog: (value: boolean) =>
-    set((state) => ({
-      addNewUserStoreProps: {
-        ...state.addNewUserStoreProps,
-        addNewUserShowDialog: value,
-      },
-    })),
-  resetAddNewUserStore: () =>
-    set(() => ({
-      addNewUserStoreProps: initialProps,
-    })),
+const addNewUserStore = create<AddNewUserProps & AddNewUserActions>((set) => ({
+  props: initialProps,
+  actions: {
+    setShowDialog: (showDialog: boolean) =>
+      set((state) => ({
+        props: { ...state.props, showDialog },
+      })),
+    setTableName: (tableName: string) =>
+      set((state) => ({
+        props: { ...state.props, tableName },
+      })),
+    resetAddNewUserStore: () => set(() => ({ props: initialProps })),
+  },
 }));
 
 export default addNewUserStore;

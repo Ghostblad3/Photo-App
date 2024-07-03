@@ -15,7 +15,11 @@ import addNewUserStore from "./stores/addNewUserStore";
 import operationStore from "../global-stores/operationStore";
 
 function AddNewUserDialog() {
-  const { userKeys, addUser } = userDataStore();
+  // const { userKeys, addUser } = userDataStore();
+
+  const userKeys = userDataStore((state) => state.props.userKeys);
+  const { addUser } = userDataStore((state) => state.actions);
+
   const keysRef = useRef(
     userKeys.filter(
       (key) =>
@@ -38,20 +42,22 @@ function AddNewUserDialog() {
       return acc;
     }, {})
   );
-  const {
-    addNewUserStoreProps: { addNewUserShowDialog, tableName },
-    setAddNewUserShowDialog,
-    resetAddNewUserStore,
-  } = addNewUserStore();
+  // const {
+  //   addNewUserStoreProps: { addNewUserShowDialog, tableName },
+  //   setAddNewUserShowDialog,
+  //   resetAddNewUserStore,
+  // } = addNewUserStore();
+  const showDialog = addNewUserStore((state) => state.props.showDialog);
+  const tableName = addNewUserStore((state) => state.props.tableName);
+  const { setShowDialog, resetAddNewUserStore } = addNewUserStore(
+    (state) => state.actions
+  );
+
   const [buttonIsDisabled, setButtonIsDisabled] = useState(true);
   const hashRef = useRef(crypto.randomUUID());
 
   const { addOperation, changeOperationStatus, removeOperation } =
-    operationStore((state) => ({
-      addOperation: state.addOperation,
-      changeOperationStatus: state.changeOperationStatus,
-      removeOperation: state.removeOperation,
-    }));
+    operationStore((state) => state.actions);
 
   useEffect(() => {
     return () => {
@@ -73,13 +79,13 @@ function AddNewUserDialog() {
   const { refetch: addNewUser } = useQuery({
     queryKey: ["add-new-user"],
     queryFn: async () => {
-      setAddNewUserShowDialog(false);
+      setShowDialog(false);
 
       addOperation(
         hashRef.current,
         "pending",
         "create",
-        "Creating new user",
+        "Creating a new user",
         true
       );
 
@@ -98,7 +104,7 @@ function AddNewUserDialog() {
         changeOperationStatus(
           hashRef.current,
           "error",
-          "Creating new user failed"
+          "Failed to create a new user"
         );
         remove(hashRef.current);
 
@@ -108,7 +114,7 @@ function AddNewUserDialog() {
       changeOperationStatus(
         hashRef.current,
         "success",
-        "Created a new user successfully"
+        "Successfully created a new user"
       );
       remove(hashRef.current);
 
@@ -134,11 +140,11 @@ function AddNewUserDialog() {
   }
 
   return (
-    <Dialog open={addNewUserShowDialog}>
+    <Dialog open={showDialog}>
       <DialogContent
         className="sm:max-w-[425px]"
         onPointerDownOutside={() => {
-          setAddNewUserShowDialog(false);
+          setShowDialog(false);
         }}
       >
         <DialogHeader>
@@ -148,9 +154,7 @@ function AddNewUserDialog() {
         {keysRef.current.map((key) => {
           return (
             <div key={key} className="mx-4">
-              <Label className="space-y-1 font-semibold block text-sm">
-                {key}
-              </Label>
+              <p className="space-y-1 font-semibold block text-sm">{key}</p>
               <Input
                 className="mt-1"
                 defaultValue={""}

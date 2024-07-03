@@ -9,9 +9,9 @@ interface SearchStoreProps {
 
 interface SearchStoreActions {
   actions: {
-    setSearchField: (value: string) => void;
-    setSearchValue: (value: string) => void;
-    resetSeachStore: () => void;
+    setSearchField: (searchField: string) => void;
+    setSearchValue: (searchValue: string) => void;
+    resetSearchStore: () => void;
   };
 }
 
@@ -21,13 +21,13 @@ const initialProps = {
 };
 
 const searchStore = create<SearchStoreProps & SearchStoreActions>((set) => ({
-  props: { searchField: "", searchValue: "" },
+  props: initialProps,
   actions: {
-    setSearchField: (value) =>
-      set((state) => ({ props: { ...state.props, searchField: value } })),
-    setSearchValue: (value) =>
-      set((state) => ({ props: { ...state.props, searchValue: value } })),
-    resetSeachStore: () => set(() => ({ props: initialProps })),
+    setSearchField: (searchField) =>
+      set((state) => ({ props: { ...state.props, searchField } })),
+    setSearchValue: (searchValue) =>
+      set((state) => ({ props: { ...state.props, searchValue } })),
+    resetSearchStore: () => set(() => ({ props: initialProps })),
   },
 }));
 

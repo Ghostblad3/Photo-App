@@ -1,51 +1,79 @@
 import { create } from "zustand";
 
-interface UserData {
-  userData: { [key: string]: string }[];
-  userKeys: string[];
-  setUserData: (userData: { [key: string]: string }[]) => void;
-  setUserKeys: (userKeys: string[]) => void;
-  addUser: (user: { [key: string]: string }) => void;
-  updateUser: (oldUserId: string, user: { [key: string]: string }) => void;
-  deleteUser: (key: string, id: string) => void;
-  deleteUserScreenshot: (key: string, id: string) => void;
-  resetUserData: () => void;
+interface UserDataProps {
+  props: {
+    userData: { [key: string]: string }[];
+    userKeys: string[];
+  };
 }
 
-const userDataStore = create<UserData>((set) => ({
-  userData: [],
-  userKeys: [],
-  setUserData: (userData: { [key: string]: string }[]) =>
-    set(() => ({ userData: userData })),
-  setUserKeys: (userKeys: string[]) => set(() => ({ userKeys: userKeys })),
-  addUser: (user: { [key: string]: string }) =>
-    set((state) => ({ userData: [...state.userData, user] })),
-  updateUser: (oldUserId, user: { [key: string]: string }) =>
-    set((state) => ({
-      userData: state.userData.map((u) =>
-        u[state.userKeys[0]] === oldUserId ? { ...u, ...user } : u
-      ),
-    })),
-  deleteUser: (key: string, id: string) =>
-    set((state) => ({
-      userData: state.userData.filter((u) => u[key] !== id),
-    })),
-  deleteUserScreenshot: (key: string, id: string) =>
-    set((state) => ({
-      userData: state.userData.map((user) => {
-        if (user[key] === id) {
-          return {
-            ...user,
-            has_screenshot: "no",
-            screenshot_day: "-",
-            photo_timestamp: "-",
-          };
-        }
+interface UserDataActions {
+  actions: {
+    setUserData: (userData: { [key: string]: string }[]) => void;
+    setUserKeys: (userKeys: string[]) => void;
+    addUser: (user: { [key: string]: string }) => void;
+    updateUser: (oldUserId: string, user: { [key: string]: string }) => void;
+    deleteUser: (key: string, id: string) => void;
+    deleteUserScreenshot: (key: string, id: string) => void;
+    resetUserData: () => void;
+  };
+}
 
-        return user;
-      }),
-    })),
-  resetUserData: () => set(() => ({ userData: [], userKeys: [] })),
+const initProps: { userData: { [key: string]: string }[]; userKeys: string[] } =
+  {
+    userData: [],
+    userKeys: [],
+  };
+
+const userDataStore = create<UserDataProps & UserDataActions>((set) => ({
+  props: initProps,
+  actions: {
+    userData: [],
+    userKeys: [],
+    setUserData: (userData: { [key: string]: string }[]) =>
+      set((state) => ({ props: { ...state.props, userData } })),
+    setUserKeys: (userKeys: string[]) =>
+      set((state) => ({ props: { ...state.props, userKeys } })),
+    addUser: (user: { [key: string]: string }) =>
+      set((state) => ({
+        props: { ...state.props, userData: [...state.props.userData, user] },
+      })),
+    updateUser: (oldUserId, user: { [key: string]: string }) =>
+      set((state) => ({
+        props: {
+          ...state.props,
+          userData: state.props.userData.map((u) =>
+            u[state.props.userKeys[0]] === oldUserId ? { ...u, ...user } : u
+          ),
+        },
+      })),
+    deleteUser: (key: string, id: string) =>
+      set((state) => ({
+        props: {
+          ...state.props,
+          userData: state.props.userData.filter((u) => u[key] !== id),
+        },
+      })),
+    deleteUserScreenshot: (key: string, id: string) =>
+      set((state) => ({
+        props: {
+          ...state.props,
+          userData: state.props.userData.map((user) => {
+            if (user[key] === id) {
+              return {
+                ...user,
+                has_screenshot: "no",
+                screenshot_day: "-",
+                photo_timestamp: "-",
+              };
+            }
+
+            return user;
+          }),
+        },
+      })),
+    resetUserData: () => set(() => ({ props: initProps })),
+  },
 }));
 
 export default userDataStore;
