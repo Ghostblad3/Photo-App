@@ -23,8 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
-
-*.png
 screenshot-as-txt
 faker
 png
