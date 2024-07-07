@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
@@ -15,7 +14,7 @@ import updateUserInfoStore from "./stores/updateUserInfoStore";
 import userDataStore from "./stores/userDataStore";
 import operationStore from "../global-stores/operationStore";
 
-function UpdateUserDialog() {
+const UpdateUserDialog = memo(() => {
   const showDialog = updateUserInfoStore((state) => state.props.showDialog);
   const userId = updateUserInfoStore((state) => state.props.userId);
   const userIndex = updateUserInfoStore((state) => state.props.userIndex);
@@ -77,6 +76,8 @@ function UpdateUserDialog() {
         true
       );
 
+      const time = Date.now();
+
       const result = await fetch("http://localhost:3000/record/update-user", {
         method: "POST",
         headers: {
@@ -88,6 +89,12 @@ function UpdateUserDialog() {
           user: userToUpdateRef.current,
         }),
       });
+
+      const timeDiff = Date.now() - time;
+
+      if (timeDiff < 500) {
+        await new Promise((resolve) => setTimeout(resolve, 500 - timeDiff));
+      }
 
       if (!result.ok) {
         changeOperationStatus(
@@ -145,7 +152,7 @@ function UpdateUserDialog() {
   return (
     <Dialog open={showDialog}>
       <DialogContent
-        className="sm:max-w-[425px]"
+        className="sm:max-w-[26.563rem]"
         onPointerDownOutside={() => {
           setShowDialog(false);
         }}
@@ -187,6 +194,6 @@ function UpdateUserDialog() {
       </DialogContent>
     </Dialog>
   );
-}
+});
 
 export default UpdateUserDialog;

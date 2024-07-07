@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, memo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,7 @@ import DragAndDropPngComponent from "./DragAndDropPngComponent";
 import ImageCrop from "./ImageCrop";
 import addNewScreenshotStore from "./stores/addNewScreenshotStore";
 
-function AddNewScreenshotDialog() {
+const AddNewScreenshotDialog = memo(() => {
   const screenshotAsBase64 = addNewScreenshotStore(
     (state) => state.props.screenshotAsBase64
   );
@@ -28,7 +28,7 @@ function AddNewScreenshotDialog() {
   return (
     <Dialog open={showDialog}>
       <DialogContent
-        className="sm:max-w-[825px]"
+        className="sm:max-w-[51.563rem]"
         onPointerDownOutside={() => {
           setShowDialog(false);
         }}
@@ -41,6 +41,6 @@ function AddNewScreenshotDialog() {
       </DialogContent>
     </Dialog>
   );
-}
+});
 
 export default AddNewScreenshotDialog;

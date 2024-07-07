@@ -1,3 +1,4 @@
+import { useEffect, memo } from "react";
 import {
   Dialog,
   DialogTrigger,
@@ -5,12 +6,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import singleUserStore from "./stores/singleUserStore";
-import { useEffect } from "react";
+import availableKeysStore from "./stores/availableKeysStore";
 
-function ScreenshotDialog({ children }: { children: React.ReactNode }) {
+const ScreenshotDialog = memo(({ children }: { children: React.ReactNode }) => {
   const singleUserData = singleUserStore((state) => state.props.singleUserData);
+  const availableKeys = availableKeysStore(
+    (state) => state.props.availableKeys
+  );
+
   const { resetSingleUserDataStore } = singleUserStore(
     (state) => state.actions
   );
@@ -25,33 +29,30 @@ function ScreenshotDialog({ children }: { children: React.ReactNode }) {
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[26.563rem]">
         <DialogHeader>
           <DialogTitle>User information</DialogTitle>
         </DialogHeader>
         <div className="bg-slate-100 p-4">
           <img
-            className="h-[100px] w-[105px] mx-auto rounded-md"
+            className="h-[6.25rem] w-[6.563rem] mx-auto rounded-md"
             src={`data:image/png;base64,${singleUserData["screenshot"]}`}
           />
         </div>
-
-        {Object.keys(singleUserData)
-          .filter((key) => key !== "screenshot")
-          .map((key) => {
-            return (
-              <div key={key} className="mx-4">
-                <Label className="font-semibold block text-sm">{key}</Label>
-                <Label className="text-gray-700 dark:text-gray-300 text-base">
-                  {singleUserData[key]}
-                </Label>
-                <hr className="my-2" />
-              </div>
-            );
-          })}
+        {availableKeys.map((key) => {
+          return (
+            <div key={key} className="mx-4">
+              <p className="font-semibold block text-sm">{key}</p>
+              <p className="text-gray-700 dark:text-gray-300 text-base">
+                {singleUserData[key]}
+              </p>
+              <hr className="my-2" />
+            </div>
+          );
+        })}
       </DialogContent>
     </Dialog>
   );
-}
+});
 
 export default ScreenshotDialog;

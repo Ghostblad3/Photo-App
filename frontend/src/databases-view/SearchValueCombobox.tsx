@@ -44,11 +44,10 @@ function SearchValueCombobox() {
         return { value: key.toLowerCase(), label: key };
       })
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchField, userData]);
 
   return (
-    <div className="p-2.5 flex gap-2 w-[300px]">
+    <div className="p-2.5 flex gap-2 w-[18.75rem]">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -64,7 +63,7 @@ function SearchValueCombobox() {
           </Button>
         </PopoverTrigger>
         <PopoverContent className="popover-content-width-full p-0">
-          <Command>
+          <Command shouldFilter={true}>
             <CommandInput placeholder={`Search ${searchField}...`} />
             <CommandEmpty>No {searchField} found.</CommandEmpty>
             <ScrollArea className="max-h-56">

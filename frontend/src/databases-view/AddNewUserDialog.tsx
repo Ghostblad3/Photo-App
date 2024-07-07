@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
@@ -14,11 +14,16 @@ import userDataStore from "./stores/userDataStore";
 import addNewUserStore from "./stores/addNewUserStore";
 import operationStore from "../global-stores/operationStore";
 
-function AddNewUserDialog() {
-  // const { userKeys, addUser } = userDataStore();
-
+const AddNewUserDialog = memo(() => {
   const userKeys = userDataStore((state) => state.props.userKeys);
   const { addUser } = userDataStore((state) => state.actions);
+  const showDialog = addNewUserStore((state) => state.props.showDialog);
+  const tableName = addNewUserStore((state) => state.props.tableName);
+  const { setShowDialog, resetAddNewUserStore } = addNewUserStore(
+    (state) => state.actions
+  );
+  const { addOperation, changeOperationStatus, removeOperation } =
+    operationStore((state) => state.actions);
 
   const keysRef = useRef(
     userKeys.filter(
@@ -42,22 +47,8 @@ function AddNewUserDialog() {
       return acc;
     }, {})
   );
-  // const {
-  //   addNewUserStoreProps: { addNewUserShowDialog, tableName },
-  //   setAddNewUserShowDialog,
-  //   resetAddNewUserStore,
-  // } = addNewUserStore();
-  const showDialog = addNewUserStore((state) => state.props.showDialog);
-  const tableName = addNewUserStore((state) => state.props.tableName);
-  const { setShowDialog, resetAddNewUserStore } = addNewUserStore(
-    (state) => state.actions
-  );
-
   const [buttonIsDisabled, setButtonIsDisabled] = useState(true);
   const hashRef = useRef(crypto.randomUUID());
-
-  const { addOperation, changeOperationStatus, removeOperation } =
-    operationStore((state) => state.actions);
 
   useEffect(() => {
     return () => {
@@ -89,6 +80,8 @@ function AddNewUserDialog() {
         true
       );
 
+      const time = new Date();
+
       const response = await fetch("http://localhost:3000/record/add-users", {
         method: "POST",
         headers: {
@@ -99,6 +92,12 @@ function AddNewUserDialog() {
           users: [userRef.current],
         }),
       });
+
+      const timeDiff = Date.now() - time.getTime();
+
+      if (timeDiff < 500) {
+        await new Promise((resolve) => setTimeout(resolve, 500 - timeDiff));
+      }
 
       if (!response.ok) {
         changeOperationStatus(
@@ -142,7 +141,7 @@ function AddNewUserDialog() {
   return (
     <Dialog open={showDialog}>
       <DialogContent
-        className="sm:max-w-[425px]"
+        className="sm:max-w-[26.563rem]"
         onPointerDownOutside={() => {
           setShowDialog(false);
         }}
@@ -191,6 +190,6 @@ function AddNewUserDialog() {
       </DialogContent>
     </Dialog>
   );
-}
+});
 
 export default AddNewUserDialog;

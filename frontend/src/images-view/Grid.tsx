@@ -2,6 +2,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Image } from "lucide-react";
 import ScreenshotDialog from "./ScreenshotDialog";
 import SelectedKeysCombobox from "./SelectedKeysCombobox";
 import SearchValueCombobox from "./SearchValueCombobox";
@@ -9,14 +10,12 @@ import SearchFieldCombobox from "./SearchFieldCombobox";
 import selectedTableStore from "./stores/selectedTableStore";
 import userDataStore from "./stores/userDataStore";
 import singleUserStore from "./stores/singleUserStore";
-import useAvailableKeysStore from "./stores/availableKeysStore";
+import availableKeysStore from "./stores/availableKeysStore";
 import operationStore from "../global-stores/operationStore";
 
 function Grid() {
-  const selectedKeys = useAvailableKeysStore(
-    (state) => state.props.selectedKeys
-  );
-  const { setAvailableKeys } = useAvailableKeysStore((state) => state.actions);
+  const selectedKeys = availableKeysStore((state) => state.props.selectedKeys);
+  const { setAvailableKeys } = availableKeysStore((state) => state.actions);
   const tableName = selectedTableStore((state) => state.props.tableName);
   const userData = userDataStore((state) => state.props.userData);
   const userDataFiltered = userDataStore(
@@ -136,7 +135,9 @@ function Grid() {
       }
 
       const [firstObject] = data;
-      const keys = Object.keys(firstObject);
+      const keys = Object.keys(firstObject).filter(
+        (key) => key !== "screenshot"
+      );
 
       setUserData(data);
       setAvailableKeys(keys);
@@ -167,18 +168,14 @@ function Grid() {
       {fetchUserDataStatus === "pending" ? (
         <>
           <div className="p-2.5">
-            <Skeleton className="h-[40px] w-full" />
+            <Skeleton className="h-10 w-full" />
           </div>
           <div className="flex flex-wrap gap-2 mb-2.5">
-            <div className="p-2.5 flex gap-2 w-[300px]">
-              <div className="flex gap-2 mb-2.5 ">
-                <Skeleton className="h-[40px] w-[200px]" />
-              </div>
+            <div className="p-2.5 flex gap-2 w-[18.75rem]">
+              <Skeleton className="h-10 w-[18.75rem]" />
             </div>
-            <div className="p-2.5 flex gap-2 w-[300px]">
-              <div className="flex gap-2 mb-2.5 ">
-                <Skeleton className="h-[40px] w-[200px]" />
-              </div>
+            <div className="p-2.5 flex gap-2 w-[18.75rem]">
+              <Skeleton className="h-10 w-[18.75rem]" />
             </div>
           </div>
         </>
@@ -199,43 +196,10 @@ function Grid() {
           <>
             {Array.from({ length: count }).map((_, index) => (
               <Fragment key={index}>
-                <Skeleton className="h-[258px] bg-white rounded-lg flex flex-col p-2.5 shadow-custom">
-                  <Skeleton className="h-[100px] w-[105px] mx-auto rounded-lg bg-slate-200">
+                <Skeleton className="h-[16.125rem] bg-white rounded-lg flex flex-col p-2.5 shadow-custom">
+                  <Skeleton className="h-[6.25rem] w-[6.563rem] mx-auto rounded-lg bg-slate-200">
                     <div className="w-full h-full rounded-lg flex justify-center items-center bg-slate-200">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        width={24}
-                        height={24}
-                        color={"#9b9b9b"}
-                        fill={"none"}
-                        className="m-auto"
-                      >
-                        <path
-                          d="M2.5 12C2.5 7.52166 2.5 5.28249 3.89124 3.89124C5.28249 2.5 7.52166 2.5 12 2.5C16.4783 2.5 18.7175 2.5 20.1088 3.89124C21.5 5.28249 21.5 7.52166 21.5 12C21.5 16.4783 21.5 18.7175 20.1088 20.1088C18.7175 21.5 16.4783 21.5 12 21.5C7.52166 21.5 5.28249 21.5 3.89124 20.1088C2.5 18.7175 2.5 16.4783 2.5 12Z"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                        />
-                        <circle
-                          cx="16.5"
-                          cy="7.5"
-                          r="1.5"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                        />
-                        <path
-                          d="M16 22C15.3805 19.7749 13.9345 17.7821 11.8765 16.3342C9.65761 14.7729 6.87163 13.9466 4.01569 14.0027C3.67658 14.0019 3.33776 14.0127 3 14.0351"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M13 18C14.7015 16.6733 16.5345 15.9928 18.3862 16.0001C19.4362 15.999 20.4812 16.2216 21.5 16.6617"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
+                      <Image />
                     </div>
                   </Skeleton>
                   <Skeleton className="w-20 h-5 mt-4" />
@@ -247,19 +211,22 @@ function Grid() {
         ) : null}
 
         {fetchUserDataStatus === "success"
-          ? userDataFiltered.map((item: { [key: string]: string }, index) => {
-              // if (index > 10) return null;
+          ? userDataFiltered.map((item: { [key: string]: string }) => {
               return (
                 <ScreenshotDialog key={item[userKeys[0]]}>
                   <div
                     className="bg-white rounded-lg flex flex-col cursor-pointer"
                     onClick={() => {
-                      setSingleUserData(userData[index]);
+                      const key = userKeys[0];
+                      const user = userData.find((u) => u[key] === item[key]);
+                      if (user) {
+                        setSingleUserData(user);
+                      }
                     }}
                   >
                     <div className="w-full bg-slate-200 py-5 rounded-t-lg">
                       <img
-                        className="h-[100px] w-[105px] mx-auto rounded-lg"
+                        className="h-[6.25rem] w-[6.563rem] mx-auto rounded-lg"
                         src={`data:image/png;base64,${item.screenshot}`}
                       />
                     </div>
@@ -272,12 +239,12 @@ function Grid() {
                           key={key}
                           className="flex flex-col px-1 mt-1.5 mb-0.5"
                         >
-                          <Label className="font-semibold block text-sm cursor-pointer">
+                          <p className="font-semibold block text-sm cursor-pointer">
                             {key}
-                          </Label>
-                          <Label className="text-gray-700 dark:text-gray-300 text-base cursor-pointer">
+                          </p>
+                          <p className="text-gray-700 dark:text-gray-300 text-base cursor-pointer">
                             {item[key]}
-                          </Label>
+                          </p>
                           <hr className="my-2" />
                         </div>
                       );

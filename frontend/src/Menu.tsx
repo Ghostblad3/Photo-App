@@ -1,38 +1,63 @@
+import { Aperture, Database, FileX, Images, UserRoundPlus } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+
 function Menu({
   currentComponent,
   setCurrentComponent,
+  isVisible,
+  isFixedMenu,
+  setIsVisible,
 }: {
   currentComponent: number;
   setCurrentComponent: React.Dispatch<React.SetStateAction<number>>;
+  isVisible: boolean;
+  isFixedMenu: boolean;
+  setIsVisible: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
+  const mountRef = useRef(true);
+  const [unmount, setUnmount] = useState(false);
+
   function handleClick(index: number) {
-    if (currentComponent === index) return;
+    if (isFixedMenu) {
+      setIsVisible(false);
+    }
+
+    if (currentComponent === index) {
+      return;
+    }
 
     setCurrentComponent(index);
   }
 
-  return (
-    <div className="flex-grow flex-shrink-0 h-full overflow-y-auto w-[250px] bg-[#051923] flex flex-col @apply text-[white] flex-[0_0_auto];">
-      <div className="mt-[70px] p-[5px] text-lg items-center justify-center flex gap-2.5 ">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          preserveAspectRatio="xMidYMin meet"
-          stroke="currentColor"
-          className="size-6 text-white"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"
-          />
-        </svg>
+  useEffect(() => {
+    mountRef.current = false;
+  }, []);
 
+  useEffect(() => {
+    if (!isVisible) {
+      setTimeout(() => {
+        setUnmount(true);
+      }, 125);
+    } else {
+      setUnmount(false);
+    }
+  }, [isVisible]);
+
+  const isFixed = isFixedMenu ? "fixed left-0" : "";
+
+  if (unmount || (mountRef.current && isFixed)) return null;
+
+  return (
+    <div
+      className={`${isFixed} ${
+        !isVisible ? "animate-killAnimation" : ""
+      } top-[2.75rem] h-full overflow-y-auto w-[15.625rem] bg-[#051923] flex flex-col @apply text-[white] flex-[0_0_auto]`}
+    >
+      <div className="mt-[4.375rem] text-lg items-center justify-center flex gap-2.5">
+        <Aperture />
         <h1>PHOTO MANAGER</h1>
       </div>
-      <div className="mt-7 border-[1px] border-[solid] border-[white]"></div>
+      <div className="mt-7 border-[0.063rem] border-[solid] border-[white]"></div>
       <div>
         <ul className="mt-20 flex flex-col flex-grow flex-shrink-0 h-full overflow-y-auto gap-1.5">
           <li
@@ -42,21 +67,8 @@ function Menu({
             }}
             className="h-10 cursor-pointer flex gap-4 items-center pl-8 mx-2.5 hover:text-white hover:underline"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125"
-              />
-            </svg>
-            <span className="mt-[-1px]">Database</span>
+            <Database />
+            <span className="mt-[-0.063rem]">Database</span>
           </li>
           <li
             onClick={() => handleClick(1)}
@@ -65,20 +77,7 @@ function Menu({
             }}
             className="h-10 cursor-pointer flex gap-4 items-center pl-8 mx-2.5 hover:text-white hover:underline"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
-              />
-            </svg>
+            <UserRoundPlus />
             <span className="mt-[-1px]">Add records</span>
           </li>
           <li
@@ -88,21 +87,18 @@ function Menu({
             }}
             className="h-10 cursor-pointer flex gap-4 items-center pl-8 mx-2.5 hover:text-white hover:underline"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
-              />
-            </svg>
-            <span className="mt-[-1px]">Images</span>
+            <FileX />
+            <span className="mt-[-0.063rem]">Remove table</span>
+          </li>
+          <li
+            onClick={() => handleClick(3)}
+            style={{
+              color: `${currentComponent === 3 ? "white" : "#b1b1af"}`,
+            }}
+            className="h-10 cursor-pointer flex gap-4 items-center pl-8 mx-2.5 hover:text-white hover:underline"
+          >
+            <Images />
+            <span className="mt-[-0.063rem]">Images</span>
           </li>
         </ul>
       </div>

@@ -47,7 +47,7 @@ function TableNamesCombobox() {
   }, []);
 
   useQuery({
-    queryKey: ["tableNames"],
+    queryKey: ["tableNames-image-view"],
     queryFn: async () => {
       addOperation(
         tableNamesFetchRef.current,
@@ -110,61 +110,79 @@ function TableNamesCombobox() {
   return (
     <div className="p-2.5">
       {tableNamesFetchStatus === "pending" ? (
-        <>
-          <Skeleton className="h-[24px] w-[46px] mb-2" />
-          <Skeleton className="h-[40px] w-full" />
-        </>
+        <div className="space-y-10 flex flex-col">
+          <div>
+            <Skeleton className="h-8 w-[2.875rem] mb-1" />
+            <Skeleton className="h-6 w-full" />
+          </div>
+
+          <div className="space-y-2.5 flex flex-col">
+            <Skeleton className="h-6 w-[2.875rem]" />
+            <Skeleton className="h-[2.5rem] w-full" />
+          </div>
+        </div>
       ) : null}
 
       {tableNamesFetchStatus !== "pending" ? (
-        <>
-          <h1 className="mb-2">Tables</h1>
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={open}
-                className="w-[100%] justify-between"
-                disabled={tableNamesFetchStatus === "error"}
-              >
-                {tableName !== ""
-                  ? tableNames.find((item) => item === tableName)
-                  : "Select table..."}
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="p-0">
-              <Command>
-                <CommandInput placeholder="Search table..." />
-                <CommandEmpty>No table found.</CommandEmpty>
-                <CommandGroup>
-                  {tableNames.map((item) => (
-                    <CommandItem
-                      key={item}
-                      value={item}
-                      onSelect={(currentValue) => {
-                        setTableName(
-                          currentValue === tableName ? "" : currentValue
-                        );
+        <div className="space-y-10 flex flex-col">
+          <div>
+            <h1 className="font-bold text-2xl decoration-slate-100">
+              Select table
+            </h1>
+            <p className="text-slate-500">
+              Select the name of the table that you want to work with
+            </p>
+          </div>
 
-                        setOpen(false);
-                      }}
-                    >
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          tableName === item ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                      {item}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </Command>
-            </PopoverContent>
-          </Popover>
-        </>
+          <div className="space-y-2.5 flex flex-col">
+            <p className="font-bold">Table name</p>
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={open}
+                  className="w-[100%] justify-between"
+                  disabled={tableNamesFetchStatus === "error"}
+                >
+                  {tableName !== ""
+                    ? tableNames.find((item) => item === tableName)
+                    : "Select table..."}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="p-0">
+                <Command shouldFilter={true}>
+                  <CommandInput placeholder="Search table..." />
+                  <CommandEmpty>No table found.</CommandEmpty>
+                  <CommandGroup>
+                    {tableNames.map((item) => (
+                      <CommandItem
+                        key={item}
+                        value={item}
+                        onSelect={(currentValue) => {
+                          setTableName(
+                            currentValue === tableName ? "" : currentValue
+                          );
+
+                          setOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            tableName === item ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {item}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
+        </div>
       ) : null}
     </div>
   );

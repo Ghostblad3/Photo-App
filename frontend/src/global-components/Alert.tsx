@@ -19,7 +19,7 @@ const iconColor = {
   pending: "rgb(2, 136, 209)",
 };
 
-function MultiAlertComponent({ item }: { item: OperationObject }) {
+function Alert({ item }: { item: OperationObject }) {
   return (
     <div
       className="mt-2.5 pb-2.5 animate-fade-in flex justify-center p-1.5 rounded-lg"
@@ -39,7 +39,7 @@ function MultiAlertComponent({ item }: { item: OperationObject }) {
       }}
     >
       <div
-        className="mt-[6px] ml-2 mr-3.5"
+        className="mt-1.5 ml-2 mr-3.5"
         style={{
           color:
             item.status === "pending"
@@ -56,16 +56,16 @@ function MultiAlertComponent({ item }: { item: OperationObject }) {
         ) : null}
       </div>
       <div className="flex flex-col">
-        <div className="mt-[2.3px]">
-          {item.operation === "update" ? "Update user" : null}
-          {item.operation === "delete" ? "Screenshot delete" : null}
-          {item.operation === "create" ? "Create user" : null}
-          {item.operation === "fetch" ? "Fetching data" : null}
+        <div className="mt-[0.144rem]">
+          {item.operation === "update" ? "Update" : null}
+          {item.operation === "delete" ? "Delete" : null}
+          {item.operation === "create" ? "Create" : null}
+          {item.operation === "fetch" ? "Fetching" : null}
         </div>
-        <div className="w-[250px] mt-2 mb-1">{item.message}</div>
+        <div className="w-[15.625rem] mt-2 mb-1 mr-2">{item.message}</div>
       </div>
     </div>
   );
 }
 
-export default MultiAlertComponent;
+export default Alert;

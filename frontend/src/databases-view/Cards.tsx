@@ -6,7 +6,6 @@ import selectedTableInfoStore from "./stores/selectedTableInfoStore";
 
 function Cards() {
   const [showCards, setShowCards] = useState(true);
-  //const { selectedTableInfo } = selectedTableInfoStore();
   const { columnNames, userNumber, screenshotNumber, screenshotAverageSize } =
     selectedTableInfoStore((state) => state.props);
 

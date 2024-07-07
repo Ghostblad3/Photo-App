@@ -11,13 +11,14 @@ import {
   getFilteredRowModel,
 } from "@tanstack/react-table";
 import { useVirtualizer, notUndefined } from "@tanstack/react-virtual";
+import { columns } from "./columns";
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import { columns } from "./columns";
+import { ImageOff, ImagePlus, PenLine, UserPlus, UserX } from "lucide-react";
 import SearchValueCombobox from "./SearchValueCombobox";
 import SearchFieldCombobox from "./SearchFieldCombobox";
 import AddNewScreenshotDialog from "./AddNewScreenshotDialog";
@@ -33,6 +34,8 @@ import AddNewUserDialog from "./AddNewUserDialog";
 import deleteUserScreenshotStore from "./stores/deleteUserScreenshotStore";
 import updateUserInfoStore from "./stores/updateUserInfoStore";
 import addNewScreenshotStore from "./stores/addNewScreenshotStore";
+import deleteUserStore from "./stores/deleteUserStore";
+import DeleteUserDialog from "./DeleteUserDialog";
 
 export function DataTable<TData, TValue>() {
   const userData = userDataStore((state) => state.props.userData);
@@ -80,6 +83,10 @@ export function DataTable<TData, TValue>() {
     setUserId: setUpdateUserInfoUserId,
     setUserIndex: setUpdateUserInfoUserIndex,
   } = updateUserInfoStore((state) => state.actions);
+  const deleteUserShowDialog = deleteUserStore(
+    (state) => state.props.showDialog
+  );
+  const { setProps } = deleteUserStore((state) => state.actions);
 
   useEffect(() => {
     return () => {
@@ -151,17 +158,14 @@ export function DataTable<TData, TValue>() {
         <SearchFieldCombobox />
       </div>
 
-      {addNewScreenshotShowDialog ? <AddNewScreenshotDialog /> : null}
+      {addNewScreenshotShowDialog && <AddNewScreenshotDialog />}
+      {updateUserInfoShowDialog && <UpdateUserDialog />}
+      {deleteUserScreenshotShowDialog && <DeleteUserScreenshotDialog />}
+      {deleteUserShowDialog && <DeleteUserDialog />}
+      {addNewUserShowDialog && <AddNewUserDialog />}
+      {screenshowAsBase64ShowDialog && <ScreenshotDialog />}
 
-      {updateUserInfoShowDialog ? <UpdateUserDialog /> : null}
-
-      {deleteUserScreenshotShowDialog ? <DeleteUserScreenshotDialog /> : null}
-
-      {addNewUserShowDialog ? <AddNewUserDialog /> : null}
-
-      {screenshowAsBase64ShowDialog ? <ScreenshotDialog /> : null}
-
-      <div ref={parentRef} className="px-2.5 w-full overflow-auto h-[400px]">
+      <div ref={parentRef} className="px-2.5 w-full overflow-auto h-[25rem]">
         <table className="w-full">
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -172,12 +176,14 @@ export function DataTable<TData, TValue>() {
                       key={header.id}
                       colSpan={header.colSpan}
                       style={{
-                        padding: "0rem 0.5rem",
+                        paddingTop: "0",
                         paddingRight: "2.5rem",
                         textWrap: "nowrap",
                         position: "sticky",
-                        top: 0,
+                        zIndex: 1,
+                        top: "0",
                         backgroundColor: "white",
+                        // height: "1.875rem",
                       }}
                       className="border-b border-gray-300 bg-gray-50 py-3 text-left text-sm font-semibold text-gray-900"
                     >
@@ -241,15 +247,12 @@ export function DataTable<TData, TValue>() {
                       >
                         <ContextMenu>
                           <ContextMenuTrigger asChild>
-                            <span
-                              className="w-[100%] flex items-center leading-none"
-                              style={{ height: `${virtualRow.size}px` }}
-                            >
+                            <div className="pt-[0.25rem] pb-[0.344rem] pl-4 h-[2rem]">
                               {flexRender(
                                 cell.column.columnDef.cell,
                                 cell.getContext()
                               )}
-                            </span>
+                            </div>
                           </ContextMenuTrigger>
                           <ContextMenuContent className="w-64">
                             <ContextMenuItem
@@ -273,7 +276,10 @@ export function DataTable<TData, TValue>() {
                                 );
                               }}
                             >
-                              Add screenshot to user
+                              <div className="flex gap-5 items-center">
+                                <ImagePlus className="h-4 w-4" />
+                                <span>Add screenshot to user</span>
+                              </div>
                             </ContextMenuItem>
                             <ContextMenuItem
                               inset
@@ -282,7 +288,10 @@ export function DataTable<TData, TValue>() {
                                 setAddNewUserShowDialog(true);
                               }}
                             >
-                              Add new user
+                              <div className="flex gap-5 items-center">
+                                <UserPlus className="h-4 w-4" />
+                                <span>Add new user</span>
+                              </div>
                             </ContextMenuItem>
                             <ContextMenuItem
                               inset
@@ -305,7 +314,10 @@ export function DataTable<TData, TValue>() {
                                 setUpdateUserInfoShowDialog(true);
                               }}
                             >
-                              Modify user information
+                              <div className="flex gap-5 items-center">
+                                <PenLine className="h-4 w-4" />
+                                <span>Modify user information</span>
+                              </div>
                             </ContextMenuItem>
                             <ContextMenuItem
                               inset
@@ -335,7 +347,33 @@ export function DataTable<TData, TValue>() {
                                 setDeleteUserScreenshotShowDialog(true);
                               }}
                             >
-                              Delete user screenshot
+                              <div className="flex gap-5 items-center">
+                                <ImageOff className="h-4 w-4" />
+                                <span>Delete user screenshot</span>
+                              </div>
+                            </ContextMenuItem>
+                            <ContextMenuItem
+                              inset
+                              onClick={() => {
+                                const keys: string[] = table
+                                  .getHeaderGroups()[0]
+                                  .headers.map((header) => header.id);
+
+                                const [firstKey] = keys;
+
+                                const userId = (
+                                  userData[row.id as unknown as number] as {
+                                    [key: string]: string;
+                                  }
+                                )[firstKey];
+
+                                setProps(userId, firstKey, tableName);
+                              }}
+                            >
+                              <div className="flex gap-5 items-center">
+                                <UserX className="h-4 w-4" />
+                                <span>Delete user</span>
+                              </div>
                             </ContextMenuItem>
                           </ContextMenuContent>
                         </ContextMenu>

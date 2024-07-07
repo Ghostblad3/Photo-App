@@ -54,7 +54,7 @@ function TableNamesCombobox() {
   }, []);
 
   useQuery({
-    queryKey: ["tableNames"],
+    queryKey: ["tableNames-databases-view"],
     queryFn: async () => {
       addOperation(
         hashRef.current,
@@ -119,8 +119,8 @@ function TableNamesCombobox() {
     <div className="p-2.5">
       {fetchStatus === "pending" ? (
         <>
-          <Skeleton className="h-[24px] w-[46px] mb-2" />
-          <Skeleton className="h-[40px] w-full" />
+          <Skeleton className="h-6 w-[2.875rem] mb-2" />
+          <Skeleton className="h-10 w-full" />
         </>
       ) : null}
 
@@ -143,10 +143,10 @@ function TableNamesCombobox() {
               </Button>
             </PopoverTrigger>
             <PopoverContent className="p-0">
-              <Command>
+              <Command shouldFilter={true}>
                 <CommandInput placeholder="Search table..." />
                 <CommandEmpty>No table found.</CommandEmpty>
-                <ScrollArea className="max-h-[300px]">
+                <ScrollArea className="max-h-[18.75rem]">
                   <div>
                     <CommandGroup>
                       {tableNames.map((item) => (

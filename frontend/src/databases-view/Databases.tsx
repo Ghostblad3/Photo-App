@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "./VirtualizedNew";
 import { Skeleton } from "@/components/ui/skeleton";
-import MultiAlertComponent from "../global-components/MultiAlertComponet";
 import TableNamesCombobox from "./TableNamesCombobox";
 import Cards from "./Cards";
 import userDataStore from "./stores/userDataStore";
@@ -12,11 +11,6 @@ import searchStore from "./stores/searchStore";
 import operationStore from "../global-stores/operationStore";
 
 function Databases() {
-  // const {
-  //   selectedTableInfo,
-  //   setSelectedTableInfo,
-  //   resetSelectedTableInfoStore,
-  // } = selectedTableInfoStore();
   const tableName = selectedTableInfoStore((state) => state.props.tableName);
   const {
     setColumnNames,
@@ -25,17 +19,12 @@ function Databases() {
     setScreenshotAverageSize,
     resetSelectedTableInfoStore,
   } = selectedTableInfoStore((state) => state.actions);
-
   const { setUserData, setUserKeys, resetUserData } = userDataStore(
     (state) => state.actions
   );
-
-  //const { resetSearch } = searchStore();
   const resetSearchStore = searchStore(
     (state) => state.actions.resetSearchStore
   );
-
-  const showQueue = operationStore((state) => state.props.showQueue);
   const { addOperation, changeOperationStatus, removeOperation } =
     operationStore((state) => state.actions);
 
@@ -288,6 +277,8 @@ function Databases() {
         false
       );
 
+      const time = Date.now();
+
       let response = await fetch(
         `http://localhost:3000/record/get-user-data/{"tableName":"${tableName}"}`,
         {
@@ -296,6 +287,12 @@ function Databases() {
       );
 
       if (!response.ok) {
+        const timeTaken = Date.now() - time;
+
+        if (timeTaken < 500) {
+          await new Promise((resolve) => setTimeout(resolve, 500 - timeTaken));
+        }
+
         changeOperationStatus(
           userRecordsHashRef.current,
           "error",
@@ -324,6 +321,12 @@ function Databases() {
       );
 
       if (!response.ok) {
+        const timeTaken = Date.now() - time;
+
+        if (timeTaken < 500) {
+          await new Promise((resolve) => setTimeout(resolve, 500 - timeTaken));
+        }
+
         changeOperationStatus(
           userRecordsHashRef.current,
           "error",
@@ -365,6 +368,12 @@ function Databases() {
 
       const [user] = userDataUpdated;
       const keys = Object.keys(user);
+
+      const timeTaken = Date.now() - time;
+
+      if (timeTaken < 500) {
+        await new Promise((resolve) => setTimeout(resolve, 500 - timeTaken));
+      }
 
       resetSearchStore();
       resetUserData();
@@ -412,14 +421,14 @@ function Databases() {
       {tableInfoFetchStatus === "pending" ? (
         <>
           <div className="my-2 pl-2.5 flex items-center gap-2.5">
-            <Skeleton className="rounded-lg h-[24px] w-[44px] shadow-lg" />
-            <Skeleton className="h-[14px] w-[148px] shadow-lg" />
+            <Skeleton className="rounded-lg h-6 w-[2.75rem] shadow-lg" />
+            <Skeleton className="h-[0.875rem] w-[9.25rem] shadow-lg" />
           </div>
           <div className="grid lg:grid-cols-4 gap-5 auto-rows-fr p-2.5">
-            <Skeleton className="rounded-lg h-[110px] shadow-lg" />
-            <Skeleton className="rounded-lg h-[110px] shadow-lg" />
-            <Skeleton className="rounded-lg h-[110px] shadow-lg" />
-            <Skeleton className="rounded-lg h-[110px] shadow-lg" />
+            <Skeleton className="rounded-lg h-[6.875rem] shadow-lg" />
+            <Skeleton className="rounded-lg h-[6.875rem] shadow-lg" />
+            <Skeleton className="rounded-lg h-[6.875rem] shadow-lg" />
+            <Skeleton className="rounded-lg h-[6.875rem] shadow-lg" />
           </div>
         </>
       ) : null}
@@ -437,24 +446,16 @@ function Databases() {
       {userRecordsFetchStatus === "pending" ? (
         <div className="h-full mx-2.5">
           <div className="flex gap-2 mb-2.5 ">
-            <Skeleton className="h-[40px] w-[200px]" />
-            <Skeleton className="h-[40px] w-[200px]" />
+            <Skeleton className="h-10 w-[12.5rem]" />
+            <Skeleton className="h-10 w-[12.5rem]" />
           </div>
-          <Skeleton className="h-[400px] w-full" />
+          <Skeleton className="h-[25rem] w-full" />
         </div>
       ) : null}
 
       {userRecordsFetchStatus === "success" && tableName.length !== 0 ? (
         <DataTable />
       ) : null}
-
-      <div className="fixed bottom-4 right-4 z-50">
-        {showQueue.map((item) => (
-          <div key={item.hash}>
-            <MultiAlertComponent item={item} />
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

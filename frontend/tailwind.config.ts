@@ -81,11 +81,17 @@ const config = {
           from: { opacity: "0" },
           to: { opacity: "1" },
         },
+        killAnimation: {
+          "0%": { left: "0" },
+          "50%": { left: "-100px" },
+          "100%": { left: "-15.625rem" },
+        },
       },
       animation: {
         fade: "fadeIn 3s easy-in-out",
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        killAnimation: "killAnimation 0.125s linear forwards",
       },
     },
   },

@@ -358,10 +358,13 @@ function ImageCrop() {
         </div>
       )}
       {(uploadStatus === "pending" || uploadStatus === "success") && (
-        <div className="flex flex-col justify-center items-center h-[200px]">
+        <div className="flex flex-col justify-center items-center h-[12.5rem]">
           <h1 className="text-xl">Uploading</h1>
           <div className="flex justify-center items-center gap-2.5 w-full mt-10">
-            <Progress value={progress} className="w-[60%] h-2.5 mt-[3px]" />
+            <Progress
+              value={progress}
+              className="w-[60%] h-2.5 mt-[0.188rem]"
+            />
             <p className="">{progress} %</p>
           </div>
         </div>

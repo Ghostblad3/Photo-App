@@ -60,10 +60,10 @@ function SelectedKeysCombobox() {
           </Button>
         </PopoverTrigger>
         <PopoverContent className="p-0">
-          <Command>
+          <Command shouldFilter={true}>
             {/* <CommandInput placeholder="Search fields..." /> */}
             <CommandEmpty>No field found.</CommandEmpty>
-            <ScrollArea className="max-h-[300px]">
+            <ScrollArea className="max-h-[18.75rem]">
               <CommandGroup>
                 {values.map((item) => (
                   <div key={item.label} className="flex items-center">

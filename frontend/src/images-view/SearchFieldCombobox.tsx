@@ -53,7 +53,7 @@ function SearchFieldCombobox() {
   }, [userData]);
 
   return (
-    <div className="p-2.5 w-[300px]">
+    <div className="p-2.5 w-[18.75rem]">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -69,7 +69,7 @@ function SearchFieldCombobox() {
           </Button>
         </PopoverTrigger>
         <PopoverContent className="popover-content-width-full p-0">
-          <Command>
+          <Command shouldFilter={true}>
             <CommandInput placeholder={`Search by column name...`} />
             <CommandEmpty>No column name found.</CommandEmpty>
             <ScrollArea className="max-h-56">

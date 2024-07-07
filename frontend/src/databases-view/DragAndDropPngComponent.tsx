@@ -44,7 +44,7 @@ function DragAndDropPngComponent() {
     <div
       onDragOver={handleDragOver}
       onDrop={handleDrop}
-      className="h-[400px] w-[calc(100%-40px)] mx-4 flex flex-col justify-evenly items-center border-2 border-zinc-300 border-dashed rounded-xl"
+      className="h-[25rem] w-[calc(100%-2.5rem)] mx-4 flex flex-col justify-evenly items-center border-2 border-zinc-300 border-dashed rounded-xl"
     >
       <input
         type="file"
@@ -55,12 +55,12 @@ function DragAndDropPngComponent() {
         ref={inputRef}
       />
 
-      <h1 className="text-3xl text-slate-400">Drag and a png here</h1>
+      <h1 className="text-3xl text-slate-400">Drag and drop a png file here</h1>
 
       <h3 className="text-lg text-slate-400">Or, if you prefer...</h3>
 
       <Button onClick={() => inputRef!.current!.click()}>
-        Select a png from your computer
+        Select a png file from your computer
       </Button>
     </div>
   );

@@ -14,9 +14,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import searchStore from "./stores/searchStore";
 import userDataStore from "./stores/userDataStore";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 function SearchValueCombobox() {
   const { setSearchValue, resetSearchStore } = searchStore(
@@ -59,7 +59,7 @@ function SearchValueCombobox() {
     );
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchField]);
+  }, [searchField, userData]);
 
   useEffect(() => {
     if (searchValue === "") {
@@ -70,11 +70,12 @@ function SearchValueCombobox() {
     setUserDataFiltered(
       userData.filter((user) => user[searchField] === searchValue)
     );
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchValue]);
+  }, [searchValue, userData, searchField]);
 
   return (
-    <div className="p-2.5 flex gap-2 w-[300px]">
+    <div className="p-2.5 flex gap-2 w-[18.75rem]">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -90,7 +91,7 @@ function SearchValueCombobox() {
           </Button>
         </PopoverTrigger>
         <PopoverContent className="popover-content-width-full p-0">
-          <Command>
+          <Command shouldFilter={true}>
             <CommandInput placeholder={`Search ${searchField}...`} />
             <CommandEmpty>No {searchField} found.</CommandEmpty>
             <ScrollArea className="max-h-56">

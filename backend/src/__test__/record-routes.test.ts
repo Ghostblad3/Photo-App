@@ -149,12 +149,12 @@ describe("Add users with wrong prop names", () => {
         users: [
           {
             asmasm: "123456789",
-            name: "John",
+            some_name: "John",
             lastName: "Doe",
           },
           {
             asmasm: "987654321",
-            name: "Jane",
+            some_name: "Jane",
             lastName: "Danniel",
           },
         ],
@@ -242,20 +242,10 @@ describe("Get all user data for a specific table", () => {
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual({
       status: "success",
-      data: expect.any(Array),
+      data: [
+        { user_asm: "123456789", firstName: "peter", lastName: "johnson" },
+      ],
       error: { message: "" },
-    });
-
-    const { data } = res.body;
-
-    data.forEach((item: any) => {
-      expect(typeof item).toBe("object");
-
-      const keys = Object.keys(item);
-
-      keys.forEach((key) => {
-        expect(typeof item[key]).toBe("string");
-      });
     });
   });
 
@@ -752,7 +742,7 @@ describe("Update user props with more props than required", () => {
         user: {
           user_asm: "123456789",
           firstName: "John",
-          age: "30",
+          some_age: "30",
           lastName: "Doe",
         },
       });

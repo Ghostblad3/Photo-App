@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
@@ -13,19 +13,8 @@ import userDataStore from "./stores/userDataStore";
 import deleteUserScreenshotStore from "./stores/deleteUserScreenshotStore";
 import operationStore from "../global-stores/operationStore";
 
-function DeleteUserScreenshotDialog() {
+const DeleteUserScreenshotDialog = memo(() => {
   const { deleteUserScreenshot } = userDataStore((state) => state.actions);
-  // const {
-  //   deleteUserScreenshotStoreProps: {
-  //     userId,
-  //     userIdName,
-  //     tableName,
-  //     deleteUserScreenshotShowDialog,
-  //   },
-  //   setDeleteUserScreenshotShowDialog,
-  //   resetDeleteUserScreenshotStore,
-  // } = deleteUserScreenshotStore();
-
   const showDialog = deleteUserScreenshotStore(
     (state) => state.props.showDialog
   );
@@ -34,7 +23,6 @@ function DeleteUserScreenshotDialog() {
   const userIdName = deleteUserScreenshotStore(
     (state) => state.props.userIdName
   );
-
   const { setShowDialog, resetDeleteUserScreenshotStore } =
     deleteUserScreenshotStore((state) => state.actions);
 
@@ -69,6 +57,8 @@ function DeleteUserScreenshotDialog() {
         true
       );
 
+      const time = Date.now();
+
       const response = await fetch(
         `http://localhost:3000/screenshot/delete-user-screenshot/${JSON.stringify(
           paramData
@@ -77,6 +67,12 @@ function DeleteUserScreenshotDialog() {
           method: "DELETE",
         }
       );
+
+      const timeDiff = Date.now() - time;
+
+      if (timeDiff < 500) {
+        await new Promise((resolve) => setTimeout(resolve, 500 - timeDiff));
+      }
 
       if (!response.ok) {
         changeOperationStatus(
@@ -117,7 +113,7 @@ function DeleteUserScreenshotDialog() {
     <>
       <Dialog open={showDialog}>
         <DialogContent
-          className="sm:max-w-[425px]"
+          className="sm:max-w-[26.563rem]"
           onPointerDownOutside={() => {
             setShowDialog(false);
           }}
@@ -155,6 +151,6 @@ function DeleteUserScreenshotDialog() {
       </Dialog>
     </>
   );
-}
+});
 
 export default DeleteUserScreenshotDialog;

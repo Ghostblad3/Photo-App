@@ -50,7 +50,11 @@ describe("Add user screenshot", () => {
     expect(res.statusCode).toEqual(201);
     expect(res.body).toEqual({
       status: "success",
-      data: {},
+      data: {
+        photo_timestamp: expect.stringMatching(
+          /[+-]?\d{4}(-[01]\d(-[0-3]\d(T[0-2]\d:[0-5]\d:?([0-5]\d(\.\d+)?)?[+-][0-2]\d:[0-5]\dZ?)?)?)?/
+        ),
+      },
       error: { message: "" },
     });
   });
@@ -513,35 +517,20 @@ describe("Retrieve all user screenshots for specific day", () => {
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual({
       status: "success",
-      data: expect.any(Array),
+      data: [
+        {
+          photo_id: 1,
+          dayNumber: "1",
+          photo_timestamp: "2024-06-22T05:28:44.596Z",
+          rec_id: 1,
+          user_asm: "123456789",
+          firstName: "peter",
+          lastName: "johnson",
+          screenshot:
+            "iVBORw0KGgoAAAANSUhEUgAAAAkAAAAKCAIAAADpZ+PpAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAUSURBVChTY2DY8BMH+j1y5Tb8BgBuMZV/pMayZwAAAABJRU5ErkJggg==",
+        },
+      ],
       error: { message: "" },
-    });
-
-    const { data } = res.body;
-
-    data.forEach((item: any) => {
-      expect(typeof item).toBe("object");
-
-      const keys = Object.keys(item);
-
-      expect(item).toMatchObject({
-        photo_id: expect.any(Number),
-        rec_id: expect.any(Number),
-        screenshot: expect.any(String),
-        photo_timestamp: expect.any(String),
-        dayNumber: expect.any(String),
-      });
-
-      const keysFiltered = keys.filter(
-        (key) =>
-          key !== "photo_id" &&
-          key !== "rec_id" &&
-          key !== "dayNumber" &&
-          key !== "screenshot" &&
-          key !== "photo_timestamp"
-      );
-
-      keysFiltered.forEach((key) => expect(typeof item[key]).toBe("string"));
     });
   });
 
@@ -635,14 +624,8 @@ describe("Retrieve all submitted days for user screenshots", () => {
 
     expect(res.body).toEqual({
       status: "success",
-      data: expect.any(Array),
+      data: ["1"],
       error: { message: "" },
-    });
-
-    const { data } = res.body;
-
-    data.forEach((item: unknown) => {
-      expect(typeof item).toBe("string");
     });
   });
 
@@ -870,20 +853,16 @@ describe("Retrieve user data for users that have screenshot", () => {
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual({
       status: "success",
-      data: expect.any(Array),
+      data: [
+        {
+          dayNumber: "1",
+          photo_timestamp: "2024-06-22T05:28:44.596Z",
+          user_asm: "123456789",
+          firstName: "peter",
+          lastName: "johnson",
+        },
+      ],
       error: { message: "" },
-    });
-
-    const { data } = res.body;
-
-    data.forEach((item: unknown) => {
-      expect(typeof item).toBe("object");
-
-      const keys = Object.keys(item!);
-
-      keys.forEach((prop: unknown) => {
-        expect(typeof prop).toBe("string");
-      });
     });
   });
 
@@ -943,7 +922,17 @@ describe("Retrieve user screenshots for all days", () => {
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual({
       status: "success",
-      data: expect.any(Array),
+      data: [
+        {
+          user_asm: "123456789",
+          firstName: "peter",
+          lastName: "johnson",
+          dayNumber: "1",
+          photo_timestamp: "2024-06-22T05:28:44.596Z",
+          screenshot:
+            "iVBORw0KGgoAAAANSUhEUgAAAAkAAAAKCAIAAADpZ+PpAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAUSURBVChTY2DY8BMH+j1y5Tb8BgBuMZV/pMayZwAAAABJRU5ErkJggg==",
+        },
+      ],
       error: { message: "" },
     });
   });
