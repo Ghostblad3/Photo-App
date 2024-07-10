@@ -51,7 +51,7 @@ function Menu({
     <div
       className={`${isFixed} ${
         !isVisible ? "animate-killAnimation" : ""
-      } top-[2.75rem] h-full overflow-y-auto w-[15.625rem] bg-[#051923] flex flex-col @apply text-[white] flex-[0_0_auto]`}
+      } top-[2.75rem] h-full overflow-y-auto w-[15.625rem] bg-[#051923] flex flex-col @apply text-[white] flex-[0_0_auto] z-50`}
     >
       <div className="mt-[4.375rem] text-lg items-center justify-center flex gap-2.5">
         <Aperture />

@@ -22,7 +22,7 @@ const iconColor = {
 function Alert({ item }: { item: OperationObject }) {
   return (
     <div
-      className="mt-2.5 pb-2.5 animate-fade-in flex justify-center p-1.5 rounded-lg"
+      className="w-full p-1.5 pb-2.5 animate-fade-in flex justify-center rounded-lg"
       style={{
         backgroundColor:
           item.status === "pending"
@@ -49,20 +49,20 @@ function Alert({ item }: { item: OperationObject }) {
               : iconColor["error"],
         }}
       >
-        {item.status === "success" ? <Check className="h-5 w-5" /> : null}
-        {item.status === "error" ? <AlertCircle className="h-5 w-5" /> : null}
-        {item.status === "pending" ? (
+        {item.status === "success" && <Check className="h-5 w-5" />}
+        {item.status === "error" && <AlertCircle className="h-5 w-5" />}
+        {item.status === "pending" && (
           <Loader className="h-5 w-5 animate-spin" />
-        ) : null}
+        )}
       </div>
-      <div className="flex flex-col">
+      <div className="flex flex-col w-full">
         <div className="mt-[0.144rem]">
-          {item.operation === "update" ? "Update" : null}
-          {item.operation === "delete" ? "Delete" : null}
-          {item.operation === "create" ? "Create" : null}
-          {item.operation === "fetch" ? "Fetching" : null}
+          {item.operation === "update" && "Update"}
+          {item.operation === "delete" && "Delete"}
+          {item.operation === "create" && "Create"}
+          {item.operation === "fetch" && "Fetching"}
         </div>
-        <div className="w-[15.625rem] mt-2 mb-1 mr-2">{item.message}</div>
+        <div className="w-full mt-2 mb-1 mr-2">{item.message}</div>
       </div>
     </div>
   );

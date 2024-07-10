@@ -54,7 +54,7 @@ function TableNamesCombobox() {
         "pending",
         "fetch",
         "Fetching table names",
-        true
+        false
       );
 
       const startTime = Date.now();
@@ -68,7 +68,8 @@ function TableNamesCombobox() {
         changeOperationStatus(
           tableNamesFetchRef.current,
           "error",
-          "Failed to fetch table names"
+          "Failed to fetch table names",
+          true
         );
         remove(tableNamesFetchRef.current);
 
@@ -92,7 +93,8 @@ function TableNamesCombobox() {
       changeOperationStatus(
         tableNamesFetchRef.current,
         "success",
-        "Successfully fetched table names"
+        "Successfully fetched table names",
+        false
       );
       remove(tableNamesFetchRef.current);
       setTableNames(data.map((item: { name: string }) => item.name));
@@ -109,21 +111,20 @@ function TableNamesCombobox() {
 
   return (
     <div className="p-2.5">
-      {tableNamesFetchStatus === "pending" ? (
+      {tableNamesFetchStatus === "pending" && (
         <div className="space-y-10 flex flex-col">
           <div>
-            <Skeleton className="h-8 w-[2.875rem] mb-1" />
-            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-8 max-w-[2.875rem] mb-1" />
+            <Skeleton className="h-6 max-w-full" />
           </div>
 
           <div className="space-y-2.5 flex flex-col">
-            <Skeleton className="h-6 w-[2.875rem]" />
-            <Skeleton className="h-[2.5rem] w-full" />
+            <Skeleton className="h-6 max-w-[2.875rem]" />
+            <Skeleton className="h-[2.5rem] max-w-full" />
           </div>
         </div>
-      ) : null}
-
-      {tableNamesFetchStatus !== "pending" ? (
+      )}
+      {tableNamesFetchStatus !== "pending" && (
         <div className="space-y-10 flex flex-col">
           <div>
             <h1 className="font-bold text-2xl decoration-slate-100">
@@ -133,7 +134,6 @@ function TableNamesCombobox() {
               Select the name of the table that you want to work with
             </p>
           </div>
-
           <div className="space-y-2.5 flex flex-col">
             <p className="font-bold">Table name</p>
             <Popover open={open} onOpenChange={setOpen}>
@@ -183,7 +183,7 @@ function TableNamesCombobox() {
             </Popover>
           </div>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }

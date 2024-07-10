@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import tableNamesStore from "./stores/tableNamesStore";
-import TableNamesCombobox from "./TableNamesCombobox";
-import operationStore from "@/global-stores/operationStore";
 import { Skeleton } from "@/components/ui/skeleton";
 import DeleteCheckBoxButton from "./DeleteCheckBoxButton";
+import TableNamesCombobox from "./TableNamesCombobox";
+import tableNamesStore from "./stores/tableNamesStore";
+import operationStore from "@/global-stores/operationStore";
 
 function DeleteTable() {
   const { setTableNames, resetTableNamesStore } = tableNamesStore(
@@ -54,7 +54,8 @@ function DeleteTable() {
         changeOperationStatus(
           hashRef.current,
           "error",
-          "Failed to fetch table names"
+          "Failed to fetch table names",
+          true
         );
         remove(hashRef.current);
 
@@ -72,7 +73,8 @@ function DeleteTable() {
       changeOperationStatus(
         hashRef.current,
         "success",
-        "Successfully fetched table names"
+        "Successfully fetched table names",
+        false
       );
       remove(hashRef.current);
       setTableNames(data.map((item: { name: string }) => item.name));
@@ -92,17 +94,17 @@ function DeleteTable() {
       {fetchStatus === "pending" && (
         <div className="w-full border space-y-12 p-5 rounded-md">
           <div className="space-y-1">
-            <Skeleton className="h-8 w-[8.75rem]" />
-            <Skeleton className="h-6 w-[21.188rem]" />
+            <Skeleton className="h-8 max-w-[8.75rem]" />
+            <Skeleton className="h-6 max-w-[21.188rem]" />
           </div>
 
           <div className="space-y-2.5 flex flex-col">
-            <Skeleton className="h-6 w-[5.625rem]" />
-            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-6 max-w-[5.625rem]" />
+            <Skeleton className="h-10 max-w-full" />
           </div>
           <div className="flex flex-col gap-2.5">
-            <Skeleton className="h-4 w-[18.75rem]" />
-            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-4 max-w-[18.75rem]" />
+            <Skeleton className="h-10 max-w-full" />
           </div>
         </div>
       )}

@@ -70,7 +70,8 @@ function Grid() {
         changeOperationStatus(
           userDataFetchRef.current,
           "error",
-          "Failed to fetch user data"
+          "Failed to fetch user data",
+          true
         );
         remove(userDataFetchRef.current);
         setFetchUserDataStatus("error");
@@ -100,7 +101,8 @@ function Grid() {
         changeOperationStatus(
           userDataFetchRef.current,
           "error",
-          "Failed to fetch user data"
+          "Failed to fetch user data",
+          true
         );
         remove(userDataFetchRef.current);
         setFetchUserDataStatus("error");
@@ -125,7 +127,8 @@ function Grid() {
       changeOperationStatus(
         userDataFetchRef.current,
         "success",
-        "Successfully fetched user data"
+        "Successfully fetched user data",
+        false
       );
       remove(userDataFetchRef.current);
 
@@ -165,23 +168,18 @@ function Grid() {
 
   return (
     <>
-      {fetchUserDataStatus === "pending" ? (
+      {fetchUserDataStatus === "pending" && (
         <>
           <div className="p-2.5">
-            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 max-w-full" />
           </div>
-          <div className="flex flex-wrap gap-2 mb-2.5">
-            <div className="p-2.5 flex gap-2 w-[18.75rem]">
-              <Skeleton className="h-10 w-[18.75rem]" />
-            </div>
-            <div className="p-2.5 flex gap-2 w-[18.75rem]">
-              <Skeleton className="h-10 w-[18.75rem]" />
-            </div>
+          <div className="w-full flex flex-wrap gap-2 mb-2.5 p-2.5">
+            <Skeleton className="h-10 w-full max-w-[18.75rem]" />
+            <Skeleton className="h-10 w-full max-w-[18.75rem]" />
           </div>
         </>
-      ) : null}
-
-      {fetchUserDataStatus === "success" ? (
+      )}
+      {fetchUserDataStatus === "success" && (
         <>
           <SelectedKeysCombobox />
           <div className="flex flex-wrap gap-2 mb-2.5">
@@ -189,71 +187,66 @@ function Grid() {
             <SearchFieldCombobox />
           </div>
         </>
-      ) : null}
-
+      )}
       <div className="m-2.5 grid grid-repeat-auto-fill-min-max gap-10">
-        {fetchUserDataStatus === "pending" ? (
+        {fetchUserDataStatus === "pending" && (
           <>
             {Array.from({ length: count }).map((_, index) => (
               <Fragment key={index}>
                 <Skeleton className="h-[16.125rem] bg-white rounded-lg flex flex-col p-2.5 shadow-custom">
                   <Skeleton className="h-[6.25rem] w-[6.563rem] mx-auto rounded-lg bg-slate-200">
-                    <div className="w-full h-full rounded-lg flex justify-center items-center bg-slate-200">
+                    <div className="h-full w-full rounded-lg flex justify-center items-center bg-slate-200">
                       <Image />
                     </div>
                   </Skeleton>
-                  <Skeleton className="w-20 h-5 mt-4" />
-                  <Skeleton className="w-28 h-5 mt-4" />
+                  <Skeleton className="max-w-20 h-5 mt-4" />
+                  <Skeleton className="max-w-28 h-5 mt-4" />
                 </Skeleton>
               </Fragment>
             ))}
           </>
-        ) : null}
-
-        {fetchUserDataStatus === "success"
-          ? userDataFiltered.map((item: { [key: string]: string }) => {
-              return (
-                <ScreenshotDialog key={item[userKeys[0]]}>
-                  <div
-                    className="bg-white rounded-lg flex flex-col cursor-pointer"
-                    onClick={() => {
-                      const key = userKeys[0];
-                      const user = userData.find((u) => u[key] === item[key]);
-                      if (user) {
-                        setSingleUserData(user);
-                      }
-                    }}
-                  >
-                    <div className="w-full bg-slate-200 py-5 rounded-t-lg">
-                      <img
-                        className="h-[6.25rem] w-[6.563rem] mx-auto rounded-lg"
-                        src={`data:image/png;base64,${item.screenshot}`}
-                      />
-                    </div>
-
-                    {selectedKeys.map((key) => {
-                      if (key === "screenshot") return null;
-
-                      return (
-                        <div
-                          key={key}
-                          className="flex flex-col px-1 mt-1.5 mb-0.5"
-                        >
-                          <p className="font-semibold block text-sm cursor-pointer">
-                            {key}
-                          </p>
-                          <p className="text-gray-700 dark:text-gray-300 text-base cursor-pointer">
-                            {item[key]}
-                          </p>
-                          <hr className="my-2" />
-                        </div>
-                      );
-                    })}
+        )}
+        {fetchUserDataStatus === "success" &&
+          userDataFiltered.map((item: { [key: string]: string }) => {
+            return (
+              <ScreenshotDialog key={item[userKeys[0]]}>
+                <div
+                  key={item[userKeys[0]]}
+                  className="bg-white rounded-lg flex flex-col cursor-pointer"
+                  onClick={() => {
+                    const key = userKeys[0];
+                    const user = userData.find((u) => u[key] === item[key]);
+                    if (user) {
+                      setSingleUserData(user);
+                    }
+                  }}
+                >
+                  <div className="w-full bg-slate-200 py-5 rounded-t-lg">
+                    <img
+                      className="h-[6.25rem] w-[6.563rem] mx-auto rounded-lg"
+                      src={`data:image/png;base64,${item.screenshot}`}
+                    />
                   </div>
-                </ScreenshotDialog>
-              );
-            })
-          : null}
+                  {selectedKeys.map((key) => {
+                    return (
+                      <div
+                        key={key}
+                        className="flex flex-col px-1 mt-1.5 mb-0.5"
+                      >
+                        <p className="font-semibold block text-sm cursor-pointer">
+                          {key}
+                        </p>
+                        <p className="text-gray-700 dark:text-gray-300 text-base cursor-pointer">
+                          {item[key]}
+                        </p>
+                        <hr className="my-2" />
+                      </div>
+                    );
+                  })}
+                </div>
+              </ScreenshotDialog>
+            );
+          })}
       </div>
     </>
   );

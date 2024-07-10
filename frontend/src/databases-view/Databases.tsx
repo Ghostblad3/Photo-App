@@ -208,7 +208,8 @@ function Databases() {
         changeOperationStatus(
           fetchersHashRef.current,
           "error",
-          "Failed to fetch the selected table information"
+          "Failed to fetch the selected table information",
+          true
         );
         remove(fetchersHashRef.current);
         setTableInfoFetchStatus("error");
@@ -219,7 +220,8 @@ function Databases() {
       changeOperationStatus(
         fetchersHashRef.current,
         "success",
-        "Successfully fetched the selected table information"
+        "Successfully fetched the selected table information",
+        false
       );
       remove(fetchersHashRef.current);
 
@@ -269,6 +271,7 @@ function Databases() {
   const { refetch: fetchTableRecords } = useQuery({
     queryKey: ["tableRecords", tableName],
     queryFn: async () => {
+      setUserRecordsFetchStatus("pending");
       addOperation(
         userRecordsHashRef.current,
         "pending",
@@ -296,7 +299,8 @@ function Databases() {
         changeOperationStatus(
           userRecordsHashRef.current,
           "error",
-          "Failed to fetch user records"
+          "Failed to fetch user records",
+          true
         );
         remove(userRecordsHashRef.current);
         setUserRecordsFetchStatus("error");
@@ -330,7 +334,8 @@ function Databases() {
         changeOperationStatus(
           userRecordsHashRef.current,
           "error",
-          "Failed to fetch user records"
+          "Failed to fetch user records",
+          true
         );
         remove(userRecordsHashRef.current);
         setUserRecordsFetchStatus("error");
@@ -381,7 +386,8 @@ function Databases() {
       changeOperationStatus(
         userRecordsHashRef.current,
         "success",
-        "Successfully fetched user records"
+        "Successfully fetched user records",
+        false
       );
       remove(userRecordsHashRef.current);
       setUserRecordsFetchStatus("success");
@@ -418,11 +424,11 @@ function Databases() {
     <div className="flex flex-col min-h-full">
       <TableNamesCombobox />
 
-      {tableInfoFetchStatus === "pending" ? (
+      {tableInfoFetchStatus === "pending" && (
         <>
           <div className="my-2 pl-2.5 flex items-center gap-2.5">
-            <Skeleton className="rounded-lg h-6 w-[2.75rem] shadow-lg" />
-            <Skeleton className="h-[0.875rem] w-[9.25rem] shadow-lg" />
+            <Skeleton className="rounded-lg h-6 max-w-[2.75rem] shadow-lg" />
+            <Skeleton className="h-[0.875rem] max-w-[9.25rem] shadow-lg" />
           </div>
           <div className="grid lg:grid-cols-4 gap-5 auto-rows-fr p-2.5">
             <Skeleton className="rounded-lg h-[6.875rem] shadow-lg" />
@@ -431,31 +437,31 @@ function Databases() {
             <Skeleton className="rounded-lg h-[6.875rem] shadow-lg" />
           </div>
         </>
-      ) : null}
+      )}
 
-      {tableInfoFetchStatus === "success" && tableName.length !== 0 ? (
+      {tableInfoFetchStatus === "success" && tableName.length !== 0 && (
         <Cards />
-      ) : null}
+      )}
 
-      {tableInfoFetchStatus === "success" && tableName.length !== 0 ? (
+      {tableInfoFetchStatus === "success" && tableName.length !== 0 && (
         <Button className="m-2" onClick={() => throttledOperation()}>
           Show records
         </Button>
-      ) : null}
+      )}
 
-      {userRecordsFetchStatus === "pending" ? (
-        <div className="h-full mx-2.5">
-          <div className="flex gap-2 mb-2.5 ">
-            <Skeleton className="h-10 w-[12.5rem]" />
-            <Skeleton className="h-10 w-[12.5rem]" />
+      {userRecordsFetchStatus === "pending" && (
+        <div className="h-full m-2.5 flex flex-col max-w-full">
+          <div className="flex flex-wrap gap-2 mb-2.5 max-w-full">
+            <Skeleton className="h-10 w-[18.75rem]" />
+            <Skeleton className="h-10 w-[18.75rem]" />
           </div>
           <Skeleton className="h-[25rem] w-full" />
         </div>
-      ) : null}
+      )}
 
-      {userRecordsFetchStatus === "success" && tableName.length !== 0 ? (
+      {userRecordsFetchStatus === "success" && tableName.length !== 0 && (
         <DataTable />
-      ) : null}
+      )}
     </div>
   );
 }

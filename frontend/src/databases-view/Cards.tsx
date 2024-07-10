@@ -1,13 +1,20 @@
 import { useState } from "react";
 import { Switch } from "../components/ui/switch";
-import { Label } from "@/components/ui/label";
 import Card from "./Card";
 import selectedTableInfoStore from "./stores/selectedTableInfoStore";
 
 function Cards() {
   const [showCards, setShowCards] = useState(true);
-  const { columnNames, userNumber, screenshotNumber, screenshotAverageSize } =
-    selectedTableInfoStore((state) => state.props);
+  const columnNames = selectedTableInfoStore(
+    (state) => state.props.columnNames
+  );
+  const userNumber = selectedTableInfoStore((state) => state.props.userNumber);
+  const screenshotNumber = selectedTableInfoStore(
+    (state) => state.props.screenshotNumber
+  );
+  const screenshotAverageSize = selectedTableInfoStore(
+    (state) => state.props.screenshotAverageSize
+  );
 
   return (
     <>
@@ -16,11 +23,11 @@ function Cards() {
           id="airplane-mode"
           onCheckedChange={() => setShowCards((prev) => !prev)}
         />
-        <Label className="font-semibold">Show table information</Label>
+        <p className="font-semibold">Show table information</p>
       </div>
-      {showCards ? (
+      {showCards && (
         <div className="grid lg:grid-cols-4 gap-5 auto-rows-fr p-2.5">
-          {columnNames.length !== 0 ? (
+          {columnNames.length !== 0 && (
             <>
               <Card>
                 <span className="text-center text-xl mb-5">
@@ -50,9 +57,9 @@ function Cards() {
                 </p>
               </Card>
             </>
-          ) : null}
+          )}
         </div>
-      ) : null}
+      )}
     </>
   );
 }

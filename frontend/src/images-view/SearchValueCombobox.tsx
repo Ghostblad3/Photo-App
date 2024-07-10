@@ -38,9 +38,8 @@ function SearchValueCombobox() {
   }, []);
 
   useEffect(() => {
-    setUserDataFiltered(userData);
-
     if (searchField === "") {
+      setUserDataFiltered(userData);
       setValues([]);
 
       return;
@@ -59,7 +58,7 @@ function SearchValueCombobox() {
     );
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchField, userData]);
+  }, [searchField]);
 
   useEffect(() => {
     if (searchValue === "") {
@@ -72,10 +71,10 @@ function SearchValueCombobox() {
     );
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchValue, userData, searchField]);
+  }, [searchValue]);
 
   return (
-    <div className="p-2.5 flex gap-2 w-[18.75rem]">
+    <div className="p-2.5 flex w-full max-w-[18.75rem]">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button

@@ -100,7 +100,8 @@ const UpdateUserDialog = memo(() => {
         changeOperationStatus(
           hashRef.current,
           "error",
-          "Failed to update user information"
+          "Failed to update user information",
+          true
         );
         remove(hashRef.current);
 
@@ -110,7 +111,8 @@ const UpdateUserDialog = memo(() => {
       changeOperationStatus(
         hashRef.current,
         "success",
-        "Successfully updated user information"
+        "Successfully updated user information",
+        true
       );
       remove(hashRef.current);
       updateUser(userId, userToUpdateRef.current);
@@ -173,18 +175,17 @@ const UpdateUserDialog = memo(() => {
                 }}
               />
               {(fieldsModified[key] && userRef.current[key].length === 0) ||
-              userRef.current[key].length > 50 ? (
-                <div className="flex items-center mt-2">
-                  <CircleX className="text-red-500 mr-1 h-5 w-5" />
-                  <Label className="text-red-500">
-                    Field must be between 1 and 50 characters
-                  </Label>
-                </div>
-              ) : null}
+                (userRef.current[key].length > 50 && (
+                  <div className="flex items-center mt-2">
+                    <CircleX className="text-red-500 mr-1 h-5 w-5" />
+                    <Label className="text-red-500">
+                      Field must be between 1 and 50 characters
+                    </Label>
+                  </div>
+                ))}
             </div>
           );
         })}
-
         <Button
           className="w-[calc(100%_-_2rem)] mx-4"
           onClick={updateUserButtonHandler}

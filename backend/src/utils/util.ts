@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 
-async function getFilesInDirectorySync(directoryPath: string) {
+async function getAverageScreenshotSizeInDirectory(directoryPath: string) {
   try {
     // Get list of files and directories in the directory
     const entries = await fs.readdir(directoryPath);
@@ -18,7 +18,7 @@ async function getFilesInDirectorySync(directoryPath: string) {
 
     const result = await Promise.all(filesSizes);
 
-    return result.reduce((x, y) => x + y);
+    return result.reduce((x, y) => x + y) / entries.length;
   } catch (error) {
     return null;
   }
@@ -94,4 +94,8 @@ async function errorLogger(
   );
 }
 
-export { getFilesInDirectorySync, getErrorCodeAndMessage, errorLogger };
+export {
+  getAverageScreenshotSizeInDirectory,
+  getErrorCodeAndMessage,
+  errorLogger,
+};

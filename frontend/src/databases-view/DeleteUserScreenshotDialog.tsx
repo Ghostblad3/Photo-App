@@ -78,7 +78,8 @@ const DeleteUserScreenshotDialog = memo(() => {
         changeOperationStatus(
           hashRef.current,
           "error",
-          "Failed to delete user screenshot"
+          "Failed to delete user screenshot",
+          true
         );
         remove(hashRef.current);
 
@@ -88,7 +89,8 @@ const DeleteUserScreenshotDialog = memo(() => {
       changeOperationStatus(
         hashRef.current,
         "success",
-        "Successfully deleted user screenshot"
+        "Successfully deleted user screenshot",
+        true
       );
       remove(hashRef.current);
       deleteUserScreenshot(userIdName, userId);

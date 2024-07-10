@@ -23,12 +23,16 @@ function SearchValueCombobox() {
   const searchValue = searchStore((state) => state.props.searchValue);
   const setSearchValue = searchStore((state) => state.actions.setSearchValue);
   const userData = userDataStore((state) => state.props.userData);
+  const setFilteredUserData = userDataStore(
+    (state) => state.actions.setFilteredUserData
+  );
 
   const [open, setOpen] = useState(false);
   const [values, setValues] = useState<{ value: string; label: string }[]>([]);
 
   useEffect(() => {
     if (searchField === "") {
+      setFilteredUserData(userData);
       setValues([]);
       return;
     }
@@ -44,10 +48,24 @@ function SearchValueCombobox() {
         return { value: key.toLowerCase(), label: key };
       })
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchField, userData]);
 
+  useEffect(() => {
+    if (searchValue !== "") {
+      setFilteredUserData(
+        userData.filter((user) => user[searchField] === searchValue)
+      );
+
+      return;
+    }
+
+    setFilteredUserData(userData);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchValue, userData]);
+
   return (
-    <div className="p-2.5 flex gap-2 w-[18.75rem]">
+    <div className="w-[18.75rem]">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button

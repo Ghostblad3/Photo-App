@@ -31,7 +31,6 @@ function TableNamesCombobox() {
         <h1 className="font-bold text-2xl decoration-slate-100">
           Delete Table
         </h1>
-
         <p className="text-slate-500">
           Select the name of the table you want to delete.
         </p>

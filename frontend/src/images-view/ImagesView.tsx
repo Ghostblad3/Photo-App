@@ -7,7 +7,7 @@ function ImagesView() {
   return (
     <>
       <TableNamesCombobox />
-      {tableName !== "" ? <Grid /> : null}
+      {tableName !== "" && <Grid />}
     </>
   );
 }

@@ -15,17 +15,15 @@ import {
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Label } from "@/components/ui/label";
-import useAvailableKeysStore from "./stores/availableKeysStore";
+import availableKeysStore from "./stores/availableKeysStore";
 
 function SelectedKeysCombobox() {
-  const selectedKeys = useAvailableKeysStore(
-    (state) => state.props.selectedKeys
-  );
-  const availableKeys = useAvailableKeysStore(
+  const selectedKeys = availableKeysStore((state) => state.props.selectedKeys);
+  const availableKeys = availableKeysStore(
     (state) => state.props.availableKeys
   );
   const { setAvailableKeys, setSelectedKeys, resetAvailableKeysStore } =
-    useAvailableKeysStore((state) => state.actions);
+    availableKeysStore((state) => state.actions);
 
   const [open, setOpen] = useState(false);
   const [values, setValues] = useState<{ value: string; label: string }[]>([]);
@@ -38,22 +36,33 @@ function SelectedKeysCombobox() {
   }, []);
 
   useEffect(() => {
-    setValues(
-      [...new Set(availableKeys)].map((key) => {
-        return { value: key.toLocaleLowerCase(), label: key };
-      })
-    );
+    const newValues = [...new Set(availableKeys)].map((key) => {
+      return { value: key.toLocaleLowerCase(), label: key };
+    });
+
+    const temp = [...selectedKeys];
+    temp.sort((a, b) => {
+      return (
+        newValues.findIndex((item) => item.label === a) -
+        newValues.findIndex((item) => item.label === b)
+      );
+    });
+
+    setSelectedKeys(temp);
+
+    setValues(newValues);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [availableKeys]);
 
   return (
-    <div className="p-2.5">
+    <div className="p-2.5 flex flex-col">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-[100%] justify-between"
+            className="max-w-[100%] justify-between"
           >
             {"Select fields..."}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -83,7 +92,17 @@ function SelectedKeysCombobox() {
                           return;
                         }
 
-                        setSelectedKeys([...selectedKeys, item.label]);
+                        const selectedKeysOrdered = [
+                          ...selectedKeys,
+                          item.label,
+                        ].sort((a, b) => {
+                          return (
+                            values.findIndex((item) => item.label === a) -
+                            values.findIndex((item) => item.label === b)
+                          );
+                        });
+
+                        setSelectedKeys(selectedKeysOrdered);
                       }}
                     >
                       <Check
@@ -111,9 +130,6 @@ function SelectedKeysCombobox() {
                           newKeys[index] = otherKey;
 
                           setAvailableKeys(newKeys);
-                          setSelectedKeys(
-                            newKeys.filter((key) => selectedKeys.includes(key))
-                          );
                         }}
                       />
                       <ArrowDown
@@ -130,9 +146,6 @@ function SelectedKeysCombobox() {
                           newKeys[index] = otherKey;
 
                           setAvailableKeys(newKeys);
-                          setSelectedKeys(
-                            newKeys.filter((key) => selectedKeys.includes(key))
-                          );
                         }}
                       />
                     </div>
@@ -143,8 +156,7 @@ function SelectedKeysCombobox() {
           </Command>
         </PopoverContent>
       </Popover>
-
-      {selectedKeys.length !== 0 ? (
+      {selectedKeys.length !== 0 && (
         <div className="flex flex-wrap gap-2 mt-5">
           {selectedKeys.map((key) => (
             <div
@@ -163,7 +175,7 @@ function SelectedKeysCombobox() {
             </div>
           ))}
         </div>
-      ) : null}
+      )}
     </div>
   );
 }

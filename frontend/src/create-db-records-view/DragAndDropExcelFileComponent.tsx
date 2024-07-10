@@ -160,7 +160,8 @@ function DragAndDropExcelFileComponent() {
         changeOperationStatus(
           hashRef.current,
           "error",
-          "Failed to create users due to parse error in the excel file"
+          "Failed to create users due to parse error in the excel file",
+          true
         );
         remove(hashRef.current);
 
@@ -170,7 +171,8 @@ function DragAndDropExcelFileComponent() {
       changeOperationStatus(
         hashRef.current,
         "success",
-        "Successfully created users from the excel file"
+        "Successfully created users from the excel file",
+        true
       );
       remove(hashRef.current);
 

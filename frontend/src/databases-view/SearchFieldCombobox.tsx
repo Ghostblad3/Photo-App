@@ -33,7 +33,7 @@ function SearchFieldCombobox() {
   );
 
   return (
-    <div className="p-2.5 w-[18.75rem]">
+    <div className="w-[18.75rem]">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button

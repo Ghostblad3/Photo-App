@@ -71,13 +71,15 @@ function CreateTable() {
           changeOperationStatus(
             tableHashRef.current,
             "error",
-            "Failed to create table, because table already exists"
+            "Failed to create table, because table already exists",
+            true
           );
         } else {
           changeOperationStatus(
             tableHashRef.current,
             "error",
-            "Failed to create table"
+            "Failed to create table",
+            true
           );
         }
 
@@ -95,7 +97,8 @@ function CreateTable() {
       changeOperationStatus(
         tableHashRef.current,
         "success",
-        "Successfully created table"
+        "Successfully created table",
+        true
       );
       remove(tableHashRef.current);
 
@@ -130,7 +133,8 @@ function CreateTable() {
         changeOperationStatus(
           usersHashRef.current,
           "error",
-          "Failed to add users to the table"
+          "Failed to add users to the table",
+          true
         );
         setCreateTable(false);
         setCreateStatus("nonpending");
@@ -142,7 +146,8 @@ function CreateTable() {
       changeOperationStatus(
         usersHashRef.current,
         "success",
-        "Successfully added users to the table"
+        "Successfully added users to the table",
+        true
       );
       remove(usersHashRef.current);
 

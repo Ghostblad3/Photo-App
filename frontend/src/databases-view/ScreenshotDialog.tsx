@@ -26,15 +26,8 @@ const ScreenshotDialog = memo(() => {
 
   const hashRef = useRef(crypto.randomUUID());
   const [userScreenshotFetchStatus, setUserScreenshotFetchStatus] = useState<
-    "pending" | "success" | "error"
+    "pending" | "success"
   >("pending");
-
-  useEffect(() => {
-    if (userScreenshotFetchStatus === "error") {
-      setShowDialog(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userScreenshotFetchStatus]);
 
   useEffect(() => {
     return () => {
@@ -81,12 +74,12 @@ const ScreenshotDialog = memo(() => {
         changeOperationStatus(
           hashRef.current,
           "error",
-          "Failed to fetch user screenshot"
+          "Failed to fetch user screenshot",
+          true
         );
         remove(hashRef.current);
-        setUserScreenshotFetchStatus("error");
+        setShowDialog(false);
 
-        resetScreenshotAsBase64Store();
         return {};
       }
 
@@ -101,7 +94,8 @@ const ScreenshotDialog = memo(() => {
       changeOperationStatus(
         hashRef.current,
         "success",
-        "Successfully fetched user screenshot"
+        "Successfully fetched user screenshot",
+        false
       );
       remove(hashRef.current);
       setUserScreenshotFetchStatus("success");
@@ -130,7 +124,7 @@ const ScreenshotDialog = memo(() => {
         <>
           {userScreenshotFetchStatus === "pending" ? (
             <div className="bg-slate-100 p-4">
-              <Skeleton className="h-[6.25rem] w-[6.563rem] mx-auto rounded-lg bg-slate-200 shadow-custom">
+              <Skeleton className="h-[6.25rem] max-w-[6.563rem] mx-auto rounded-lg bg-slate-200 shadow-custom">
                 <div className="w-full h-full flex justify-center items-center bg-slate-200">
                   <Image />
                 </div>
@@ -144,7 +138,6 @@ const ScreenshotDialog = memo(() => {
               />
             </div>
           )}
-
           {Object.keys(userInfo).map((key) => (
             <div key={key} className="mx-4">
               <p className="font-semibold block text-sm">{key}</p>

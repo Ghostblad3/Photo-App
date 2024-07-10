@@ -103,7 +103,8 @@ const AddNewUserDialog = memo(() => {
         changeOperationStatus(
           hashRef.current,
           "error",
-          "Failed to create a new user"
+          "Failed to create a new user",
+          true
         );
         remove(hashRef.current);
 
@@ -113,7 +114,8 @@ const AddNewUserDialog = memo(() => {
       changeOperationStatus(
         hashRef.current,
         "success",
-        "Successfully created a new user"
+        "Successfully created a new user",
+        true
       );
       remove(hashRef.current);
 
@@ -149,7 +151,6 @@ const AddNewUserDialog = memo(() => {
         <DialogHeader>
           <DialogTitle>Add new user</DialogTitle>
         </DialogHeader>
-
         {keysRef.current.map((key) => {
           return (
             <div key={key} className="mx-4">
@@ -168,18 +169,17 @@ const AddNewUserDialog = memo(() => {
                 }}
               />
               {(fieldsModified[key] && userRef.current[key].length === 0) ||
-              userRef.current[key].length > 50 ? (
-                <div className="flex items-center mt-2">
-                  <CircleX className="text-red-500 mr-1 h-5 w-5" />
-                  <Label className="text-red-500">
-                    Field must be between 1 and 50 characters
-                  </Label>
-                </div>
-              ) : null}
+                (userRef.current[key].length > 50 && (
+                  <div className="flex items-center mt-2">
+                    <CircleX className="text-red-500 mr-1 h-5 w-5" />
+                    <Label className="text-red-500">
+                      Field must be between 1 and 50 characters
+                    </Label>
+                  </div>
+                ))}
             </div>
           );
         })}
-
         <Button
           className="w-[calc(100%_-_2rem)] mx-4"
           disabled={buttonIsDisabled}

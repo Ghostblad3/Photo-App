@@ -7,7 +7,6 @@ import {
   SortingState,
   getSortedRowModel,
   Row,
-  ColumnFiltersState,
   getFilteredRowModel,
 } from "@tanstack/react-table";
 import { useVirtualizer, notUndefined } from "@tanstack/react-virtual";
@@ -21,71 +20,46 @@ import {
 import { ImageOff, ImagePlus, PenLine, UserPlus, UserX } from "lucide-react";
 import SearchValueCombobox from "./SearchValueCombobox";
 import SearchFieldCombobox from "./SearchFieldCombobox";
-import AddNewScreenshotDialog from "./AddNewScreenshotDialog";
-import DeleteUserScreenshotDialog from "./DeleteUserScreenshotDialog";
-import UpdateUserDialog from "./UpdateUserDialog";
+import Dialogs from "./Dialogs";
 import userDataStore from "./stores/userDataStore";
-import searchStore from "./stores/searchStore";
 import screenshotAsBase64Store from "./stores/screenshotAsBase64Store";
 import selectedTableInfoStore from "./stores/selectedTableInfoStore";
 import addNewUserStore from "./stores/addNewUserStore";
-import ScreenshotDialog from "./ScreenshotDialog";
-import AddNewUserDialog from "./AddNewUserDialog";
 import deleteUserScreenshotStore from "./stores/deleteUserScreenshotStore";
 import updateUserInfoStore from "./stores/updateUserInfoStore";
 import addNewScreenshotStore from "./stores/addNewScreenshotStore";
 import deleteUserStore from "./stores/deleteUserStore";
-import DeleteUserDialog from "./DeleteUserDialog";
 
 export function DataTable<TData, TValue>() {
-  const userData = userDataStore((state) => state.props.userData);
-  const { resetUserData } = userDataStore((state) => state.actions);
-  const searchField = searchStore((state) => state.props.searchField);
-  const searchValue = searchStore((state) => state.props.searchValue);
-  const setSearchValue = searchStore((state) => state.actions.setSearchValue);
-  const screenshowAsBase64ShowDialog = screenshotAsBase64Store(
-    (state) => state.props.showDialog
+  const filteredUserData = userDataStore(
+    (state) => state.props.filteredUserData
   );
+  const { resetUserData } = userDataStore((state) => state.actions);
   const {
     setShowDialog: setScreenshowAsBase64ShowDialog,
     setUserInfo: setScreenshowAsBase64UserInfo,
     setTableName: setScreenshowAsBase64TableName,
     setKeyName: setScreenshotAsBase64KeyName,
   } = screenshotAsBase64Store((state) => state.actions);
-  const addNewScreenshotShowDialog = addNewScreenshotStore(
-    (state) => state.props.showDialog
-  );
   const { setTableName, setUserIdName, setUserId, setShowDialog } =
     addNewScreenshotStore((state) => state.actions);
   const tableName = selectedTableInfoStore((state) => state.props.tableName);
-  const addNewUserShowDialog = addNewUserStore(
-    (state) => state.props.showDialog
-  );
   const {
     setShowDialog: setAddNewUserShowDialog,
     setTableName: setAddNewUserTableName,
   } = addNewUserStore((state) => state.actions);
-  const deleteUserScreenshotShowDialog = deleteUserScreenshotStore(
-    (state) => state.props.showDialog
-  );
   const {
     setShowDialog: setDeleteUserScreenshotShowDialog,
     setUserId: setDeleteUserScreenshotUserId,
     setUserIdName: setDeleteUserScreenshotUserIdName,
     setTableName: setDeleteUserScreenshotTableName,
   } = deleteUserScreenshotStore((state) => state.actions);
-  const updateUserInfoShowDialog = updateUserInfoStore(
-    (state) => state.props.showDialog
-  );
   const {
     setShowDialog: setUpdateUserInfoShowDialog,
     setTableName: setUpdateUserInfoTableName,
     setUserId: setUpdateUserInfoUserId,
     setUserIndex: setUpdateUserInfoUserIndex,
   } = updateUserInfoStore((state) => state.actions);
-  const deleteUserShowDialog = deleteUserStore(
-    (state) => state.props.showDialog
-  );
   const { setProps } = deleteUserStore((state) => state.actions);
 
   useEffect(() => {
@@ -95,41 +69,17 @@ export function DataTable<TData, TValue>() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    if (searchField === "") {
-      setSearchValue("");
-      table.resetColumnFilters(true);
-      return;
-    }
-
-    table.getColumn(searchField)?.setFilterValue(searchValue);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchField]);
-
-  useEffect(() => {
-    if (searchField === "" || searchValue === "") {
-      table.resetColumnFilters(true);
-      return;
-    }
-
-    table.getColumn(searchField)?.setFilterValue(searchValue);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchValue]);
-
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   const table = useReactTable({
-    data: userData as TData[],
-    columns: columns(userData) as ColumnDef<TData, TValue>[],
+    data: filteredUserData as TData[],
+    columns: columns(filteredUserData) as ColumnDef<TData, TValue>[],
     getCoreRowModel: getCoreRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
-    onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
     state: {
       sorting,
-      columnFilters,
     },
   });
   const { rows } = table.getRowModel();
@@ -149,22 +99,15 @@ export function DataTable<TData, TValue>() {
             notUndefined(items[items.length - 1]).end,
         ]
       : [0, 0];
-  const colSpan = 4;
+  const colSpan = Object.keys(filteredUserData[0]).length;
 
   return (
     <div className="h-full">
-      <div className="flex flex-wrap gap-2 mb-2.5">
+      <div className="flex flex-wrap gap-2 m-2.5">
         <SearchValueCombobox />
         <SearchFieldCombobox />
       </div>
-
-      {addNewScreenshotShowDialog && <AddNewScreenshotDialog />}
-      {updateUserInfoShowDialog && <UpdateUserDialog />}
-      {deleteUserScreenshotShowDialog && <DeleteUserScreenshotDialog />}
-      {deleteUserShowDialog && <DeleteUserDialog />}
-      {addNewUserShowDialog && <AddNewUserDialog />}
-      {screenshowAsBase64ShowDialog && <ScreenshotDialog />}
-
+      <Dialogs />
       <div ref={parentRef} className="px-2.5 w-full overflow-auto h-[25rem]">
         <table className="w-full">
           <thead>
@@ -228,7 +171,7 @@ export function DataTable<TData, TValue>() {
                             .getHeaderGroups()[0]
                             .headers.map((header) => header.id);
 
-                          const user = userData[
+                          const user = filteredUserData[
                             row.id as unknown as number
                           ] as {
                             [key: string]: string;
@@ -269,7 +212,9 @@ export function DataTable<TData, TValue>() {
                                 setUserIdName(firstKey);
                                 setUserId(
                                   (
-                                    userData[row.id as unknown as number] as {
+                                    filteredUserData[
+                                      row.id as unknown as number
+                                    ] as {
                                       [key: string]: string;
                                     }
                                   )[firstKey]
@@ -305,7 +250,9 @@ export function DataTable<TData, TValue>() {
                                 setUpdateUserInfoTableName(tableName);
                                 setUpdateUserInfoUserId(
                                   (
-                                    userData[row.id as unknown as number] as {
+                                    filteredUserData[
+                                      row.id as unknown as number
+                                    ] as {
                                       [key: string]: string;
                                     }
                                   )[firstKey]
@@ -323,7 +270,9 @@ export function DataTable<TData, TValue>() {
                               inset
                               disabled={
                                 (
-                                  userData[row.id as unknown as number] as {
+                                  filteredUserData[
+                                    row.id as unknown as number
+                                  ] as {
                                     [key: string]: string;
                                   }
                                 )["has_screenshot"] === "no"
@@ -337,7 +286,9 @@ export function DataTable<TData, TValue>() {
 
                                 setDeleteUserScreenshotUserId(
                                   (
-                                    userData[row.id as unknown as number] as {
+                                    filteredUserData[
+                                      row.id as unknown as number
+                                    ] as {
                                       [key: string]: string;
                                     }
                                   )[firstKey]
@@ -362,7 +313,9 @@ export function DataTable<TData, TValue>() {
                                 const [firstKey] = keys;
 
                                 const userId = (
-                                  userData[row.id as unknown as number] as {
+                                  filteredUserData[
+                                    row.id as unknown as number
+                                  ] as {
                                     [key: string]: string;
                                   }
                                 )[firstKey];

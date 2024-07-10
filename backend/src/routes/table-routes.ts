@@ -3,7 +3,7 @@ import { z } from "zod";
 import fs from "fs/promises";
 import schemaValidator from "../middleware/validator-middleware";
 import sqlite from "../database/connection";
-import { getFilesInDirectorySync } from "../utils/util";
+import { getAverageScreenshotSizeInDirectory } from "../utils/util";
 import { tableNameType, columnNamesType } from "../zod/zod-types";
 
 const tableRouter = express.Router();
@@ -234,18 +234,20 @@ tableRouter.get(
       return next(new Error("table not found"));
     }
 
-    let bytes: number | null = null;
+    let averageBytes: number | null = null;
 
     try {
       await fs.access(`./screenshots/${tableName}`);
-      bytes = await getFilesInDirectorySync(`./screenshots/${tableName}`);
+      averageBytes = await getAverageScreenshotSizeInDirectory(
+        `./screenshots/${tableName}`
+      );
     } catch (e) {
       return next(new Error((e as Error).toString()));
     }
 
     return res.status(200).send({
       status: "success",
-      data: bytes ? bytes : 0,
+      data: averageBytes ? averageBytes : 0,
       error: { message: "" },
     });
   }

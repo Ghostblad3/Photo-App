@@ -3,6 +3,7 @@ import { create } from "zustand";
 interface UserDataProps {
   props: {
     userData: { [key: string]: string }[];
+    filteredUserData: { [key: string]: string }[];
     userKeys: string[];
   };
 }
@@ -11,6 +12,9 @@ interface UserDataActions {
   actions: {
     setUserData: (userData: { [key: string]: string }[]) => void;
     setUserKeys: (userKeys: string[]) => void;
+    setFilteredUserData: (
+      filteredUserData: { [key: string]: string }[]
+    ) => void;
     addUser: (user: { [key: string]: string }) => void;
     updateUser: (oldUserId: string, user: { [key: string]: string }) => void;
     deleteUser: (key: string, id: string) => void;
@@ -19,19 +23,25 @@ interface UserDataActions {
   };
 }
 
-const initProps: { userData: { [key: string]: string }[]; userKeys: string[] } =
-  {
-    userData: [],
-    userKeys: [],
-  };
+const initProps: {
+  userData: { [key: string]: string }[];
+  filteredUserData: { [key: string]: string }[];
+  userKeys: string[];
+} = {
+  userData: [],
+  filteredUserData: [],
+  userKeys: [],
+};
 
 const userDataStore = create<UserDataProps & UserDataActions>((set) => ({
   props: initProps,
   actions: {
-    userData: [],
-    userKeys: [],
     setUserData: (userData: { [key: string]: string }[]) =>
-      set((state) => ({ props: { ...state.props, userData } })),
+      set((state) => ({
+        props: { ...state.props, userData, filteredUserData: userData },
+      })),
+    setFilteredUserData: (filteredUserData: { [key: string]: string }[]) =>
+      set((state) => ({ props: { ...state.props, filteredUserData } })),
     setUserKeys: (userKeys: string[]) =>
       set((state) => ({ props: { ...state.props, userKeys } })),
     addUser: (user: { [key: string]: string }) =>

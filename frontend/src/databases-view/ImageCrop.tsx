@@ -199,7 +199,8 @@ function ImageCrop() {
         changeOperationStatus(
           hashRef.current,
           "error",
-          "Failed to create a new screenshot"
+          "Failed to create a new screenshot",
+          true
         );
         remove(hashRef.current);
         setShowDialog(false);
@@ -246,7 +247,8 @@ function ImageCrop() {
       changeOperationStatus(
         hashRef.current,
         "success",
-        "Successfully created a new screenshot"
+        "Successfully created a new screenshot",
+        true
       );
       remove(hashRef.current);
       setUploadStatus("success");

@@ -57,7 +57,8 @@ function DeleteCheckBoxButton() {
         changeOperationStatus(
           hashRef.current,
           "error",
-          "Failed to delete table"
+          "Failed to delete table",
+          true
         );
         remove(hashRef.current);
         setDeleteStatus("nopending");
@@ -70,7 +71,8 @@ function DeleteCheckBoxButton() {
       changeOperationStatus(
         hashRef.current,
         "success",
-        "Successfully deleted table"
+        "Successfully deleted table",
+        true
       );
       remove(hashRef.current);
       setDeleteStatus("nopending");

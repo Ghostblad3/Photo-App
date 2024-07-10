@@ -67,7 +67,8 @@ const AddNewUserDialog = () => {
         changeOperationStatus(
           hashRef.current,
           "error",
-          "Failed to delete user"
+          "Failed to delete user",
+          true
         );
         remove(hashRef.current);
 
@@ -79,7 +80,8 @@ const AddNewUserDialog = () => {
       changeOperationStatus(
         hashRef.current,
         "success",
-        "Successfully deleted user"
+        "Successfully deleted user",
+        true
       );
       remove(hashRef.current);
 

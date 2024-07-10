@@ -29,7 +29,8 @@ interface OperationStoreActions {
     changeOperationStatus: (
       hash: string,
       status: Status,
-      message: string
+      message: string,
+      show: boolean
     ) => void;
     removeOperation: (hash: string) => void;
     resetOperationStore: () => void;
@@ -62,7 +63,7 @@ const operationStore = create<OperationStoreProps & OperationStoreActions>(
           },
         }));
       },
-      changeOperationStatus(hash, status, message) {
+      changeOperationStatus(hash, status, message, show) {
         set((state) => ({
           props: {
             operations: state.props.operations.map((item) => {
@@ -80,7 +81,8 @@ const operationStore = create<OperationStoreProps & OperationStoreActions>(
               ? state.props.showQueue.map((item) =>
                   item.hash === hash ? { ...item, status, message } : item
                 )
-              : [
+              : show
+              ? [
                   ...state.props.showQueue,
                   {
                     hash,
@@ -90,7 +92,8 @@ const operationStore = create<OperationStoreProps & OperationStoreActions>(
                     )!.operation,
                     message,
                   },
-                ],
+                ]
+              : state.props.showQueue,
           },
         }));
       },
