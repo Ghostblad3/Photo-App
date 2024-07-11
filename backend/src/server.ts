@@ -12,7 +12,7 @@ dotenv.config();
 const app: Express = express();
 
 app.use(express.json());
-app.use(cors({ origin: "http://localhost:5173", optionsSuccessStatus: 200 }));
+app.use(cors());
 app.use("/table", tableRouter);
 app.use("/screenshot", screenshotRouter);
 app.use("/record", recordRouter);
