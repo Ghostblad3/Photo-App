@@ -5,7 +5,7 @@ function Alerts() {
   const showQueue = operationStore((state) => state.props.showQueue);
 
   return (
-    <div className="fixed bottom-4 ml-5 right-5 z-50 w-[calc(100%-2.50rem)] md:w-[15.625rem]">
+    <div className="fixed bottom-4 ml-5 right-10 z-50 w-[calc(100%-3.25rem)] md:w-80">
       {showQueue.map((item) => (
         <div key={item.hash}>
           <Alert item={item} />

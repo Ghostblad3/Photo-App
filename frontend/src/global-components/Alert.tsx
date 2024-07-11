@@ -22,7 +22,7 @@ const iconColor = {
 function Alert({ item }: { item: OperationObject }) {
   return (
     <div
-      className="w-full p-1.5 pb-2.5 animate-fade-in flex justify-center rounded-lg"
+      className="w-full m-2.5 p-1.5 pb-2.5 animate-fade-in flex justify-center rounded-lg"
       style={{
         backgroundColor:
           item.status === "pending"

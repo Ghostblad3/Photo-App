@@ -174,8 +174,8 @@ function Grid() {
             <Skeleton className="h-10 max-w-full" />
           </div>
           <div className="w-full flex flex-wrap gap-2 mb-2.5 p-2.5">
-            <Skeleton className="h-10 w-full max-w-[18.75rem]" />
-            <Skeleton className="h-10 w-full max-w-[18.75rem]" />
+            <Skeleton className="h-10 w-full max-w-[17.5rem]" />
+            <Skeleton className="h-10 w-full max-w-[17.5rem] ml-5" />
           </div>
         </>
       )}
