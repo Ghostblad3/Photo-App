@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import addNewScreenshotStore from "./stores/addNewScreenshotStore";
 
-function DragAndDropPngComponent() {
+function DragAndDropPng() {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const setScreenshotAsBase64 = addNewScreenshotStore(
@@ -66,4 +66,4 @@ function DragAndDropPngComponent() {
   );
 }
 
-export default DragAndDropPngComponent;
+export default DragAndDropPng;

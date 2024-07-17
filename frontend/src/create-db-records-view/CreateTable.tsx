@@ -17,8 +17,6 @@ function CreateTable() {
   const setAllowRight = navitationStore((state) => state.actions.setAllowRight);
 
   const inputRef = useRef("");
-  const tableHashRef = useRef(crypto.randomUUID());
-  const usersHashRef = useRef(crypto.randomUUID());
   const [inputErrors, setInputErrors] = useState<{
     typeOne: boolean;
     typeTwo: boolean;
@@ -37,8 +35,11 @@ function CreateTable() {
     queryKey: ["create-table", inputRef.current],
     queryFn: async () => {
       setCreateStatus("pending");
+
+      const tableHash = crypto.randomUUID();
+
       addOperation(
-        tableHashRef.current,
+        tableHash,
         "pending",
         "create",
         "Creating a new user table",
@@ -69,14 +70,14 @@ function CreateTable() {
 
         if (response.status === 409) {
           changeOperationStatus(
-            tableHashRef.current,
+            tableHash,
             "error",
             "Failed to create table, because table already exists",
             true
           );
         } else {
           changeOperationStatus(
-            tableHashRef.current,
+            tableHash,
             "error",
             "Failed to create table",
             true
@@ -85,7 +86,7 @@ function CreateTable() {
 
         setCreateTable(false);
         setCreateStatus("nonpending");
-        remove(tableHashRef.current);
+        remove(tableHash);
 
         return {};
       }
@@ -95,15 +96,17 @@ function CreateTable() {
       }
 
       changeOperationStatus(
-        tableHashRef.current,
+        tableHash,
         "success",
         "Successfully created table",
         true
       );
-      remove(tableHashRef.current);
+      remove(tableHash);
+
+      const usersHash = crypto.randomUUID();
 
       addOperation(
-        usersHashRef.current,
+        usersHash,
         "pending",
         "create",
         "Creating new users in the table",
@@ -131,25 +134,25 @@ function CreateTable() {
 
       if (!response.ok) {
         changeOperationStatus(
-          usersHashRef.current,
+          usersHash,
           "error",
           "Failed to add users to the table",
           true
         );
         setCreateTable(false);
         setCreateStatus("nonpending");
-        remove(usersHashRef.current);
+        remove(usersHash);
 
         return {};
       }
 
       changeOperationStatus(
-        usersHashRef.current,
+        usersHash,
         "success",
         "Successfully added users to the table",
         true
       );
-      remove(usersHashRef.current);
+      remove(usersHash);
 
       resetDataStore();
       resetNagivationStore();

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "./VirtualizedNew";
@@ -28,9 +28,6 @@ function Databases() {
   const { addOperation, changeOperationStatus, removeOperation } =
     operationStore((state) => state.actions);
 
-  const fetchersHashRef = useRef(crypto.randomUUID());
-  const userRecordsHashRef = useRef(crypto.randomUUID());
-
   const [tableInfoFetchStatus, setTableInfoFetchStatus] = useState<
     "nop" | "pending" | "success" | "error"
   >("nop");
@@ -56,15 +53,17 @@ function Databases() {
   useQuery({
     queryKey: ["table-info", tableName],
     queryFn: async () => {
+      setTableInfoFetchStatus("pending");
+
+      const hash = crypto.randomUUID();
+
       addOperation(
-        fetchersHashRef.current,
+        hash,
         "pending",
         "fetch",
         "Fetching the selected table information.",
         false
       );
-
-      setTableInfoFetchStatus("pending");
 
       const startTime = Date.now();
 
@@ -206,24 +205,24 @@ function Databases() {
         averageScreenshotSizeResult.status === "error"
       ) {
         changeOperationStatus(
-          fetchersHashRef.current,
+          hash,
           "error",
           "Failed to fetch the selected table information",
           true
         );
-        remove(fetchersHashRef.current);
+        remove(hash);
         setTableInfoFetchStatus("error");
 
         return {};
       }
 
       changeOperationStatus(
-        fetchersHashRef.current,
+        hash,
         "success",
         "Successfully fetched the selected table information",
         false
       );
-      remove(fetchersHashRef.current);
+      remove(hash);
 
       setColumnNames(tableColumnNamesResult.data as string[]);
       setUserNumber((countRecordsResult.data as number).toString());
@@ -272,13 +271,10 @@ function Databases() {
     queryKey: ["tableRecords", tableName],
     queryFn: async () => {
       setUserRecordsFetchStatus("pending");
-      addOperation(
-        userRecordsHashRef.current,
-        "pending",
-        "fetch",
-        "Fetching user records",
-        false
-      );
+
+      const hash = crypto.randomUUID();
+
+      addOperation(hash, "pending", "fetch", "Fetching user records", false);
 
       const time = Date.now();
 
@@ -297,12 +293,12 @@ function Databases() {
         }
 
         changeOperationStatus(
-          userRecordsHashRef.current,
+          hash,
           "error",
           "Failed to fetch user records",
           true
         );
-        remove(userRecordsHashRef.current);
+        remove(hash);
         setUserRecordsFetchStatus("error");
 
         resetUserData();
@@ -332,12 +328,12 @@ function Databases() {
         }
 
         changeOperationStatus(
-          userRecordsHashRef.current,
+          hash,
           "error",
           "Failed to fetch user records",
           true
         );
-        remove(userRecordsHashRef.current);
+        remove(hash);
         setUserRecordsFetchStatus("error");
 
         resetUserData();
@@ -384,12 +380,12 @@ function Databases() {
       resetUserData();
 
       changeOperationStatus(
-        userRecordsHashRef.current,
+        hash,
         "success",
         "Successfully fetched user records",
         false
       );
-      remove(userRecordsHashRef.current);
+      remove(hash);
       setUserRecordsFetchStatus("success");
 
       setUserKeys(keys);
@@ -400,14 +396,14 @@ function Databases() {
     enabled: false,
   });
   //eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function throttle(this: any, mainFunction: () => void, delay: number) {
+  function throttle(mainFunction: () => void, delay: number) {
     let allow: boolean = false;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (...args: any) => {
+    return () => {
       if (allow === false) {
-        mainFunction.apply(this, args);
         allow = true;
+        mainFunction();
         setTimeout(() => {
           allow = false; // Clear the timerFlag to allow the main function to be executed again
         }, delay);
@@ -423,12 +419,11 @@ function Databases() {
   return (
     <div className="flex flex-col min-h-full">
       <TableNamesCombobox />
-
       {tableInfoFetchStatus === "pending" && (
         <>
-          <div className="my-2 pl-2.5 flex items-center gap-2.5">
-            <Skeleton className="rounded-lg h-6 max-w-[2.75rem] shadow-lg" />
-            <Skeleton className="h-[0.875rem] max-w-[9.25rem] shadow-lg" />
+          <div className="my-2 pl-2.5 w-full flex items-center gap-2.5">
+            <Skeleton className="rounded-lg h-6 w-[2.75rem] shadow-lg" />
+            <Skeleton className="h-[0.875rem] w-[9.25rem] shadow-lg" />
           </div>
           <div className="grid lg:grid-cols-4 gap-5 auto-rows-fr p-2.5">
             <Skeleton className="rounded-lg h-[6.875rem] shadow-lg" />
@@ -438,17 +433,14 @@ function Databases() {
           </div>
         </>
       )}
-
       {tableInfoFetchStatus === "success" && tableName.length !== 0 && (
         <Cards />
       )}
-
       {tableInfoFetchStatus === "success" && tableName.length !== 0 && (
         <Button className="m-2" onClick={() => throttledOperation()}>
           Show records
         </Button>
       )}
-
       {userRecordsFetchStatus === "pending" && (
         <div className="h-full m-2.5 flex flex-col max-w-full">
           <div className="flex flex-wrap gap-2 mb-2.5 max-w-full">
@@ -458,7 +450,6 @@ function Databases() {
           <Skeleton className="h-[25rem] w-full" />
         </div>
       )}
-
       {userRecordsFetchStatus === "success" && tableName.length !== 0 && (
         <DataTable />
       )}

@@ -24,7 +24,6 @@ const AddNewUserDialog = () => {
   const deleteUser = userDataStore((state) => state.actions.deleteUser);
 
   const checkedBoxIsCheckedRef = useRef(false);
-  const hashRef = useRef(crypto.randomUUID());
   const [allowDelete, setAllowDelete] = useState(false);
 
   useEffect(() => {
@@ -38,7 +37,8 @@ const AddNewUserDialog = () => {
     queryKey: ["add-new-user"],
     queryFn: async () => {
       setShowDialog(false);
-      addOperation(hashRef.current, "pending", "delete", "Deleting user", true);
+      const hash = crypto.randomUUID();
+      addOperation(hash, "pending", "delete", "Deleting user", true);
 
       const time = Date.now();
 
@@ -64,26 +64,16 @@ const AddNewUserDialog = () => {
       }
 
       if (!response.ok) {
-        changeOperationStatus(
-          hashRef.current,
-          "error",
-          "Failed to delete user",
-          true
-        );
-        remove(hashRef.current);
+        changeOperationStatus(hash, "error", "Failed to delete user", true);
+        remove(hash);
 
         return {};
       }
 
       deleteUser(userIdName, userId);
 
-      changeOperationStatus(
-        hashRef.current,
-        "success",
-        "Successfully deleted user",
-        true
-      );
-      remove(hashRef.current);
+      changeOperationStatus(hash, "success", "Successfully deleted user", true);
+      remove(hash);
 
       return {};
     },
@@ -113,7 +103,6 @@ const AddNewUserDialog = () => {
           <DialogTitle>Delete user</DialogTitle>
         </DialogHeader>
         <p className="mx-4">Are you sure you want to delete this user?</p>
-
         <div className="flex items-center space-x-2 mx-4">
           <Checkbox
             id="terms"
@@ -128,7 +117,6 @@ const AddNewUserDialog = () => {
             Yes I am sure
           </Label>
         </div>
-
         <Button
           className="w-[calc(100%_-_2rem)] mx-4"
           onClick={deleteButtonHandler}

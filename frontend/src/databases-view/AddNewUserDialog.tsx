@@ -48,7 +48,6 @@ const AddNewUserDialog = memo(() => {
     }, {})
   );
   const [buttonIsDisabled, setButtonIsDisabled] = useState(true);
-  const hashRef = useRef(crypto.randomUUID());
 
   useEffect(() => {
     return () => {
@@ -72,13 +71,9 @@ const AddNewUserDialog = memo(() => {
     queryFn: async () => {
       setShowDialog(false);
 
-      addOperation(
-        hashRef.current,
-        "pending",
-        "create",
-        "Creating a new user",
-        true
-      );
+      const hash = crypto.randomUUID();
+
+      addOperation(hash, "pending", "create", "Creating a new user", true);
 
       const time = new Date();
 
@@ -101,23 +96,23 @@ const AddNewUserDialog = memo(() => {
 
       if (!response.ok) {
         changeOperationStatus(
-          hashRef.current,
+          hash,
           "error",
           "Failed to create a new user",
           true
         );
-        remove(hashRef.current);
+        remove(hash);
 
         return {};
       }
 
       changeOperationStatus(
-        hashRef.current,
+        hash,
         "success",
         "Successfully created a new user",
         true
       );
-      remove(hashRef.current);
+      remove(hash);
 
       addUser({
         ...userRef.current,

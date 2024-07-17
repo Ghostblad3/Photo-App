@@ -5,7 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import DragAndDropPngComponent from "./DragAndDropPngComponent";
+import DragAndDropPng from "./DragAndDropPng";
 import ImageCrop from "./ImageCrop";
 import addNewScreenshotStore from "./stores/addNewScreenshotStore";
 
@@ -36,7 +36,7 @@ const AddNewScreenshotDialog = memo(() => {
         <DialogHeader>
           <DialogTitle>Add new screenshot for user</DialogTitle>
         </DialogHeader>
-        {screenshotAsBase64.length === 0 && <DragAndDropPngComponent />}
+        {screenshotAsBase64.length === 0 && <DragAndDropPng />}
         {screenshotAsBase64.length > 0 && <ImageCrop />}
       </DialogContent>
     </Dialog>

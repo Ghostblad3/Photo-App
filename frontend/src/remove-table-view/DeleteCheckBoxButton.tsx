@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -21,18 +21,13 @@ function DeleteCheckBoxButton() {
     "nopending"
   );
   const [isChecked, setIsChecked] = useState(false);
-  const hashRef = useRef(crypto.randomUUID());
 
   useQuery({
     queryKey: ["deleteTable"],
     queryFn: async () => {
-      addOperation(
-        hashRef.current,
-        "pending",
-        "delete",
-        "Deleting table",
-        true
-      );
+      const hash = crypto.randomUUID();
+
+      addOperation(hash, "pending", "delete", "Deleting table", true);
 
       const paramData = {
         tableName: selectedTableName,
@@ -54,13 +49,8 @@ function DeleteCheckBoxButton() {
       }
 
       if (!response.ok) {
-        changeOperationStatus(
-          hashRef.current,
-          "error",
-          "Failed to delete table",
-          true
-        );
-        remove(hashRef.current);
+        changeOperationStatus(hash, "error", "Failed to delete table", true);
+        remove(hash);
         setDeleteStatus("nopending");
         setDeleteTable(false);
 
@@ -69,12 +59,12 @@ function DeleteCheckBoxButton() {
 
       removeSelectedTable();
       changeOperationStatus(
-        hashRef.current,
+        hash,
         "success",
         "Successfully deleted table",
         true
       );
-      remove(hashRef.current);
+      remove(hash);
       setDeleteStatus("nopending");
       setDeleteTable(false);
 

@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -24,7 +24,6 @@ const ScreenshotDialog = memo(() => {
   const { addOperation, changeOperationStatus, removeOperation } =
     operationStore((state) => state.actions);
 
-  const hashRef = useRef(crypto.randomUUID());
   const [userScreenshotFetchStatus, setUserScreenshotFetchStatus] = useState<
     "pending" | "success"
   >("pending");
@@ -39,22 +38,17 @@ const ScreenshotDialog = memo(() => {
   useQuery({
     queryKey: ["screenshot", userInfo[keyName], tableName],
     queryFn: async () => {
+      const hash = crypto.randomUUID();
+
+      addOperation(hash, "pending", "fetch", "Fetching user screenshot", false);
+
+      const timeNow = new Date();
+
       const paramObj = {
         userIdName: keyName,
         userId: userInfo[keyName],
         tableName: tableName,
       };
-
-      addOperation(
-        hashRef.current,
-        "pending",
-        "fetch",
-        "Fetching user screenshot",
-        false
-      );
-
-      const timeNow = new Date();
-
       const response = await fetch(
         `http://localhost:3000/screenshot/retrieve-user-screenshot/${JSON.stringify(
           paramObj
@@ -72,12 +66,12 @@ const ScreenshotDialog = memo(() => {
 
       if (!response.ok) {
         changeOperationStatus(
-          hashRef.current,
+          hash,
           "error",
           "Failed to fetch user screenshot",
           true
         );
-        remove(hashRef.current);
+        remove(hash);
         setShowDialog(false);
 
         return {};
@@ -92,12 +86,12 @@ const ScreenshotDialog = memo(() => {
       const { data } = receivedObject;
 
       changeOperationStatus(
-        hashRef.current,
+        hash,
         "success",
         "Successfully fetched user screenshot",
         false
       );
-      remove(hashRef.current);
+      remove(hash);
       setUserScreenshotFetchStatus("success");
       setScreenshotAsBase64(data);
 

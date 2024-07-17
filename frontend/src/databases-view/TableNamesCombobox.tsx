@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -41,7 +41,6 @@ function TableNamesCombobox() {
     operationStore((state) => state.actions);
 
   const [open, setOpen] = useState(false);
-  const hashRef = useRef(crypto.randomUUID());
   const [fetchStatus, setFetchStatus] = useState<"pending" | "success">(
     "pending"
   );
@@ -56,13 +55,9 @@ function TableNamesCombobox() {
   useQuery({
     queryKey: ["tableNames-databases-view"],
     queryFn: async () => {
-      addOperation(
-        hashRef.current,
-        "pending",
-        "fetch",
-        "Fetching table names",
-        false
-      );
+      const hash = crypto.randomUUID();
+
+      addOperation(hash, "pending", "fetch", "Fetching table names", false);
 
       const startTime = Date.now();
 
@@ -78,12 +73,12 @@ function TableNamesCombobox() {
 
       if (!response.ok) {
         changeOperationStatus(
-          hashRef.current,
+          hash,
           "error",
           "Failed to fetch table names",
           true
         );
-        remove(hashRef.current);
+        remove(hash);
 
         return {};
       }
@@ -97,12 +92,12 @@ function TableNamesCombobox() {
       const { data } = receivedObject;
 
       changeOperationStatus(
-        hashRef.current,
+        hash,
         "success",
         "Successfully fetched table names",
         false
       );
-      remove(hashRef.current);
+      remove(hash);
       setTableNames(data.map((item: { name: string }) => item.name));
       setFetchStatus("success");
 
@@ -170,7 +165,6 @@ function TableNamesCombobox() {
                             onSelect={(currentValue) => {
                               if (currentValue !== selectedTableName) {
                                 resetSearchStore();
-                                resetUserData();
                               }
 
                               setSelectedTableName(

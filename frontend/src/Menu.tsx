@@ -43,7 +43,7 @@ function Menu({
     }
   }, [isVisible]);
 
-  const isFixed = isFixedMenu ? "fixed left-0" : "";
+  const isFixed = isFixedMenu ? "z-[1000] fixed left-0" : "";
 
   if (unmount || (mountRef.current && isFixed)) return null;
 
@@ -51,11 +51,11 @@ function Menu({
     <div
       className={`${isFixed} ${
         !isVisible ? "animate-killAnimation" : ""
-      } top-[2.75rem] h-full overflow-y-auto w-[15.625rem] bg-[#051923] flex flex-col @apply text-[white] flex-[0_0_auto] z-50`}
+      } top-[2.75rem] h-full overflow-y-auto w-[15.625rem] bg-[#192a33] flex flex-col @apply text-[white] flex-[0_0_auto]`}
     >
       <div className="mt-[4.375rem] text-lg items-center justify-center flex gap-2.5">
         <Aperture />
-        <h1>PHOTO MANAGER</h1>
+        <h1>Image manager</h1>
       </div>
       <div className="mt-7 border-[0.063rem] border-[solid] border-[white]"></div>
       <div>
@@ -78,7 +78,7 @@ function Menu({
             className="h-10 cursor-pointer flex gap-4 items-center pl-8 mx-2.5 hover:text-white hover:underline"
           >
             <UserRoundPlus />
-            <span className="mt-[-1px]">Add records</span>
+            <span className="mt-[-0.063rem]">Add records</span>
           </li>
           <li
             onClick={() => handleClick(2)}

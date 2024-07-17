@@ -5,7 +5,7 @@ import fieldsStore from "./stores/fieldsStore";
 import navitationStore from "./stores/navigationStore";
 import dataStore from "./stores/dataStore";
 
-function FieldsComponent() {
+function Fields() {
   const setVisibleFields = fieldsStore(
     (state) => state.actions.setVisibleFields
   );
@@ -107,4 +107,4 @@ function FieldsComponent() {
   );
 }
 
-export default FieldsComponent;
+export default Fields;

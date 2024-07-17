@@ -7,6 +7,8 @@ export type Data = {
 };
 
 export function columns(cols: Data[]) {
+  if (cols.length === 0) return {};
+
   const keys = Object.keys(cols[0]);
 
   const tableCols: ColumnDef<Data>[] = keys.map((val) => {

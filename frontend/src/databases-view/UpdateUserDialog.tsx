@@ -28,7 +28,6 @@ const UpdateUserDialog = memo(() => {
   const { addOperation, changeOperationStatus, removeOperation } =
     operationStore((state) => state.actions);
 
-  const hashRef = useRef(crypto.randomUUID());
   const userToUpdateRef = useRef<{ [key: string]: string }>({});
   const userObjRef = useRef<{ [key: string]: string }>(
     userData[parseInt(userIndex)]
@@ -68,8 +67,10 @@ const UpdateUserDialog = memo(() => {
     queryFn: async () => {
       setShowDialog(false);
 
+      const hash = crypto.randomUUID();
+
       addOperation(
-        hashRef.current,
+        hash,
         "pending",
         "update",
         "Updating user information",
@@ -98,23 +99,23 @@ const UpdateUserDialog = memo(() => {
 
       if (!result.ok) {
         changeOperationStatus(
-          hashRef.current,
+          hash,
           "error",
           "Failed to update user information",
           true
         );
-        remove(hashRef.current);
+        remove(hash);
 
         return {};
       }
 
       changeOperationStatus(
-        hashRef.current,
+        hash,
         "success",
         "Successfully updated user information",
         true
       );
-      remove(hashRef.current);
+      remove(hash);
       updateUser(userId, userToUpdateRef.current);
 
       return {};

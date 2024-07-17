@@ -76,7 +76,7 @@ const usersType = z
     }
   );
 
-function DragAndDropExcelFileComponent() {
+function DragAndDropExcelFile() {
   const { setFields, setVisibleFields } = fieldsStore((state) => state.actions);
   const data = dataStore((state) => state.props.data);
   const { setData } = dataStore((state) => state.actions);
@@ -87,7 +87,6 @@ function DragAndDropExcelFileComponent() {
   const { addOperation, changeOperationStatus, removeOperation } =
     operationStore((state) => state.actions);
 
-  const hashRef = useRef(crypto.randomUUID());
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -123,8 +122,10 @@ function DragAndDropExcelFileComponent() {
   }
 
   function fileReader(file: File) {
+    const hash = crypto.randomUUID();
+
     addOperation(
-      hashRef.current,
+      hash,
       "pending",
       "create",
       "Creating users from the excel file",
@@ -158,23 +159,23 @@ function DragAndDropExcelFileComponent() {
 
       if (!result.success) {
         changeOperationStatus(
-          hashRef.current,
+          hash,
           "error",
           "Failed to create users due to parse error in the excel file",
           true
         );
-        remove(hashRef.current);
+        remove(hash);
 
         return;
       }
 
       changeOperationStatus(
-        hashRef.current,
+        hash,
         "success",
         "Successfully created users from the excel file",
         true
       );
-      remove(hashRef.current);
+      remove(hash);
 
       setFields(Object.keys(json[0]));
       setData(json);
@@ -194,32 +195,28 @@ function DragAndDropExcelFileComponent() {
   }
 
   return (
-    <>
-      <div
-        className="space-y-12 p-5 flex flex-col justify-evenly items-center border-2 border-zinc-300 border-dashed rounded-xl"
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
-      >
-        <h1 className="text-3xl text-slate-400">
-          Drag and drop an excel file here
-        </h1>
-
-        <h3 className="text-lg text-slate-400">Or, if you prefer...</h3>
-
-        <input
-          type="file"
-          accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-          multiple
-          onChange={inputOnChange}
-          hidden
-          ref={inputRef}
-        />
-        <Button className="" onClick={() => inputRef.current!.click()}>
-          Select an excel file from your computer
-        </Button>
-      </div>
-    </>
+    <div
+      className="space-y-12 p-5 flex flex-col justify-evenly items-center border-2 border-zinc-300 border-dashed rounded-xl"
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
+      <h1 className="text-3xl text-slate-400">
+        Drag and drop an excel file here
+      </h1>
+      <h3 className="text-lg text-slate-400">Or, if you prefer...</h3>
+      <input
+        type="file"
+        accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        multiple
+        onChange={inputOnChange}
+        hidden
+        ref={inputRef}
+      />
+      <Button className="" onClick={() => inputRef.current!.click()}>
+        Select an excel file from your computer
+      </Button>
+    </div>
   );
 }
 
-export default DragAndDropExcelFileComponent;
+export default DragAndDropExcelFile;

@@ -39,7 +39,6 @@ function ImageCrop() {
   const [uploadStatus, setUploadStatus] = useState<
     "nop" | "pending" | "success" | "error"
   >("nop");
-  const hashRef = useRef(crypto.randomUUID());
 
   function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
     if (aspect) {
@@ -134,8 +133,10 @@ function ImageCrop() {
     queryFn: async () => {
       setUploadStatus("pending");
 
+      const hash = crypto.randomUUID();
+
       addOperation(
-        hashRef.current,
+        hash,
         "pending",
         "create",
         "Creating a new screenshot for user",
@@ -197,12 +198,12 @@ function ImageCrop() {
       if (code !== 201) {
         setUploadStatus("error");
         changeOperationStatus(
-          hashRef.current,
+          hash,
           "error",
           "Failed to create a new screenshot",
           true
         );
-        remove(hashRef.current);
+        remove(hash);
         setShowDialog(false);
 
         return {};
@@ -245,12 +246,12 @@ function ImageCrop() {
       const { data } = result;
       const { photo_timestamp } = data;
       changeOperationStatus(
-        hashRef.current,
+        hash,
         "success",
         "Successfully created a new screenshot",
         true
       );
-      remove(hashRef.current);
+      remove(hash);
       setUploadStatus("success");
       updateUser(userId, {
         has_screenshot: "yes",

@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button.tsx";
 import { ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
-import DragAndDropExcelFileComponent from "./DragAndDropExcelFileComponent";
-import FieldsComponent from "./FieldsComponent";
+import DragAndDropExcelFile from "./DragAndDropExcelFile";
+import Fields from "./Fields";
 import CreateTable from "./CreateTable";
 import fieldsStore from "./stores/fieldsStore";
 import navigationStore from "./stores/navigationStore";
@@ -67,10 +67,8 @@ function ComponentTree() {
         )}
       </div>
 
-      {(fields.length === 0 || index === 0) && (
-        <DragAndDropExcelFileComponent />
-      )}
-      {fields.length > 0 && index === 1 && <FieldsComponent />}
+      {(fields.length === 0 || index === 0) && <DragAndDropExcelFile />}
+      {fields.length > 0 && index === 1 && <Fields />}
       {visibleFields.length > 0 && index === 2 && <Records />}
       {fields.length > 0 && data.length > 0 && index === 3 && <CreateTable />}
     </div>

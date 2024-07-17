@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import DeleteCheckBoxButton from "./DeleteCheckBoxButton";
@@ -13,7 +13,6 @@ function DeleteTable() {
   const { addOperation, changeOperationStatus, removeOperation } =
     operationStore((state) => state.actions);
 
-  const hashRef = useRef(crypto.randomUUID());
   const [fetchStatus, setFetchStatus] = useState<"pending" | "success">(
     "pending"
   );
@@ -28,13 +27,9 @@ function DeleteTable() {
   useQuery({
     queryKey: ["tableNames-delete"],
     queryFn: async () => {
-      addOperation(
-        hashRef.current,
-        "pending",
-        "fetch",
-        "Fetching table names",
-        false
-      );
+      const hash = crypto.randomUUID();
+
+      addOperation(hash, "pending", "fetch", "Fetching table names", false);
 
       const startTime = Date.now();
 
@@ -52,12 +47,12 @@ function DeleteTable() {
 
       if (!response.ok) {
         changeOperationStatus(
-          hashRef.current,
+          hash,
           "error",
           "Failed to fetch table names",
           true
         );
-        remove(hashRef.current);
+        remove(hash);
 
         return {};
       }
@@ -71,12 +66,12 @@ function DeleteTable() {
       const { data } = receivedObject;
 
       changeOperationStatus(
-        hashRef.current,
+        hash,
         "success",
         "Successfully fetched table names",
         false
       );
-      remove(hashRef.current);
+      remove(hash);
       setTableNames(data.map((item: { name: string }) => item.name));
       setFetchStatus("success");
 

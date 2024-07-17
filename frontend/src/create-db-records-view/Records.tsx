@@ -84,16 +84,15 @@ function Records<TData, TValue>() {
                       key={header.id}
                       colSpan={header.colSpan}
                       style={{
-                        paddingTop: "0",
                         paddingRight: "2.5rem",
                         textWrap: "nowrap",
                         position: "sticky",
-                        zIndex: 1,
+                        zIndex: 999,
                         top: "0",
                         backgroundColor: "white",
                         // height: "30px",
                       }}
-                      className="border-b border-gray-300 bg-gray-50 py-3 text-left text-sm font-semibold text-gray-900"
+                      className="border-gray-300 bg-gray-50 py-3 text-left text-sm font-semibold text-gray-900"
                     >
                       {header.isPlaceholder ? null : (
                         <>

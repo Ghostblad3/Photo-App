@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -33,7 +33,6 @@ function TableNamesCombobox() {
   );
 
   const [open, setOpen] = useState(false);
-  const tableNamesFetchRef = useRef(crypto.randomUUID());
   const [tableNamesFetchStatus, setTableNamesFetchStatus] = useState<
     "pending" | "success" | "error"
   >("pending");
@@ -49,13 +48,8 @@ function TableNamesCombobox() {
   useQuery({
     queryKey: ["tableNames-image-view"],
     queryFn: async () => {
-      addOperation(
-        tableNamesFetchRef.current,
-        "pending",
-        "fetch",
-        "Fetching table names",
-        false
-      );
+      const hash = crypto.randomUUID();
+      addOperation(hash, "pending", "fetch", "Fetching table names", false);
 
       const startTime = Date.now();
 
@@ -66,12 +60,12 @@ function TableNamesCombobox() {
       if (!response.ok) {
         setTableNamesFetchStatus("error");
         changeOperationStatus(
-          tableNamesFetchRef.current,
+          hash,
           "error",
           "Failed to fetch table names",
           true
         );
-        remove(tableNamesFetchRef.current);
+        remove(hash);
 
         return {};
       }
@@ -91,12 +85,12 @@ function TableNamesCombobox() {
         });
 
       changeOperationStatus(
-        tableNamesFetchRef.current,
+        hash,
         "success",
         "Successfully fetched table names",
         false
       );
-      remove(tableNamesFetchRef.current);
+      remove(hash);
       setTableNames(data.map((item: { name: string }) => item.name));
       setTableNamesFetchStatus("success");
 

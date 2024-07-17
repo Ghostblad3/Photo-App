@@ -99,6 +99,11 @@ export function DataTable<TData, TValue>() {
             notUndefined(items[items.length - 1]).end,
         ]
       : [0, 0];
+
+  if (filteredUserData.length === 0) {
+    return null;
+  }
+
   const colSpan = Object.keys(filteredUserData[0]).length;
 
   return (
@@ -119,16 +124,15 @@ export function DataTable<TData, TValue>() {
                       key={header.id}
                       colSpan={header.colSpan}
                       style={{
-                        paddingTop: "0",
                         paddingRight: "2.5rem",
                         textWrap: "nowrap",
                         position: "sticky",
-                        zIndex: 1,
+                        zIndex: 999,
                         top: "0",
                         backgroundColor: "white",
                         // height: "1.875rem",
                       }}
-                      className="border-b border-gray-300 bg-gray-50 py-3 text-left text-sm font-semibold text-gray-900"
+                      className="border-gray-300 bg-gray-50 py-3 text-left text-sm font-semibold text-gray-900"
                     >
                       {header.isPlaceholder ? null : (
                         <>
@@ -190,7 +194,7 @@ export function DataTable<TData, TValue>() {
                       >
                         <ContextMenu>
                           <ContextMenuTrigger asChild>
-                            <div className="pt-[0.25rem] pb-[0.344rem] pl-4 h-[2rem]">
+                            <div className="pt-[0.25rem] pb-[0.344rem] pl-4 h-9">
                               {flexRender(
                                 cell.column.columnDef.cell,
                                 cell.getContext()

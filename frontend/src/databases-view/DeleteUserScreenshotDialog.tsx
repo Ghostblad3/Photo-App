@@ -29,7 +29,6 @@ const DeleteUserScreenshotDialog = memo(() => {
   const checkedBoxIsCheckedRef = useRef(false);
   const { addOperation, changeOperationStatus, removeOperation } =
     operationStore((state) => state.actions);
-  const hashRef = useRef(crypto.randomUUID());
 
   useEffect(() => {
     return () => {
@@ -41,23 +40,18 @@ const DeleteUserScreenshotDialog = memo(() => {
   const { refetch: deleteUserQuery } = useQuery({
     queryKey: ["delete-user-screenshot", userId],
     queryFn: async () => {
+      setShowDialog(false);
+
+      const hash = crypto.randomUUID();
+      addOperation(hash, "pending", "delete", "Deleting user screenshot", true);
+
+      const time = Date.now();
+
       const paramData = {
         userIdName,
         userId,
         tableName,
       };
-
-      setShowDialog(false);
-
-      addOperation(
-        hashRef.current,
-        "pending",
-        "delete",
-        "Deleting user screenshot",
-        true
-      );
-
-      const time = Date.now();
 
       const response = await fetch(
         `http://localhost:3000/screenshot/delete-user-screenshot/${JSON.stringify(
@@ -76,23 +70,23 @@ const DeleteUserScreenshotDialog = memo(() => {
 
       if (!response.ok) {
         changeOperationStatus(
-          hashRef.current,
+          hash,
           "error",
           "Failed to delete user screenshot",
           true
         );
-        remove(hashRef.current);
+        remove(hash);
 
         return {};
       }
 
       changeOperationStatus(
-        hashRef.current,
+        hash,
         "success",
         "Successfully deleted user screenshot",
         true
       );
-      remove(hashRef.current);
+      remove(hash);
       deleteUserScreenshot(userIdName, userId);
 
       return {};

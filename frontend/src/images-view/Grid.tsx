@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -30,7 +30,6 @@ function Grid() {
     operationStore((state) => state.actions);
 
   const [count, setCount] = useState(0);
-  const userDataFetchRef = useRef(crypto.randomUUID());
   const [fetchUserDataStatus, setFetchUserDataStatus] = useState<
     "pending" | "success" | "error"
   >("pending");
@@ -45,13 +44,9 @@ function Grid() {
   useQuery({
     queryKey: ["user-data", tableName],
     queryFn: async () => {
-      addOperation(
-        userDataFetchRef.current,
-        "pending",
-        "fetch",
-        "Fetching user data",
-        true
-      );
+      const hash = crypto.randomUUID();
+
+      addOperation(hash, "pending", "fetch", "Fetching user data", true);
 
       const paramsObj = JSON.stringify({
         tableName,
@@ -67,13 +62,8 @@ function Grid() {
       );
 
       if (!countResponse.ok) {
-        changeOperationStatus(
-          userDataFetchRef.current,
-          "error",
-          "Failed to fetch user data",
-          true
-        );
-        remove(userDataFetchRef.current);
+        changeOperationStatus(hash, "error", "Failed to fetch user data", true);
+        remove(hash);
         setFetchUserDataStatus("error");
 
         resetUserDataStore();
@@ -98,13 +88,8 @@ function Grid() {
       );
 
       if (!response.ok) {
-        changeOperationStatus(
-          userDataFetchRef.current,
-          "error",
-          "Failed to fetch user data",
-          true
-        );
-        remove(userDataFetchRef.current);
+        changeOperationStatus(hash, "error", "Failed to fetch user data", true);
+        remove(hash);
         setFetchUserDataStatus("error");
 
         resetUserDataStore();
@@ -125,12 +110,12 @@ function Grid() {
         await new Promise((resolve) => setTimeout(resolve, 500 - timeTaken));
 
       changeOperationStatus(
-        userDataFetchRef.current,
+        hash,
         "success",
         "Successfully fetched user data",
         false
       );
-      remove(userDataFetchRef.current);
+      remove(hash);
 
       if (data.length === 0) {
         resetUserDataStore();
