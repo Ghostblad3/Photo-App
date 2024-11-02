@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import ReactCrop, { Crop, PixelCrop } from "react-image-crop";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import { ReloadIcon } from "@radix-ui/react-icons";
 import userDataStore from "./stores/userDataStore";
 import operationStore from "../global-stores/operationStore";
 import addNewScreenshotStore from "./stores/addNewScreenshotStore";
@@ -32,13 +33,11 @@ function ImageCrop() {
   const [scale, setScale] = useState(1);
   const [rotate, setRotate] = useState(0);
   const [screenshotBlob, setScreenshotBlob] = useState<Blob>();
-  const inputRef = useRef<string>("");
+  const inputRef = useRef("");
   const [progress, setProgress] = useState(0);
   const [buttonEnabled, setButtonEnabled] = useState(true);
 
-  const [uploadStatus, setUploadStatus] = useState<
-    "nop" | "pending" | "success" | "error"
-  >("nop");
+  const hash = useRef(crypto.randomUUID());
 
   function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
     if (aspect) {
@@ -65,6 +64,7 @@ function ImageCrop() {
 
     const image = imgRef.current;
     const previewCanvas = previewCanvasRef.current;
+
     if (!image || !previewCanvas || !completedCrop) {
       throw new Error("Crop canvas does not exist");
     }
@@ -128,15 +128,17 @@ function ImageCrop() {
     func();
   }, [completedCrop, scale, rotate]);
 
-  useQuery({
-    queryKey: ["upload", userId, screenshotBlob],
-    queryFn: async () => {
-      setUploadStatus("pending");
+  useEffect(() => {
+    if (screenshotBlob) {
+      mutation.mutate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screenshotBlob]);
 
-      const hash = crypto.randomUUID();
-
+  const mutation = useMutation({
+    mutationFn: async () => {
       addOperation(
-        hash,
+        hash.current,
         "pending",
         "create",
         "Creating a new screenshot for user",
@@ -155,6 +157,7 @@ function ImageCrop() {
         responseString: string;
       }>((resolve, reject) => {
         const req = new XMLHttpRequest();
+
         req.open(
           "POST",
           "http://localhost:3000/screenshot/add-user-screenshot",
@@ -193,27 +196,25 @@ function ImageCrop() {
         );
       });
 
+      const endTime = Date.now();
+
+      if (endTime - time < 500) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, 500 - (endTime - time))
+        );
+      }
+
       const { code, responseString } = response;
 
       if (code !== 201) {
-        setUploadStatus("error");
-        changeOperationStatus(
-          hash,
-          "error",
-          "Failed to create a new screenshot",
-          true
-        );
-        remove(hash);
-        setShowDialog(false);
-
-        return {};
+        throw new Error("Error creating screenshot");
       }
 
-      const result = JSON.parse(responseString) as {
+      const result: {
         status: string;
         data: { photo_timestamp: string };
         error: { message: string };
-      };
+      } = JSON.parse(responseString);
 
       // const response = await fetch(
       //   "http://localhost:3000/screenshot/add-user-screenshot",
@@ -235,47 +236,55 @@ function ImageCrop() {
       //   }
       // );
 
-      const endTime = Date.now();
-
-      if (endTime - time < 500) {
-        await new Promise((resolve) =>
-          setTimeout(resolve, 500 - (endTime - time))
-        );
-      }
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const { data } = result;
       const { photo_timestamp } = data;
-      changeOperationStatus(
-        hash,
+
+      return photo_timestamp;
+    },
+    onError: () => {
+      modifyStatus(
+        hash.current,
+        "error",
+        "Failed to create a new screenshot",
+        true
+      );
+    },
+    onSuccess: (data, _, __) => {
+      updateUser(userId, {
+        has_screenshot: "yes",
+        screenshot_day: inputRef.current,
+        photo_timestamp: new Date(data).toLocaleString("it-IT"),
+      });
+
+      modifyStatus(
+        hash.current,
         "success",
         "Successfully created a new screenshot",
         true
       );
-      remove(hash);
-      setUploadStatus("success");
-      updateUser(userId, {
-        has_screenshot: "yes",
-        screenshot_day: inputRef.current,
-        photo_timestamp: new Date(photo_timestamp).toLocaleString("it-IT"),
-      });
-
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      setShowDialog(false);
-
-      return {};
     },
-    enabled: screenshotBlob?.arrayBuffer !== undefined,
+    onSettled: () => {
+      setShowDialog(false);
+    },
+    retry: false,
   });
 
-  async function remove(hash: string) {
+  async function modifyStatus(
+    hash: string,
+    status: "pending" | "success" | "error",
+    message: string,
+    show: boolean
+  ) {
+    changeOperationStatus(hash, status, message, show);
     await new Promise((resolve) => setTimeout(resolve, 5000));
     removeOperation(hash);
   }
 
   return (
     <>
-      {uploadStatus === "nop" && (
+      {mutation.isIdle && (
         <div className="w-full flex flex-col justify-center">
           {!!screenshotAsBase64 && (
             <ReactCrop
@@ -352,15 +361,17 @@ function ImageCrop() {
                   inputRef.current = e.target.value;
                 }}
               />
-
               <Button onClick={processImage} disabled={!buttonEnabled}>
+                {mutation.isPending && (
+                  <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 Save cropped image
               </Button>
             </div>
           )}
         </div>
       )}
-      {(uploadStatus === "pending" || uploadStatus === "success") && (
+      {!mutation.isIdle && (
         <div className="flex flex-col justify-center items-center h-[12.5rem]">
           <h1 className="text-xl">Uploading</h1>
           <div className="flex justify-center items-center gap-2.5 w-full mt-10">

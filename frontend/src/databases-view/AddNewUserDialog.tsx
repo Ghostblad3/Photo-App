@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { CircleX } from "lucide-react";
+import { ReloadIcon } from "@radix-ui/react-icons";
 import userDataStore from "./stores/userDataStore";
 import addNewUserStore from "./stores/addNewUserStore";
 import operationStore from "../global-stores/operationStore";
@@ -47,6 +48,7 @@ const AddNewUserDialog = memo(() => {
       return acc;
     }, {})
   );
+  const hash = useRef(crypto.randomUUID());
   const [buttonIsDisabled, setButtonIsDisabled] = useState(true);
 
   useEffect(() => {
@@ -66,14 +68,15 @@ const AddNewUserDialog = memo(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fieldsModified]);
 
-  const { refetch: addNewUser } = useQuery({
-    queryKey: ["add-new-user"],
-    queryFn: async () => {
-      setShowDialog(false);
-
-      const hash = crypto.randomUUID();
-
-      addOperation(hash, "pending", "create", "Creating a new user", true);
+  const mutation = useMutation({
+    mutationFn: async (user: { [key: string]: string }) => {
+      addOperation(
+        hash.current,
+        "pending",
+        "create",
+        "Creating a new user",
+        true
+      );
 
       const time = new Date();
 
@@ -84,7 +87,7 @@ const AddNewUserDialog = memo(() => {
         },
         body: JSON.stringify({
           tableName,
-          users: [userRef.current],
+          users: [user],
         }),
       });
 
@@ -95,44 +98,51 @@ const AddNewUserDialog = memo(() => {
       }
 
       if (!response.ok) {
-        changeOperationStatus(
-          hash,
-          "error",
-          "Failed to create a new user",
-          true
-        );
-        remove(hash);
-
-        return {};
+        throw new Error("Failed to create a new user");
       }
-
+    },
+    onError: () => {
       changeOperationStatus(
-        hash,
-        "success",
-        "Successfully created a new user",
+        hash.current,
+        "error",
+        "Failed to create a new user",
         true
       );
-      remove(hash);
-
+    },
+    onSuccess: (_, variables, __) => {
       addUser({
-        ...userRef.current,
+        ...variables,
         has_screenshot: "no",
         screenshot_day: "-",
         photo_timestamp: "-",
       });
 
-      return {};
+      modifyStatus(
+        hash.current,
+        "success",
+        "Successfully created a new user",
+        true
+      );
     },
-    enabled: false,
+    onSettled: () => {
+      setShowDialog(false);
+    },
+    retry: false,
   });
 
-  async function remove(hash: string) {
+  async function modifyStatus(
+    hash: string,
+    status: "pending" | "success" | "error",
+    message: string,
+    show: boolean
+  ) {
+    changeOperationStatus(hash, status, message, show);
     await new Promise((resolve) => setTimeout(resolve, 5000));
     removeOperation(hash);
   }
 
   function addNewUserButtonHandler() {
-    addNewUser();
+    mutation.mutate(userRef.current);
   }
 
   return (
@@ -177,9 +187,12 @@ const AddNewUserDialog = memo(() => {
         })}
         <Button
           className="w-[calc(100%_-_2rem)] mx-4"
-          disabled={buttonIsDisabled}
           onClick={addNewUserButtonHandler}
+          disabled={!mutation.isIdle}
         >
+          {mutation.isPending && (
+            <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+          )}
           Submit
         </Button>
       </DialogContent>

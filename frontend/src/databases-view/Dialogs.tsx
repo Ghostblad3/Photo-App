@@ -8,11 +8,11 @@ import addNewScreenshotStore from "./stores/addNewScreenshotStore";
 import addNewUserStore from "./stores/addNewUserStore";
 import deleteUserScreenshotStore from "./stores/deleteUserScreenshotStore";
 import deleteUserStore from "./stores/deleteUserStore";
-import screenshotAsBase64Store from "./stores/screenshotAsBase64Store";
+import screenshotStore from "./stores/screenshotStore";
 import updateUserInfoStore from "./stores/updateUserInfoStore";
 
 function Dialogs() {
-  const screenshowAsBase64ShowDialog = screenshotAsBase64Store(
+  const screenshowShowDialog = screenshotStore(
     (state) => state.props.showDialog
   );
 
@@ -40,7 +40,7 @@ function Dialogs() {
       {deleteUserScreenshotShowDialog && <DeleteUserScreenshotDialog />}
       {deleteUserShowDialog && <DeleteUserDialog />}
       {addNewUserShowDialog && <AddNewUserDialog />}
-      {screenshowAsBase64ShowDialog && <ScreenshotDialog />}
+      {screenshowShowDialog && <ScreenshotDialog />}
     </>
   );
 }

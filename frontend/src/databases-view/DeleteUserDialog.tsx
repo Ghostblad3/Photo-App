@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
+import { useMutation } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -7,10 +7,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import deleteUserStore from "./stores/deleteUserStore";
-import operationStore from "@/global-stores/operationStore";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { ReloadIcon } from "@radix-ui/react-icons";
+import deleteUserStore from "./stores/deleteUserStore";
+import operationStore from "@/global-stores/operationStore";
 import userDataStore from "./stores/userDataStore";
 
 const AddNewUserDialog = () => {
@@ -23,8 +24,8 @@ const AddNewUserDialog = () => {
     operationStore((state) => state.actions);
   const deleteUser = userDataStore((state) => state.actions.deleteUser);
 
+  const hash = useRef(crypto.randomUUID());
   const checkedBoxIsCheckedRef = useRef(false);
-  const [allowDelete, setAllowDelete] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -33,20 +34,17 @@ const AddNewUserDialog = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useQuery({
-    queryKey: ["add-new-user"],
-    queryFn: async () => {
-      setShowDialog(false);
-      const hash = crypto.randomUUID();
-      addOperation(hash, "pending", "delete", "Deleting user", true);
-
-      const time = Date.now();
+  const mutation = useMutation({
+    mutationFn: async () => {
+      addOperation(hash.current, "pending", "delete", "Deleting user", true);
 
       const paramObject = {
         tableName,
         userId,
         userIdName,
       };
+
+      const time = Date.now();
 
       const response = await fetch(
         `http://localhost:3000/record/remove-user/${JSON.stringify(
@@ -64,31 +62,37 @@ const AddNewUserDialog = () => {
       }
 
       if (!response.ok) {
-        changeOperationStatus(hash, "error", "Failed to delete user", true);
-        remove(hash);
-
-        return {};
+        throw new Error("Failed to delete user");
       }
-
-      deleteUser(userIdName, userId);
-
-      changeOperationStatus(hash, "success", "Successfully deleted user", true);
-      remove(hash);
-
-      return {};
     },
-    enabled: allowDelete,
+    onError: () => {
+      modifyStatus(hash.current, "error", "Failed to delete user", true);
+    },
+    onSuccess: () => {
+      deleteUser(userIdName, userId);
+      modifyStatus(hash.current, "success", "Successfully deleted user", true);
+    },
+    onSettled: () => {
+      setShowDialog(false);
+    },
+    retry: false,
   });
 
-  async function remove(hash: string) {
+  async function modifyStatus(
+    hash: string,
+    status: "pending" | "success" | "error",
+    message: string,
+    show: boolean
+  ) {
+    changeOperationStatus(hash, status, message, show);
     await new Promise((resolve) => setTimeout(resolve, 5000));
     removeOperation(hash);
   }
 
   function deleteButtonHandler() {
-    if (checkedBoxIsCheckedRef.current) {
-      setAllowDelete(true);
-    }
+    if (!checkedBoxIsCheckedRef.current) return;
+
+    mutation.mutate();
   }
 
   return (
@@ -120,7 +124,11 @@ const AddNewUserDialog = () => {
         <Button
           className="w-[calc(100%_-_2rem)] mx-4"
           onClick={deleteButtonHandler}
+          disabled={!mutation.isIdle}
         >
+          {mutation.isPending && (
+            <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+          )}
           Submit
         </Button>
       </DialogContent>

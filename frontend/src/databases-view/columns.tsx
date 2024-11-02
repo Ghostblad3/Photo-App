@@ -1,5 +1,6 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 
 export type Data = {
@@ -22,7 +23,7 @@ export function columns(cols: Data[]) {
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
             {val}
-            <ArrowUpDown className="ml-2 h-4 w-4" />
+            <ArrowUpDown className="ml-2 size-4" />
           </Button>
         );
       },

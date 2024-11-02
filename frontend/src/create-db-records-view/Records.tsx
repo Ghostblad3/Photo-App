@@ -58,7 +58,7 @@ function Records<TData, TValue>() {
             notUndefined(items[items.length - 1]).end,
         ]
       : [0, 0];
-  const colSpan = 4;
+  const colSpan = 10;
 
   useEffect(() => {
     if (!allowLeft) {
@@ -72,7 +72,7 @@ function Records<TData, TValue>() {
   }, []);
 
   return (
-    <>
+    <div className="w-full">
       <div ref={parentRef} className="px-2.5 w-full overflow-auto h-[25rem]">
         <table className="w-full">
           <thead>
@@ -151,7 +151,7 @@ function Records<TData, TValue>() {
       <Button className="w-full mt-2.5" onClick={incrementIndex}>
         Create table
       </Button>
-    </>
+    </div>
   );
 }
 

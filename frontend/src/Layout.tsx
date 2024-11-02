@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Menu as MenuIcon } from "lucide-react";
+
 import Content from "./Content";
 import Menu from "./Menu";
-import photos from "./assets/photos.png";
+import photo from "./assets/photo.png";
 
 function Layout() {
   const [currentComponent, setCurrentComponent] = useState(0);
@@ -43,8 +44,8 @@ function Layout() {
 
   return (
     <div className="h-dvh w-full overflow-y-hidden">
-      <div className="h-full w-full flex flex-col overflow-y-auto">
-        <div className="flex-shrink-0 h-11 w-full flex items-center gap-2.5 pl-2 bg-[#33A5BF]">
+      <div className="flex size-full flex-col overflow-y-auto">
+        <div className="flex h-11 w-full shrink-0 items-center gap-2.5 bg-[#33A5BF] pl-2">
           {isFixedMenu && (
             <MenuIcon
               className="cursor-pointer"
@@ -53,12 +54,12 @@ function Layout() {
               }}
             />
           )}
-          <img className="h-6 w-6" src={photos} alt="photos" />
-          <h1 className="mb-[0.127rem] text-white text-lg xs:hidden">
+          <img className="size-6" src={photo} alt="photo" />
+          <h1 className="xs:hidden mb-[0.127rem] text-lg text-white">
             Next gen image management app
           </h1>
         </div>
-        <div className="flex h-[calc(100%-2.75rem)]">
+        <div className="flex h-[calc(100%-2.75rem)] w-full">
           <Menu
             currentComponent={currentComponent}
             setCurrentComponent={setCurrentComponent}

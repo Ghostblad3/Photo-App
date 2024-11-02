@@ -1,53 +1,47 @@
 import request from "supertest";
-import { server } from "../server";
+import { resetInMemoryDb } from "../database/connection";
+import { app } from "../server";
 import {
   createUserTable,
   createPhotoTable,
-  dropTables,
   insertUser,
-  deleteUser,
   insertPhoto,
   movePhotoToFolder,
-  deletePhotoFromFolder,
 } from "../testPrepareFunctions";
 
 jest.setTimeout(30000);
 
+beforeEach(() => {
+  resetInMemoryDb();
+});
+
 describe("Send json with invalid format to an api route", () => {
   test("should return error", async () => {
     const invalidJson = '{tableName="test_table_2024"}';
-    const res = await request(server).delete(`/table/delete/${invalidJson}`);
+    const res = await request(app).delete(`/table/delete/${invalidJson}`);
 
     expect(res.statusCode).toEqual(400);
     expect(res.body).toEqual({ error: "invalid JSON format" });
-  });
-
-  afterAll(() => {
-    server.close();
   });
 });
 
 describe("Call an api route that doesn't exist", () => {
   test("should return error", async () => {
-    const res = await request(server).get("/table/random-route");
+    const res = await request(app).get("/table/random-route");
 
     expect(res.statusCode).toEqual(404);
     expect(res.body).toEqual({ error: "route not found" });
   });
-
-  afterAll(() => {
-    server.close();
-  });
 });
 
 describe("Get table names for user tables", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable("test_table_2024");
     createUserTable("other_table_2024");
   });
 
   test("should return success", async () => {
-    const res = await request(server).get("/table/names");
+    const res = await request(app).get("/table/names");
 
     expect(res.statusCode).toEqual(200);
     expect(res.body).toMatchObject({
@@ -59,16 +53,10 @@ describe("Get table names for user tables", () => {
       error: { message: "" },
     });
   });
-
-  afterAll(async () => {
-    dropTables(["test_table_2024", "other_table_2024"]);
-
-    server.close();
-  });
 });
 
 describe("Delete a table that exists", () => {
-  beforeAll(async () => {
+  beforeEach(async () => {
     createUserTable();
     createPhotoTable();
     await movePhotoToFolder();
@@ -79,7 +67,7 @@ describe("Delete a table that exists", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).delete(
+    const res = await request(app).delete(
       `/table/delete/${JSON.stringify(obj)}`
     );
 
@@ -90,11 +78,6 @@ describe("Delete a table that exists", () => {
       error: { message: "" },
     });
   });
-
-  afterAll(async () => {
-    await deletePhotoFromFolder();
-    server.close();
-  });
 });
 
 describe("Delete a table that doesn't exist", () => {
@@ -103,7 +86,7 @@ describe("Delete a table that doesn't exist", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).delete(
+    const res = await request(app).delete(
       `/table/delete/${JSON.stringify(obj)}`
     );
 
@@ -114,15 +97,11 @@ describe("Delete a table that doesn't exist", () => {
       error: { message: "table not found" },
     });
   });
-
-  afterAll(() => {
-    server.close();
-  });
 });
 
 describe("Create a new table", () => {
   test("should return success", async () => {
-    const res = await request(server)
+    const res = await request(app)
       .post("/table/create")
       .send({
         tableName: "test_table_2024",
@@ -136,24 +115,17 @@ describe("Create a new table", () => {
       error: { message: "" },
     });
   });
-
-  afterAll(async () => {
-    dropTables();
-    await deletePhotoFromFolder();
-
-    server.close();
-  });
 });
 
 describe("Create a new table that already exists", () => {
-  beforeAll(async () => {
+  beforeEach(async () => {
     createUserTable();
     createPhotoTable();
     await movePhotoToFolder();
   });
 
   test("should return error", async () => {
-    const res = await request(server)
+    const res = await request(app)
       .post("/table/create")
       .send({
         tableName: "test_table_2024",
@@ -167,17 +139,10 @@ describe("Create a new table that already exists", () => {
       error: { message: "table already exists" },
     });
   });
-
-  afterAll(async () => {
-    dropTables();
-    await deletePhotoFromFolder();
-
-    server.close();
-  });
 });
 
 describe("Count records of users in specific table ", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     insertUser();
   });
@@ -187,7 +152,7 @@ describe("Count records of users in specific table ", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).get(
+    const res = await request(app).get(
       `/table/count-records/${JSON.stringify(obj)}`
     );
 
@@ -198,13 +163,6 @@ describe("Count records of users in specific table ", () => {
       error: { message: "" },
     });
   });
-
-  afterAll(() => {
-    deleteUser();
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Count records in table that doesn't exist", () => {
@@ -213,7 +171,7 @@ describe("Count records in table that doesn't exist", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).get(
+    const res = await request(app).get(
       `/table/count-records/${JSON.stringify(obj)}`
     );
 
@@ -226,14 +184,10 @@ describe("Count records in table that doesn't exist", () => {
       },
     });
   });
-
-  afterAll(() => {
-    server.close();
-  });
 });
 
 describe("Count screenshots for users of specific table", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
     insertUser();
@@ -245,7 +199,7 @@ describe("Count screenshots for users of specific table", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).get(
+    const res = await request(app).get(
       `/table/count-records/${JSON.stringify(obj)}`
     );
 
@@ -256,17 +210,10 @@ describe("Count screenshots for users of specific table", () => {
       error: { message: "" },
     });
   });
-
-  afterAll(() => {
-    deleteUser();
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Get screenshot size of users of specific table", () => {
-  beforeAll(async () => {
+  beforeEach(async () => {
     createUserTable();
     createPhotoTable();
     insertUser();
@@ -279,7 +226,7 @@ describe("Get screenshot size of users of specific table", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).get(
+    const res = await request(app).get(
       `/table/screenshots-size/${JSON.stringify(obj)}`
     );
 
@@ -290,14 +237,6 @@ describe("Get screenshot size of users of specific table", () => {
       error: { message: "" },
     });
   });
-
-  afterAll(async () => {
-    deleteUser();
-    dropTables();
-    await deletePhotoFromFolder();
-
-    server.close();
-  });
 });
 
 describe("Get screenshot size for table that doesn't exist", () => {
@@ -306,7 +245,7 @@ describe("Get screenshot size for table that doesn't exist", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).get(
+    const res = await request(app).get(
       `/table/screenshots-size/${JSON.stringify(obj)}`
     );
 
@@ -317,14 +256,10 @@ describe("Get screenshot size for table that doesn't exist", () => {
       error: { message: "table not found" },
     });
   });
-
-  afterAll(() => {
-    server.close();
-  });
 });
 
 describe("Get column names for users of specific table", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
   });
 
@@ -333,7 +268,7 @@ describe("Get column names for users of specific table", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).get(
+    const res = await request(app).get(
       `/table/table-column-names/${JSON.stringify(obj)}`
     );
 
@@ -344,12 +279,6 @@ describe("Get column names for users of specific table", () => {
       error: { message: "" },
     });
   });
-
-  afterAll(() => {
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Get column names for table that doesn't exist", () => {
@@ -358,7 +287,7 @@ describe("Get column names for table that doesn't exist", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).get(
+    const res = await request(app).get(
       `/table/table-column-names/${JSON.stringify(obj)}`
     );
 
@@ -368,9 +297,5 @@ describe("Get column names for table that doesn't exist", () => {
       data: {},
       error: { message: "table not found" },
     });
-  });
-
-  afterAll(() => {
-    server.close();
   });
 });

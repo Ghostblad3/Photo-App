@@ -2,7 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import fs from "fs/promises";
 import schemaValidator from "../middleware/validator-middleware";
-import sqlite from "../database/connection";
+import { sqlite } from "../database/connection";
 import {
   tableNameType,
   userIdNameType,
@@ -288,7 +288,7 @@ recordRouter.delete(
   }
 );
 
-recordRouter.post(
+recordRouter.patch(
   "/update-user",
   schemaValidator(
     z.object({
@@ -390,7 +390,11 @@ recordRouter.post(
 
     sqlite.prepare(query).run(Object.values(user), userId);
 
-    return res.status(204).send({});
+    return res.status(200).send({
+      status: "success",
+      data: {},
+      error: { message: "" },
+    });
   }
 );
 

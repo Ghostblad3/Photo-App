@@ -1,5 +1,5 @@
 import { useEffect, useRef, memo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -9,6 +9,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { ReloadIcon } from "@radix-ui/react-icons";
 import userDataStore from "./stores/userDataStore";
 import deleteUserScreenshotStore from "./stores/deleteUserScreenshotStore";
 import operationStore from "../global-stores/operationStore";
@@ -25,10 +26,11 @@ const DeleteUserScreenshotDialog = memo(() => {
   );
   const { setShowDialog, resetDeleteUserScreenshotStore } =
     deleteUserScreenshotStore((state) => state.actions);
-
-  const checkedBoxIsCheckedRef = useRef(false);
   const { addOperation, changeOperationStatus, removeOperation } =
     operationStore((state) => state.actions);
+
+  const checkedBoxIsCheckedRef = useRef(false);
+  const hash = useRef(crypto.randomUUID());
 
   useEffect(() => {
     return () => {
@@ -37,21 +39,23 @@ const DeleteUserScreenshotDialog = memo(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const { refetch: deleteUserQuery } = useQuery({
-    queryKey: ["delete-user-screenshot", userId],
-    queryFn: async () => {
-      setShowDialog(false);
-
-      const hash = crypto.randomUUID();
-      addOperation(hash, "pending", "delete", "Deleting user screenshot", true);
-
-      const time = Date.now();
+  const mutation = useMutation({
+    mutationFn: async () => {
+      addOperation(
+        hash.current,
+        "pending",
+        "delete",
+        "Deleting user screenshot",
+        true
+      );
 
       const paramData = {
         userIdName,
         userId,
         tableName,
       };
+
+      const time = Date.now();
 
       const response = await fetch(
         `http://localhost:3000/screenshot/delete-user-screenshot/${JSON.stringify(
@@ -69,32 +73,40 @@ const DeleteUserScreenshotDialog = memo(() => {
       }
 
       if (!response.ok) {
-        changeOperationStatus(
-          hash,
-          "error",
-          "Failed to delete user screenshot",
-          true
-        );
-        remove(hash);
-
-        return {};
+        throw new Error("Failed to delete user screenshot");
       }
+    },
+    onError: () => {
+      modifyStatus(
+        hash.current,
+        "error",
+        "Failed to delete user screenshot",
+        true
+      );
+    },
+    onSuccess: () => {
+      deleteUserScreenshot(userIdName, userId);
 
-      changeOperationStatus(
-        hash,
+      modifyStatus(
+        hash.current,
         "success",
         "Successfully deleted user screenshot",
         true
       );
-      remove(hash);
-      deleteUserScreenshot(userIdName, userId);
-
-      return {};
     },
-    enabled: false,
+    onSettled: () => {
+      setShowDialog(false);
+    },
+    retry: false,
   });
 
-  async function remove(hash: string) {
+  async function modifyStatus(
+    hash: string,
+    status: "pending" | "success" | "error",
+    message: string,
+    show: boolean
+  ) {
+    changeOperationStatus(hash, status, message, show);
     await new Promise((resolve) => setTimeout(resolve, 5000));
     removeOperation(hash);
   }
@@ -102,7 +114,7 @@ const DeleteUserScreenshotDialog = memo(() => {
   function deleteUserScreenshotButtonHandler() {
     if (!checkedBoxIsCheckedRef.current) return;
 
-    deleteUserQuery();
+    mutation.mutate();
   }
 
   return (
@@ -117,11 +129,9 @@ const DeleteUserScreenshotDialog = memo(() => {
           <DialogHeader>
             <DialogTitle>Delete user screenshot</DialogTitle>
           </DialogHeader>
-
           <p className="mx-4">
             Are you sure you want to delete this user screenshot?
           </p>
-
           <div className="flex items-center space-x-2 mx-4">
             <Checkbox
               id="terms"
@@ -136,11 +146,14 @@ const DeleteUserScreenshotDialog = memo(() => {
               Yes I am sure
             </Label>
           </div>
-
           <Button
             className="w-[calc(100%_-_2rem)] mx-4"
             onClick={deleteUserScreenshotButtonHandler}
+            disabled={!mutation.isIdle}
           >
+            {mutation.isPending && (
+              <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+            )}
             Delete
           </Button>
         </DialogContent>

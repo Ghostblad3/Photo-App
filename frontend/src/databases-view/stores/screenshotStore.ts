@@ -1,23 +1,21 @@
 import { create } from "zustand";
 
-interface ScreenshotAsBase64Props {
+interface ScreenshotProps {
   props: {
     showDialog: boolean;
     userInfo: { [key: string]: string };
     tableName: string;
     keyName: string;
-    screenshotAsBase64: string;
   };
 }
 
-interface ScreenshotAsBase64Actions {
+interface ScreenshotActions {
   actions: {
     setShowDialog: (showDialog: boolean) => void;
     setUserInfo: (userInfo: { [key: string]: string }) => void;
     setTableName: (tableName: string) => void;
     setKeyName: (keyName: string) => void;
-    setScreenshotAsBase64: (screenshotAsBase64: string) => void;
-    resetScreenshotAsBase64Store(): void;
+    resetScreenshotStore(): void;
   };
 }
 
@@ -26,12 +24,9 @@ const initialProps = {
   userInfo: {},
   tableName: "",
   keyName: "",
-  screenshotAsBase64: "",
 };
 
-const screenshotAsBase64Store = create<
-  ScreenshotAsBase64Props & ScreenshotAsBase64Actions
->((set) => ({
+const screenshotStore = create<ScreenshotProps & ScreenshotActions>((set) => ({
   props: initialProps,
   actions: {
     setShowDialog: (showDialog: boolean) => {
@@ -46,13 +41,10 @@ const screenshotAsBase64Store = create<
     setKeyName: (keyName: string) => {
       set((state) => ({ props: { ...state.props, keyName } }));
     },
-    setScreenshotAsBase64: (screenshotAsBase64: string) => {
-      set((state) => ({ props: { ...state.props, screenshotAsBase64 } }));
-    },
-    resetScreenshotAsBase64Store: () => {
+    resetScreenshotStore: () => {
       set(() => ({ props: initialProps }));
     },
   },
 }));
 
-export default screenshotAsBase64Store;
+export default screenshotStore;

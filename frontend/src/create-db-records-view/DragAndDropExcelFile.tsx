@@ -157,6 +157,8 @@ function DragAndDropExcelFile() {
         await new Promise((resolve) => setTimeout(resolve, 2000 - timeDiff));
       }
 
+      console.log(result);
+
       if (!result.success) {
         changeOperationStatus(
           hash,

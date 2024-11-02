@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -18,7 +18,6 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import tableNamesStore from "./stores/tableNamesStore";
-import userDataStore from "./stores/userDataStore";
 import searchStore from "./stores/searchStore";
 import selectedTableInfoStore from "./stores/selectedTableInfoStore";
 import operationStore from "../global-stores/operationStore";
@@ -27,7 +26,6 @@ function TableNamesCombobox() {
   const tableNames = tableNamesStore((state) => state.tableNames);
   const { setTableNames, resetTableNamesStore: resetTableNames } =
     tableNamesStore((state) => state.actions);
-  const { resetUserData } = userDataStore((state) => state.actions);
   const resetSearchStore = searchStore(
     (state) => state.actions.resetSearchStore
   );
@@ -40,10 +38,8 @@ function TableNamesCombobox() {
   const { addOperation, changeOperationStatus, removeOperation } =
     operationStore((state) => state.actions);
 
+  const hash = useRef(crypto.randomUUID());
   const [open, setOpen] = useState(false);
-  const [fetchStatus, setFetchStatus] = useState<"pending" | "success">(
-    "pending"
-  );
 
   useEffect(() => {
     return () => {
@@ -52,12 +48,16 @@ function TableNamesCombobox() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useQuery({
-    queryKey: ["tableNames-databases-view"],
+  const { data, isLoading, isSuccess, isError } = useQuery({
+    queryKey: ["tableNames-databases-view", hash.current],
     queryFn: async () => {
-      const hash = crypto.randomUUID();
-
-      addOperation(hash, "pending", "fetch", "Fetching table names", false);
+      addOperation(
+        hash.current,
+        "pending",
+        "fetch",
+        "Fetching table names",
+        false
+      );
 
       const startTime = Date.now();
 
@@ -72,15 +72,7 @@ function TableNamesCombobox() {
       }
 
       if (!response.ok) {
-        changeOperationStatus(
-          hash,
-          "error",
-          "Failed to fetch table names",
-          true
-        );
-        remove(hash);
-
-        return {};
+        throw new Error("Failed to fetch table names");
       }
 
       const receivedObject: {
@@ -91,28 +83,51 @@ function TableNamesCombobox() {
 
       const { data } = receivedObject;
 
-      changeOperationStatus(
-        hash,
+      return data.map((item: { name: string }) => item.name);
+    },
+    retry: false,
+  });
+
+  useEffect(() => {
+    if (data) {
+      setTableNames(data);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
+
+  useEffect(() => {
+    if (isSuccess) {
+      modifyStatus(
+        hash.current,
         "success",
         "Successfully fetched table names",
         false
       );
-      remove(hash);
-      setTableNames(data.map((item: { name: string }) => item.name));
-      setFetchStatus("success");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSuccess]);
 
-      return {};
-    },
-  });
+  useEffect(() => {
+    if (isError) {
+      modifyStatus(hash.current, "error", "Failed to fetch table names", true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isError]);
 
-  async function remove(hash: string) {
+  async function modifyStatus(
+    hash: string,
+    status: "pending" | "success" | "error",
+    message: string,
+    show: boolean
+  ) {
+    changeOperationStatus(hash, status, message, show);
     await new Promise((resolve) => setTimeout(resolve, 5000));
     removeOperation(hash);
   }
 
   return (
     <div className="w-full space-y-12 p-2.5">
-      {fetchStatus === "pending" && (
+      {isLoading && (
         <>
           <div className="space-y-1">
             <Skeleton className="h-8 max-w-[8.75rem]" />
@@ -124,7 +139,7 @@ function TableNamesCombobox() {
           </div>
         </>
       )}
-      {fetchStatus === "success" && (
+      {isSuccess && (
         <>
           <div className="space-y-1">
             <h1 className="font-bold text-2xl decoration-slate-100">

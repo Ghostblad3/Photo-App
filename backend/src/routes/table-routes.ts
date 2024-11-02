@@ -2,7 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import fs from "fs/promises";
 import schemaValidator from "../middleware/validator-middleware";
-import sqlite from "../database/connection";
+import { sqlite } from "../database/connection";
 import { getAverageScreenshotSizeInDirectory } from "../utils/util";
 import { tableNameType, columnNamesType } from "../zod/zod-types";
 

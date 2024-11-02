@@ -3,7 +3,7 @@ import { z } from "zod";
 import fs from "fs/promises";
 import crypto from "crypto";
 import schemaValidator from "../middleware/validator-middleware";
-import sqlite from "../database/connection";
+import { sqlite } from "../database/connection";
 import {
   userIdType,
   tableNameType,
@@ -327,7 +327,7 @@ screenshotRouter.delete(
 );
 
 // Update the date of the screenshot
-screenshotRouter.post(
+screenshotRouter.patch(
   "/update-user-screenshot-date",
   schemaValidator(
     z.object({
@@ -394,7 +394,11 @@ screenshotRouter.post(
       )
       .run(dayNumber, rec_id);
 
-    return res.status(204).send({});
+    return res.status(200).send({
+      status: "success",
+      data: {},
+      error: { message: "" },
+    });
   }
 );
 

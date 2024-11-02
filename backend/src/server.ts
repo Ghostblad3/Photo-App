@@ -2,11 +2,11 @@ import express, { Express, Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import fs from "fs/promises";
-import sqlite from "./database/connection";
+import { getErrorCodeAndMessage, errorLogger } from "./utils/util";
+import { Server, IncomingMessage, ServerResponse } from "http";
 import tableRouter from "./routes/table-routes";
 import screenshotRouter from "./routes/screenshot-routes";
 import recordRouter from "./routes/record-routes";
-import { getErrorCodeAndMessage, errorLogger } from "./utils/util";
 
 dotenv.config();
 const app: Express = express();
@@ -16,17 +16,6 @@ app.use(cors());
 app.use("/table", tableRouter);
 app.use("/screenshot", screenshotRouter);
 app.use("/record", recordRouter);
-
-let counter = 1;
-app.get("/test-route", (req, res) => {
-  if (counter % 2 === 0) {
-    counter++;
-    return res.send({ message: "ok" });
-  }
-
-  counter++;
-  return res.status(500).send({ message: "not ok" });
-});
 
 app.use(
   async (
@@ -87,16 +76,44 @@ app.all("/*", (_: Request, res: Response) => {
   res.status(404).send({ error: "route not found" });
 });
 
-const server = app.listen(process.env.PORT || 3000, async () => {
-  console.log(
-    `Server is running at http://localhost:${process.env.PORT || 3000}`
-  );
+let server: Server<typeof IncomingMessage, typeof ServerResponse>;
 
-  try {
-    await fs.access("./screenshots");
-  } catch (e) {
-    await fs.mkdir("./screenshots");
+async function startServer() {
+  if (server) {
+    return Promise.resolve();
   }
-});
 
-export { server, sqlite };
+  return new Promise<void>((resolve, _) => {
+    server = app.listen(process.env.PORT || 3000, async () => {
+      console.log(
+        `Server is running at http://localhost:${process.env.PORT || 3000}`
+      );
+
+      try {
+        await fs.access("./screenshots");
+      } catch (e) {
+        await fs.mkdir("./screenshots");
+      }
+
+      resolve();
+    });
+  });
+}
+
+async function closeServer() {
+  if (!server) {
+    return Promise.resolve();
+  }
+
+  return new Promise<void>((resolve, reject) => {
+    server.close((err) => {
+      if (err) {
+        reject();
+      }
+
+      resolve();
+    });
+  });
+}
+
+export { startServer, closeServer, app };

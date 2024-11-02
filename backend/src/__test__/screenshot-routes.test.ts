@@ -1,34 +1,32 @@
 import request from "supertest";
 import fs from "fs";
-import { server } from "../server";
+import { app } from "../server";
+import { resetInMemoryDb } from "../database/connection";
 import {
   createUserTable,
   createPhotoTable,
   insertUser,
   insertPhoto,
   movePhotoToFolder,
-  deleteUser,
-  dropTables,
-  deletePhotoFromFolder,
 } from "../testPrepareFunctions";
 
 jest.setTimeout(30000);
 
+beforeEach(() => {
+  resetInMemoryDb();
+});
+
 describe("Call an api route that doesn't exist", () => {
   test("should return error", async () => {
-    const res = await request(server).get("/screenshot/random-route");
+    const res = await request(app).get("/screenshot/random-route");
 
     expect(res.statusCode).toEqual(404);
     expect(res.body).toEqual({ error: "route not found" });
   });
-
-  afterAll(() => {
-    server.close();
-  });
 });
 
 describe("Add user screenshot", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
     insertUser();
@@ -37,7 +35,7 @@ describe("Add user screenshot", () => {
   test("Should return success", async () => {
     const screenshot = fs.readFileSync("./src/dummy_data/images/1.png");
 
-    const res = await request(server)
+    const res = await request(app)
       .post("/screenshot/add-user-screenshot")
       .send({
         userIdName: "user_asm",
@@ -58,18 +56,10 @@ describe("Add user screenshot", () => {
       error: { message: "" },
     });
   });
-
-  afterAll(async () => {
-    deleteUser();
-    dropTables();
-    await deletePhotoFromFolder();
-
-    server.close();
-  });
 });
 
 describe("Add user screenshot with wrong user prop id name", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
     insertUser();
@@ -78,7 +68,7 @@ describe("Add user screenshot with wrong user prop id name", () => {
   test("Should return error", async () => {
     const screenshot = fs.readFileSync("./src/dummy_data/images/1.png");
 
-    const res = await request(server)
+    const res = await request(app)
       .post("/screenshot/add-user-screenshot")
       .send({
         userIdName: "asmasmasm",
@@ -98,18 +88,10 @@ describe("Add user screenshot with wrong user prop id name", () => {
       },
     });
   });
-
-  afterAll(async () => {
-    deleteUser();
-    dropTables();
-    await deletePhotoFromFolder();
-
-    server.close();
-  });
 });
 
 describe("Add user screenshot to wrong table", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
     insertUser();
@@ -118,7 +100,7 @@ describe("Add user screenshot to wrong table", () => {
   test("Should return error", async () => {
     const screenshot = fs.readFileSync("./src/dummy_data/images/1.png");
 
-    const res = await request(server)
+    const res = await request(app)
       .post("/screenshot/add-user-screenshot")
       .send({
         userIdName: "user_asm",
@@ -135,18 +117,10 @@ describe("Add user screenshot to wrong table", () => {
       error: { message: "table not found" },
     });
   });
-
-  afterAll(async () => {
-    deleteUser();
-    dropTables();
-    await deletePhotoFromFolder();
-
-    server.close();
-  });
 });
 
 describe("Add user screenshot with wrong user id", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
     insertUser();
@@ -155,7 +129,7 @@ describe("Add user screenshot with wrong user id", () => {
   test("Should return error", async () => {
     const screenshot = fs.readFileSync("./src/dummy_data/images/1.png");
 
-    const res = await request(server)
+    const res = await request(app)
       .post("/screenshot/add-user-screenshot")
       .send({
         userIdName: "user_asm",
@@ -172,18 +146,10 @@ describe("Add user screenshot with wrong user id", () => {
       error: { message: "user not found" },
     });
   });
-
-  afterAll(async () => {
-    deleteUser();
-    dropTables();
-    await deletePhotoFromFolder();
-
-    server.close();
-  });
 });
 
 describe("Update user screenshot date", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
     insertUser();
@@ -191,8 +157,8 @@ describe("Update user screenshot date", () => {
   });
 
   test("Should return success", async () => {
-    const res = await request(server)
-      .post("/screenshot/update-user-screenshot-date")
+    const res = await request(app)
+      .patch("/screenshot/update-user-screenshot-date")
       .send({
         userIdName: "user_asm",
         userId: "123456789",
@@ -200,20 +166,17 @@ describe("Update user screenshot date", () => {
         tableName: "test_table_2024",
       });
 
-    expect(res.statusCode).toEqual(204);
-    expect(res.body).toEqual({});
-  });
-
-  afterAll(() => {
-    deleteUser();
-    dropTables();
-
-    server.close();
+    expect(res.statusCode).toEqual(200);
+    expect(res.body).toEqual({
+      status: "success",
+      data: {},
+      error: { message: "" },
+    });
   });
 });
 
 describe("Update user screenshot date with wrong user id prop name", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
     insertUser();
@@ -221,8 +184,8 @@ describe("Update user screenshot date with wrong user id prop name", () => {
   });
 
   test("Should return error", async () => {
-    const res = await request(server)
-      .post("/screenshot/update-user-screenshot-date")
+    const res = await request(app)
+      .patch("/screenshot/update-user-screenshot-date")
       .send({
         userIdName: "asmasm",
         userId: "123456789",
@@ -240,17 +203,10 @@ describe("Update user screenshot date with wrong user id prop name", () => {
       },
     });
   });
-
-  afterAll(() => {
-    deleteUser();
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Update user screenshot date with wrong user id", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
     insertUser();
@@ -258,8 +214,8 @@ describe("Update user screenshot date with wrong user id", () => {
   });
 
   test("Should return error", async () => {
-    const res = await request(server)
-      .post("/screenshot/update-user-screenshot-date")
+    const res = await request(app)
+      .patch("/screenshot/update-user-screenshot-date")
       .send({
         userIdName: "user_asm",
         userId: "99999999",
@@ -274,17 +230,10 @@ describe("Update user screenshot date with wrong user id", () => {
       error: { message: "user not found" },
     });
   });
-
-  afterAll(() => {
-    deleteUser();
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Update user screenshot date using wrong table name", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
     insertUser();
@@ -292,8 +241,8 @@ describe("Update user screenshot date using wrong table name", () => {
   });
 
   test("Should return error", async () => {
-    const res = await request(server)
-      .post("/screenshot/update-user-screenshot-date")
+    const res = await request(app)
+      .patch("/screenshot/update-user-screenshot-date")
       .send({
         userIdName: "user_asm",
         userId: "123456789",
@@ -308,17 +257,10 @@ describe("Update user screenshot date using wrong table name", () => {
       error: { message: "table not found" },
     });
   });
-
-  afterAll(() => {
-    deleteUser();
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Delete user screenshot", () => {
-  beforeAll(async () => {
+  beforeEach(async () => {
     createUserTable();
     createPhotoTable();
     insertUser();
@@ -333,7 +275,7 @@ describe("Delete user screenshot", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).delete(
+    const res = await request(app).delete(
       `/screenshot/delete-user-screenshot/${JSON.stringify(paramsObj)}`
     );
 
@@ -344,18 +286,10 @@ describe("Delete user screenshot", () => {
       error: { message: "" },
     });
   });
-
-  afterAll(async () => {
-    deleteUser();
-    dropTables();
-    await deletePhotoFromFolder();
-
-    server.close();
-  });
 });
 
 describe("Delete user screenshot for user that doesn't have screenshot", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
     insertUser();
@@ -368,7 +302,7 @@ describe("Delete user screenshot for user that doesn't have screenshot", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).delete(
+    const res = await request(app).delete(
       `/screenshot/delete-user-screenshot/${JSON.stringify(paramsObj)}`
     );
 
@@ -379,17 +313,10 @@ describe("Delete user screenshot for user that doesn't have screenshot", () => {
       error: { message: "user screenshot not found" },
     });
   });
-
-  afterAll(() => {
-    deleteUser();
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Delete user screenshot with wrong user id name", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
     insertUser();
@@ -402,7 +329,7 @@ describe("Delete user screenshot with wrong user id name", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).delete(
+    const res = await request(app).delete(
       `/screenshot/delete-user-screenshot/${JSON.stringify(paramsObj)}`
     );
 
@@ -416,17 +343,10 @@ describe("Delete user screenshot with wrong user id name", () => {
       },
     });
   });
-
-  afterAll(() => {
-    deleteUser();
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Delete user screenshot with wrong user id", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
     insertUser();
@@ -439,7 +359,7 @@ describe("Delete user screenshot with wrong user id", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).delete(
+    const res = await request(app).delete(
       `/screenshot/delete-user-screenshot/${JSON.stringify(paramsObj)}`
     );
 
@@ -450,17 +370,10 @@ describe("Delete user screenshot with wrong user id", () => {
       error: { message: "user not found" },
     });
   });
-
-  afterAll(() => {
-    deleteUser();
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Delete user screenshot with wrong table name", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
     insertUser();
@@ -473,7 +386,7 @@ describe("Delete user screenshot with wrong table name", () => {
       tableName: "test_2024",
     };
 
-    const res = await request(server).delete(
+    const res = await request(app).delete(
       `/screenshot/delete-user-screenshot/${JSON.stringify(paramsObj)}`
     );
 
@@ -484,17 +397,10 @@ describe("Delete user screenshot with wrong table name", () => {
       error: { message: "table not found" },
     });
   });
-
-  afterAll(() => {
-    deleteUser();
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Retrieve all user screenshots for specific day", () => {
-  beforeAll(async () => {
+  beforeEach(async () => {
     createUserTable();
     createPhotoTable();
     insertUser();
@@ -508,7 +414,7 @@ describe("Retrieve all user screenshots for specific day", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).get(
+    const res = await request(app).get(
       `/screenshot/retrieve-user-screenshots-single-day/${JSON.stringify(
         paramsObj
       )}`
@@ -533,18 +439,10 @@ describe("Retrieve all user screenshots for specific day", () => {
       error: { message: "" },
     });
   });
-
-  afterAll(async () => {
-    deleteUser();
-    dropTables();
-    await deletePhotoFromFolder();
-
-    server.close();
-  });
 });
 
 describe("Retrieve all user screenshots for specific day that doesn't exist", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
   });
@@ -555,7 +453,7 @@ describe("Retrieve all user screenshots for specific day that doesn't exist", ()
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).get(
+    const res = await request(app).get(
       `/screenshot/retrieve-user-screenshots-single-day/${JSON.stringify(
         paramsObj
       )}`
@@ -568,12 +466,6 @@ describe("Retrieve all user screenshots for specific day that doesn't exist", ()
       error: { message: "" },
     });
   });
-
-  afterAll(() => {
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Retrieve all user screenshots for specific day from table that doesn't exist", () => {
@@ -583,7 +475,7 @@ describe("Retrieve all user screenshots for specific day from table that doesn't
       tableName: "test_2024",
     };
 
-    const res = await request(server).get(
+    const res = await request(app).get(
       `/screenshot/retrieve-user-screenshots-single-day/${JSON.stringify(
         paramsObj
       )}`
@@ -596,14 +488,10 @@ describe("Retrieve all user screenshots for specific day from table that doesn't
       error: { message: "table not found" },
     });
   });
-
-  afterAll(() => {
-    server.close();
-  });
 });
 
 describe("Retrieve all submitted days for user screenshots", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
     insertUser();
@@ -616,7 +504,7 @@ describe("Retrieve all submitted days for user screenshots", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).get(
+    const res = await request(app).get(
       `/screenshot/retrieve-submitted-days/${JSON.stringify(paramsObj)}`
     );
 
@@ -628,17 +516,10 @@ describe("Retrieve all submitted days for user screenshots", () => {
       error: { message: "" },
     });
   });
-
-  afterAll(() => {
-    deleteUser();
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Retrieve all submitted days for user screenshots when there aren't submitted screenshots", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
     insertUser();
@@ -650,7 +531,7 @@ describe("Retrieve all submitted days for user screenshots when there aren't sub
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).get(
+    const res = await request(app).get(
       `/screenshot/retrieve-submitted-days/${JSON.stringify(paramsObj)}`
     );
 
@@ -661,25 +542,16 @@ describe("Retrieve all submitted days for user screenshots when there aren't sub
       error: { message: "" },
     });
   });
-
-  afterAll(() => {
-    deleteUser();
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Retrieve all submitted days for user screenshots for table that doesn't exist", () => {
-  beforeAll(() => {});
-
   test("Should return error", async () => {
     const paramsObj = {
       dayNumber: "1",
       tableName: "test_2024",
     };
 
-    const res = await request(server).get(
+    const res = await request(app).get(
       `/screenshot/retrieve-submitted-days/${JSON.stringify(paramsObj)}`
     );
 
@@ -690,14 +562,10 @@ describe("Retrieve all submitted days for user screenshots for table that doesn'
       error: { message: "table not found" },
     });
   });
-
-  afterAll(() => {
-    server.close();
-  });
 });
 
 describe("Retrieve user screenshot", () => {
-  beforeAll(async () => {
+  beforeEach(async () => {
     createUserTable();
     createPhotoTable();
     insertUser();
@@ -712,7 +580,7 @@ describe("Retrieve user screenshot", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).get(
+    const res = await request(app).get(
       `/screenshot/retrieve-user-screenshot/${JSON.stringify(paramsObj)}`
     );
 
@@ -723,18 +591,10 @@ describe("Retrieve user screenshot", () => {
       error: { message: "" },
     });
   });
-
-  afterAll(async () => {
-    deleteUser();
-    dropTables();
-    await deletePhotoFromFolder();
-
-    server.close();
-  });
 });
 
 describe("Retrieve user screenshot for user id prop name that doesn't exist", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
     insertUser();
@@ -748,7 +608,7 @@ describe("Retrieve user screenshot for user id prop name that doesn't exist", ()
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).get(
+    const res = await request(app).get(
       `/screenshot/retrieve-user-screenshot/${JSON.stringify(paramsObj)}`
     );
 
@@ -762,17 +622,10 @@ describe("Retrieve user screenshot for user id prop name that doesn't exist", ()
       },
     });
   });
-
-  afterAll(() => {
-    deleteUser();
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Retrieve user screenshot for user id that doesn't exist", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
     insertUser();
@@ -786,7 +639,7 @@ describe("Retrieve user screenshot for user id that doesn't exist", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).get(
+    const res = await request(app).get(
       `/screenshot/retrieve-user-screenshot/${JSON.stringify(paramsObj)}`
     );
 
@@ -796,13 +649,6 @@ describe("Retrieve user screenshot for user id that doesn't exist", () => {
       data: {},
       error: { message: "user not found" },
     });
-  });
-
-  afterAll(() => {
-    deleteUser();
-    dropTables();
-
-    server.close();
   });
 });
 
@@ -814,7 +660,7 @@ describe("Retrieve user screenshot for table that doesn't exist", () => {
       tableName: "test_2024",
     };
 
-    const res = await request(server).get(
+    const res = await request(app).get(
       `/screenshot/retrieve-user-screenshot/${JSON.stringify(paramsObj)}`
     );
 
@@ -825,14 +671,10 @@ describe("Retrieve user screenshot for table that doesn't exist", () => {
       error: { message: "table not found" },
     });
   });
-
-  afterAll(() => {
-    server.close();
-  });
 });
 
 describe("Retrieve user data for users that have screenshot", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
     insertUser();
@@ -844,7 +686,7 @@ describe("Retrieve user data for users that have screenshot", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).get(
+    const res = await request(app).get(
       `/screenshot/retrieve-user-data-with-screenshots/${JSON.stringify(
         paramsObj
       )}`
@@ -865,13 +707,6 @@ describe("Retrieve user data for users that have screenshot", () => {
       error: { message: "" },
     });
   });
-
-  afterAll(() => {
-    deleteUser();
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Retrieve user data for users that have screenshot for table that doesn't exist", () => {
@@ -880,7 +715,7 @@ describe("Retrieve user data for users that have screenshot for table that doesn
       tableName: "test_2024",
     };
 
-    const res = await request(server).get(
+    const res = await request(app).get(
       `/screenshot/retrieve-user-data-with-screenshots/${JSON.stringify(
         paramsObj
       )}`
@@ -893,14 +728,10 @@ describe("Retrieve user data for users that have screenshot for table that doesn
       error: { message: "table not found" },
     });
   });
-
-  afterAll(() => {
-    server.close();
-  });
 });
 
 describe("Retrieve user screenshots for all days", () => {
-  beforeAll(async () => {
+  beforeEach(async () => {
     createUserTable();
     createPhotoTable();
     insertUser();
@@ -913,7 +744,7 @@ describe("Retrieve user screenshots for all days", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).get(
+    const res = await request(app).get(
       `/screenshot/retrieve-user-screenshots-all-days/${JSON.stringify(
         paramsObj
       )}`
@@ -936,18 +767,10 @@ describe("Retrieve user screenshots for all days", () => {
       error: { message: "" },
     });
   });
-
-  afterAll(async () => {
-    deleteUser();
-    dropTables();
-    await deletePhotoFromFolder();
-
-    server.close();
-  });
 });
 
 describe("Retrieve user screenshots for all days for table that doesn't exist", () => {
-  beforeAll(async () => {
+  beforeEach(async () => {
     createUserTable();
     createPhotoTable();
     insertUser();
@@ -960,7 +783,7 @@ describe("Retrieve user screenshots for all days for table that doesn't exist", 
       tableName: "test_2024",
     };
 
-    const res = await request(server).get(
+    const res = await request(app).get(
       `/screenshot/retrieve-user-screenshots-all-days/${JSON.stringify(
         paramsObj
       )}`
@@ -972,13 +795,5 @@ describe("Retrieve user screenshots for all days for table that doesn't exist", 
       data: {},
       error: { message: "table not found" },
     });
-  });
-
-  afterAll(async () => {
-    deleteUser();
-    dropTables();
-    await deletePhotoFromFolder();
-
-    server.close();
   });
 });

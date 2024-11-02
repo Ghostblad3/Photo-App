@@ -9,7 +9,9 @@ export default function schemaValidator(schema: z.ZodObject<any, any>) {
 
     try {
       validationResult = schema.safeParse(
-        method === "POST" ? req.body : JSON.parse(req.params["query"])
+        method === "POST" || method === "PATCH"
+          ? req.body
+          : JSON.parse(req.params["query"])
       );
     } catch (e) {
       return res.status(400).send({ error: "invalid JSON format" });

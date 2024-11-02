@@ -1,4 +1,4 @@
-import sqlite from "./database/connection";
+import { sqlite } from "./database/connection";
 import fs from "fs/promises";
 
 function createUserTable(tableName: string = "test_table_2024") {
@@ -72,33 +72,10 @@ async function movePhotoToFolder(
   await fs.copyFile(photoLocation, `${path}/${tableName}/1.png`);
 }
 
-async function deletePhotoFromFolder(tableName: string = "test_table_2024") {
-  try {
-    await fs.access(`./screenshots/${tableName}`);
-    await fs.rm(`./screenshots/${tableName}`, { recursive: true, force: true });
-  } catch (e) {}
-}
-
-function deleteUser(
-  tableName: string = "test_table_2024",
-  user_asm: string = "123456789"
-) {
-  sqlite.prepare(`delete from ${tableName} where user_asm = ?`).run(user_asm);
-}
-
-function dropTables(tableNames: string[] = ["test_table_2024"]) {
-  tableNames.forEach((tableName) => {
-    sqlite.prepare(`drop table if exists ${tableName}`).run();
-  });
-}
-
 export {
   createUserTable,
   createPhotoTable,
   insertUser,
   insertPhoto,
   movePhotoToFolder,
-  deleteUser,
-  dropTables,
-  deletePhotoFromFolder,
 };

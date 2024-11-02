@@ -1,37 +1,36 @@
 import request from "supertest";
-import { server } from "../server";
+import { resetInMemoryDb } from "../database/connection";
+import { app } from "../server";
 import {
   createUserTable,
   createPhotoTable,
-  dropTables,
   insertUser,
-  deleteUser,
   insertPhoto,
   movePhotoToFolder,
 } from "../testPrepareFunctions";
 
 jest.setTimeout(30000);
 
+beforeEach(() => {
+  resetInMemoryDb();
+});
+
 describe("Call an api route that doesn't exist", () => {
   test("should return error", async () => {
-    const res = await request(server).get("/record/random-route");
+    const res = await request(app).get("/record/random-route");
 
     expect(res.statusCode).toEqual(404);
     expect(res.body).toEqual({ error: "route not found" });
   });
-
-  afterAll(() => {
-    server.close();
-  });
 });
 
 describe("Add users", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
   });
 
   test("Should return success", async () => {
-    const res = await request(server)
+    const res = await request(app)
       .post("/record/add-users/")
       .send({
         users: [
@@ -56,19 +55,11 @@ describe("Add users", () => {
       error: { message: "" },
     });
   });
-
-  afterAll(() => {
-    deleteUser("test_table_2024", "123456789");
-    deleteUser("test_table_2024", "987654321");
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Add users in table that doesn't exist", () => {
   test("Should return error", async () => {
-    const res = await request(server)
+    const res = await request(app)
       .post("/record/add-users/")
       .send({
         users: [
@@ -93,19 +84,15 @@ describe("Add users in table that doesn't exist", () => {
       error: { message: "table not found" },
     });
   });
-
-  afterAll(() => {
-    server.close();
-  });
 });
 
 describe("Add users with missing props", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
   });
 
   test("Should return error", async () => {
-    const res = await request(server)
+    const res = await request(app)
       .post("/record/add-users/")
       .send({
         users: [
@@ -129,21 +116,15 @@ describe("Add users with missing props", () => {
       },
     });
   });
-
-  afterAll(() => {
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Add users with wrong prop names", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
   });
 
   test("Should return error", async () => {
-    const res = await request(server)
+    const res = await request(app)
       .post("/record/add-users/")
       .send({
         users: [
@@ -171,23 +152,17 @@ describe("Add users with wrong prop names", () => {
       },
     });
   });
-
-  afterAll(() => {
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Add users with ids that already exist", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     insertUser("test_table_2024", "123456789");
     insertUser("test_table_2024", "987654321");
   });
 
   test("Should return error", async () => {
-    const res = await request(server)
+    const res = await request(app)
       .post("/record/add-users/")
       .send({
         users: [
@@ -212,18 +187,10 @@ describe("Add users with ids that already exist", () => {
       error: { message: "one or more users already exist" },
     });
   });
-
-  afterAll(() => {
-    deleteUser("test_table_2024", "123456789");
-    deleteUser("test_table_2024", "987654321");
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Get all user data for a specific table", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     insertUser();
   });
@@ -233,11 +200,9 @@ describe("Get all user data for a specific table", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).get(
+    const res = await request(app).get(
       `/record/get-user-data/${JSON.stringify(paramsObj)}`
     );
-
-    expect;
 
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual({
@@ -248,13 +213,6 @@ describe("Get all user data for a specific table", () => {
       error: { message: "" },
     });
   });
-
-  afterAll(() => {
-    deleteUser();
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Get all user data for a table that doesn't exist", () => {
@@ -263,11 +221,9 @@ describe("Get all user data for a table that doesn't exist", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).get(
+    const res = await request(app).get(
       `/record/get-user-data/${JSON.stringify(paramsObj)}`
     );
-
-    expect;
 
     expect(res.statusCode).toEqual(404);
     expect(res.body).toEqual({
@@ -276,14 +232,10 @@ describe("Get all user data for a table that doesn't exist", () => {
       error: { message: "table not found" },
     });
   });
-
-  afterAll(() => {
-    server.close();
-  });
 });
 
 describe("Remove user", () => {
-  beforeAll(async () => {
+  beforeEach(async () => {
     createUserTable();
     insertUser();
     createPhotoTable();
@@ -298,7 +250,7 @@ describe("Remove user", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).delete(
+    const res = await request(app).delete(
       `/record/remove-user/${JSON.stringify(paramsObj)}`
     );
 
@@ -309,16 +261,10 @@ describe("Remove user", () => {
       error: { message: "" },
     });
   });
-
-  afterAll(() => {
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Remove user that doesn't exist", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
   });
@@ -330,7 +276,7 @@ describe("Remove user that doesn't exist", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).delete(
+    const res = await request(app).delete(
       `/record/remove-user/${JSON.stringify(paramsObj)}`
     );
 
@@ -340,12 +286,6 @@ describe("Remove user that doesn't exist", () => {
       data: {},
       error: { message: "user not found" },
     });
-  });
-
-  afterAll(() => {
-    dropTables();
-
-    server.close();
   });
 });
 
@@ -357,7 +297,7 @@ describe("Remove user from table that doesn't exist", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).delete(
+    const res = await request(app).delete(
       `/record/remove-user/${JSON.stringify(paramsObj)}`
     );
 
@@ -368,14 +308,10 @@ describe("Remove user from table that doesn't exist", () => {
       error: { message: "table not found" },
     });
   });
-
-  afterAll(() => {
-    server.close();
-  });
 });
 
 describe("Remove user with wrong id name", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
   });
@@ -387,7 +323,7 @@ describe("Remove user with wrong id name", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).delete(
+    const res = await request(app).delete(
       `/record/remove-user/${JSON.stringify(paramsObj)}`
     );
 
@@ -401,16 +337,10 @@ describe("Remove user with wrong id name", () => {
       },
     });
   });
-
-  afterAll(() => {
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Remove user with no screenshot", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
     insertUser();
@@ -423,7 +353,7 @@ describe("Remove user with no screenshot", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).delete(
+    const res = await request(app).delete(
       `/record/remove-user/${JSON.stringify(paramsObj)}`
     );
 
@@ -434,17 +364,10 @@ describe("Remove user with no screenshot", () => {
       error: { message: "" },
     });
   });
-
-  afterAll(() => {
-    deleteUser();
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Remove all users from a table", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
     insertUser("test_table_2024", "123456789", "John", "Doe");
@@ -455,7 +378,7 @@ describe("Remove all users from a table", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).delete(
+    const res = await request(app).delete(
       `/record/remove-all-users/${JSON.stringify(paramsObj)}`
     );
 
@@ -466,16 +389,10 @@ describe("Remove all users from a table", () => {
       error: { message: "" },
     });
   });
-
-  afterAll(() => {
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Remove all users from a table that doesn't have any user", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
   });
@@ -485,7 +402,7 @@ describe("Remove all users from a table that doesn't have any user", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).delete(
+    const res = await request(app).delete(
       `/record/remove-all-users/${JSON.stringify(paramsObj)}`
     );
 
@@ -496,16 +413,10 @@ describe("Remove all users from a table that doesn't have any user", () => {
       error: { message: "" },
     });
   });
-
-  afterAll(() => {
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Remove all users from a table that doesn't have any user with screenshot", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
     insertUser();
@@ -516,7 +427,7 @@ describe("Remove all users from a table that doesn't have any user with screensh
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).delete(
+    const res = await request(app).delete(
       `/record/remove-all-users/${JSON.stringify(paramsObj)}`
     );
 
@@ -527,12 +438,6 @@ describe("Remove all users from a table that doesn't have any user with screensh
       error: { message: "" },
     });
   });
-
-  afterAll(() => {
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Remove all users from a table that doesn't exist", () => {
@@ -541,7 +446,7 @@ describe("Remove all users from a table that doesn't exist", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(server).delete(
+    const res = await request(app).delete(
       `/record/remove-all-users/${JSON.stringify(paramsObj)}`
     );
 
@@ -552,22 +457,18 @@ describe("Remove all users from a table that doesn't exist", () => {
       error: { message: "table not found" },
     });
   });
-
-  afterAll(() => {
-    server.close();
-  });
 });
 
 describe("Update user props", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
     insertUser();
   });
 
   test("Should return success", async () => {
-    const res = await request(server)
-      .post(`/record/update-user`)
+    const res = await request(app)
+      .patch(`/record/update-user`)
       .send({
         tableName: "test_table_2024",
         userId: "123456789",
@@ -578,28 +479,25 @@ describe("Update user props", () => {
         },
       });
 
-    expect(res.statusCode).toEqual(204);
-    expect(res.body).toEqual({});
-  });
-
-  afterAll(() => {
-    deleteUser();
-    dropTables();
-
-    server.close();
+    expect(res.statusCode).toEqual(200);
+    expect(res.body).toEqual({
+      status: "success",
+      data: {},
+      error: { message: "" },
+    });
   });
 });
 
 describe("Update user props with wrong user id", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
     insertUser();
   });
 
   test("Should return error", async () => {
-    const res = await request(server)
-      .post(`/record/update-user`)
+    const res = await request(app)
+      .patch(`/record/update-user`)
       .send({
         tableName: "test_table_2024",
         userId: "999999999",
@@ -616,25 +514,18 @@ describe("Update user props with wrong user id", () => {
       error: { message: "user not found" },
     });
   });
-
-  afterAll(() => {
-    deleteUser();
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Update user props with wrong user prop order", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
     insertUser();
   });
 
   test("Should return error", async () => {
-    const res = await request(server)
-      .post(`/record/update-user`)
+    const res = await request(app)
+      .patch(`/record/update-user`)
       .send({
         tableName: "test_table_2024",
         userId: "123456789",
@@ -654,19 +545,12 @@ describe("Update user props with wrong user prop order", () => {
       },
     });
   });
-
-  afterAll(() => {
-    deleteUser();
-    dropTables();
-
-    server.close();
-  });
 });
 
-describe("Update user props for user table that doesn't exist", () => {
+describe("Update user props for user who belongs in table that doesn't exist", () => {
   test("Should return error", async () => {
-    const res = await request(server)
-      .post(`/record/update-user`)
+    const res = await request(app)
+      .patch(`/record/update-user`)
       .send({
         tableName: "test_table_2024",
         userId: "999999999",
@@ -683,22 +567,18 @@ describe("Update user props for user table that doesn't exist", () => {
       error: { message: "table not found" },
     });
   });
-
-  afterAll(() => {
-    server.close();
-  });
 });
 
 describe("Update user props with props missing", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
     insertUser();
   });
 
   test("Should return error", async () => {
-    const res = await request(server)
-      .post(`/record/update-user`)
+    const res = await request(app)
+      .patch(`/record/update-user`)
       .send({
         tableName: "test_table_2024",
         userId: "999999999",
@@ -717,25 +597,18 @@ describe("Update user props with props missing", () => {
       },
     });
   });
-
-  afterAll(() => {
-    deleteUser();
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Update user props with more props than required", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
     insertUser();
   });
 
   test("Should return error", async () => {
-    const res = await request(server)
-      .post(`/record/update-user`)
+    const res = await request(app)
+      .patch(`/record/update-user`)
       .send({
         tableName: "test_table_2024",
         userId: "999999999",
@@ -756,24 +629,17 @@ describe("Update user props with more props than required", () => {
       },
     });
   });
-
-  afterAll(() => {
-    deleteUser();
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Update user props for user that doesn't exist", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
   });
 
   test("Should return error", async () => {
-    const res = await request(server)
-      .post(`/record/update-user`)
+    const res = await request(app)
+      .patch(`/record/update-user`)
       .send({
         tableName: "test_table_2024",
         userId: "123456789",
@@ -790,18 +656,12 @@ describe("Update user props for user that doesn't exist", () => {
       error: { message: "user not found" },
     });
   });
-
-  afterAll(() => {
-    dropTables();
-
-    server.close();
-  });
 });
 
 describe("Update user props for table that doesn't exist", () => {
   test("Should return error", async () => {
-    const res = await request(server)
-      .post(`/record/update-user`)
+    const res = await request(app)
+      .patch(`/record/update-user`)
       .send({
         tableName: "test_table_2024",
         userId: "123456789",
@@ -819,14 +679,10 @@ describe("Update user props for table that doesn't exist", () => {
       error: { message: "table not found" },
     });
   });
-
-  afterAll(() => {
-    server.close();
-  });
 });
 
 describe("Update user props with new user id that already exists", () => {
-  beforeAll(() => {
+  beforeEach(() => {
     createUserTable();
     createPhotoTable();
     insertUser();
@@ -834,8 +690,8 @@ describe("Update user props with new user id that already exists", () => {
   });
 
   test("Should return error", async () => {
-    const res = await request(server)
-      .post(`/record/update-user`)
+    const res = await request(app)
+      .patch(`/record/update-user`)
       .send({
         tableName: "test_table_2024",
         userId: "123456789",
@@ -852,9 +708,5 @@ describe("Update user props with new user id that already exists", () => {
       data: {},
       error: { message: "new user id already exists" },
     });
-  });
-
-  afterAll(() => {
-    server.close();
   });
 });
