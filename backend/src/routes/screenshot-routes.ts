@@ -5,10 +5,10 @@ import crypto from "crypto";
 import schemaValidator from "../middleware/validator-middleware";
 import { sqlite } from "../database/connection";
 import {
-  userIdType,
+  userPropValueType,
   tableNameType,
   dayNumberType,
-  userIdNameType,
+  userPropNameType,
   screenshotType,
 } from "../zod/zod-types";
 
@@ -19,8 +19,8 @@ screenshotRouter.post(
   "/add-user-screenshot",
   schemaValidator(
     z.object({
-      userIdName: userIdNameType,
-      userId: userIdType,
+      userIdName: userPropNameType,
+      userId: userPropValueType,
       dayNumber: dayNumberType,
       tableName: tableNameType,
       screenshot: screenshotType,
@@ -41,7 +41,7 @@ screenshotRouter.post(
       screenshot: { type: "Buffer"; data: Buffer };
     } = req.body;
 
-    let columnNames;
+    let columnNames: { name: string }[];
 
     try {
       columnNames = sqlite
@@ -62,7 +62,7 @@ screenshotRouter.post(
       (columnName) => columnName.name !== "rec_id"
     );
 
-    const [firstColumn] = columnNames;
+    const firstColumn = columnNames[0];
 
     const { name } = firstColumn;
 
@@ -70,7 +70,7 @@ screenshotRouter.post(
       return next(new Error("user does not have the correct properties"));
     }
 
-    let result;
+    let result: { count: number };
 
     try {
       result = sqlite
@@ -119,7 +119,7 @@ screenshotRouter.post(
       }
     }
 
-    let idResult;
+    let idResult: { rec_id: string };
 
     try {
       idResult = sqlite
@@ -134,7 +134,8 @@ screenshotRouter.post(
     }
 
     const { rec_id } = idResult;
-    let countResult;
+    let countResult: { count: number; path: string };
+
     try {
       countResult = sqlite
         .prepare(
@@ -148,7 +149,7 @@ screenshotRouter.post(
     }
 
     const buffer = Buffer.from(screenshot.data);
-    let hash;
+    let hash: string;
 
     try {
       hash = `${crypto
@@ -221,8 +222,8 @@ screenshotRouter.delete(
   "/delete-user-screenshot/:query",
   schemaValidator(
     z.object({
-      userIdName: userIdNameType,
-      userId: userIdType,
+      userIdName: userPropNameType,
+      userId: userPropValueType,
       tableName: tableNameType,
     })
   ),
@@ -235,7 +236,7 @@ screenshotRouter.delete(
       req.params["query"]
     );
 
-    let columnNames;
+    let columnNames: { name: string }[];
 
     try {
       columnNames = sqlite
@@ -256,14 +257,14 @@ screenshotRouter.delete(
       (columnName) => columnName.name !== "rec_id"
     );
 
-    const [firstColumn] = columnNames;
+    const firstColumn = columnNames[0];
     const { name } = firstColumn;
 
     if (name !== userIdName) {
       return next(new Error("user does not have the correct properties"));
     }
 
-    let exists;
+    let exists: { count: number };
 
     try {
       exists = sqlite
@@ -283,7 +284,7 @@ screenshotRouter.delete(
       return next(new Error("user not found"));
     }
 
-    let result;
+    let result: { path: string; rec_id: string } | undefined;
 
     try {
       result = sqlite
@@ -331,8 +332,8 @@ screenshotRouter.patch(
   "/update-user-screenshot-date",
   schemaValidator(
     z.object({
-      userIdName: userIdNameType,
-      userId: userIdType,
+      userIdName: userPropNameType,
+      userId: userPropValueType,
       dayNumber: dayNumberType,
       tableName: tableNameType,
     })
@@ -350,8 +351,7 @@ screenshotRouter.patch(
       tableName: string;
     } = req.body;
 
-    let columnNames;
-    columnNames = sqlite
+    let columnNames = sqlite
       .prepare(
         `select name
         from pragma_table_info(?)`
@@ -366,7 +366,7 @@ screenshotRouter.patch(
       (columnName) => columnName.name !== "rec_id"
     );
 
-    const [firstColumn] = columnNames;
+    const firstColumn = columnNames[0];
     const { name } = firstColumn;
 
     if (name !== userIdName) {
@@ -415,7 +415,13 @@ screenshotRouter.get(
     const { tableName, dayNumber }: { tableName: string; dayNumber: string } =
       JSON.parse(req.params["query"]);
 
-    let result;
+    let result: {
+      [key: string]: string;
+      photo_id: string;
+      rec_id: string;
+      dayNumber: string;
+      path: string;
+    }[];
 
     try {
       result = sqlite
@@ -511,7 +517,13 @@ screenshotRouter.get(
       req.params["query"]
     );
 
-    let result;
+    let result: {
+      [key: string]: string;
+      photo_id: string;
+      rec_id: string;
+      dayNumber: string;
+      path: string;
+    }[];
 
     try {
       result = sqlite
@@ -576,8 +588,8 @@ screenshotRouter.get(
   "/retrieve-user-screenshot/:query",
   schemaValidator(
     z.object({
-      userIdName: userIdNameType,
-      userId: userIdType,
+      userIdName: userPropNameType,
+      userId: userPropValueType,
       tableName: tableNameType,
     })
   ),
@@ -589,7 +601,8 @@ screenshotRouter.get(
     }: { userIdName: string; userId: string; tableName: string } = JSON.parse(
       req.params["query"]
     );
-    let columnNames;
+
+    let columnNames: { name: string }[];
 
     try {
       columnNames = sqlite
@@ -610,13 +623,16 @@ screenshotRouter.get(
       (columnName) => columnName.name !== "rec_id"
     );
 
-    const [firstColumn] = columnNames;
+    const firstColumn = columnNames[0];
 
     if (firstColumn.name !== userIdName) {
       return next(new Error("user does not have the correct properties"));
     }
 
-    let exists;
+    let exists: {
+      count: number;
+      rec_id: string;
+    };
 
     try {
       exists = sqlite
@@ -639,7 +655,11 @@ screenshotRouter.get(
       return next(new Error("user not found"));
     }
 
-    let result;
+    let result:
+      | {
+          path: string;
+        }
+      | undefined;
 
     try {
       result = sqlite
@@ -701,7 +721,7 @@ screenshotRouter.get(
       req.params["query"]
     );
 
-    let columnNamesResult;
+    let columnNamesResult: { name: string }[];
 
     try {
       columnNamesResult = sqlite
@@ -724,7 +744,14 @@ screenshotRouter.get(
       query = query + ` ${columnName.name},`;
     });
 
-    let result;
+    let result: {
+      [key: string]: string | number;
+      rec_id: number;
+      path: string;
+      photo_id: number;
+      dayNumber: string;
+      photo_timestamp: string;
+    }[];
 
     try {
       result = sqlite

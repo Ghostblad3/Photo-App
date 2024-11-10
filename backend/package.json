@@ -1,6 +1,7 @@
 {
   "scripts": {
     "test": "cross-env ENVIRONMENT=TEST jest --detectOpenHandles --runInBand",
+    "test-schemas": "jest ./src/__test__/schema-validators.test.ts",
     "cc": "jest --clearCache"
   },
   "dependencies": {
@@ -8,6 +9,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "ts-node": "^10.9.2",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -24,7 +26,6 @@
     "jest": "^29.7.0",
     "supertest": "^7.0.0",
     "ts-jest": "^29.1.5",
-    "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
   }
 }

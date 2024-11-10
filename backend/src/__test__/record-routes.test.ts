@@ -16,7 +16,7 @@ beforeEach(() => {
 });
 
 describe("Call an api route that doesn't exist", () => {
-  test("should return error", async () => {
+  it("should return error", async () => {
     const res = await request(app).get("/record/random-route");
 
     expect(res.statusCode).toEqual(404);
@@ -29,7 +29,7 @@ describe("Add users", () => {
     createUserTable();
   });
 
-  test("Should return success", async () => {
+  it("Should return success", async () => {
     const res = await request(app)
       .post("/record/add-users/")
       .send({
@@ -58,7 +58,7 @@ describe("Add users", () => {
 });
 
 describe("Add users in table that doesn't exist", () => {
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const res = await request(app)
       .post("/record/add-users/")
       .send({
@@ -91,7 +91,7 @@ describe("Add users with missing props", () => {
     createUserTable();
   });
 
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const res = await request(app)
       .post("/record/add-users/")
       .send({
@@ -123,7 +123,7 @@ describe("Add users with wrong prop names", () => {
     createUserTable();
   });
 
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const res = await request(app)
       .post("/record/add-users/")
       .send({
@@ -161,7 +161,7 @@ describe("Add users with ids that already exist", () => {
     insertUser("test_table_2024", "987654321");
   });
 
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const res = await request(app)
       .post("/record/add-users/")
       .send({
@@ -195,7 +195,7 @@ describe("Get all user data for a specific table", () => {
     insertUser();
   });
 
-  test("Should return success", async () => {
+  it("Should return success", async () => {
     const paramsObj = {
       tableName: "test_table_2024",
     };
@@ -216,7 +216,7 @@ describe("Get all user data for a specific table", () => {
 });
 
 describe("Get all user data for a table that doesn't exist", () => {
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const paramsObj = {
       tableName: "test_table_2024",
     };
@@ -243,7 +243,7 @@ describe("Remove user", () => {
     await movePhotoToFolder();
   });
 
-  test("Should return success", async () => {
+  it("Should return success", async () => {
     const paramsObj = {
       userIdName: "user_asm",
       userId: "123456789",
@@ -269,7 +269,7 @@ describe("Remove user that doesn't exist", () => {
     createPhotoTable();
   });
 
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const paramsObj = {
       userIdName: "user_asm",
       userId: "123456789",
@@ -290,7 +290,7 @@ describe("Remove user that doesn't exist", () => {
 });
 
 describe("Remove user from table that doesn't exist", () => {
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const paramsObj = {
       userIdName: "user_asm",
       userId: "123456789",
@@ -316,7 +316,7 @@ describe("Remove user with wrong id name", () => {
     createPhotoTable();
   });
 
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const paramsObj = {
       userIdName: "asmasm",
       userId: "123456789",
@@ -346,7 +346,7 @@ describe("Remove user with no screenshot", () => {
     insertUser();
   });
 
-  test("Should return success", async () => {
+  it("Should return success", async () => {
     const paramsObj = {
       userIdName: "user_asm",
       userId: "123456789",
@@ -373,7 +373,7 @@ describe("Remove all users from a table", () => {
     insertUser("test_table_2024", "123456789", "John", "Doe");
   });
 
-  test("Should return success", async () => {
+  it("Should return success", async () => {
     const paramsObj = {
       tableName: "test_table_2024",
     };
@@ -397,7 +397,7 @@ describe("Remove all users from a table that doesn't have any user", () => {
     createPhotoTable();
   });
 
-  test("Should return success", async () => {
+  it("Should return success", async () => {
     const paramsObj = {
       tableName: "test_table_2024",
     };
@@ -422,7 +422,7 @@ describe("Remove all users from a table that doesn't have any user with screensh
     insertUser();
   });
 
-  test("Should return success", async () => {
+  it("Should return success", async () => {
     const paramsObj = {
       tableName: "test_table_2024",
     };
@@ -441,7 +441,7 @@ describe("Remove all users from a table that doesn't have any user with screensh
 });
 
 describe("Remove all users from a table that doesn't exist", () => {
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const paramsObj = {
       tableName: "test_table_2024",
     };
@@ -466,7 +466,7 @@ describe("Update user props", () => {
     insertUser();
   });
 
-  test("Should return success", async () => {
+  it("Should return success", async () => {
     const res = await request(app)
       .patch(`/record/update-user`)
       .send({
@@ -495,7 +495,7 @@ describe("Update user props with wrong user id", () => {
     insertUser();
   });
 
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const res = await request(app)
       .patch(`/record/update-user`)
       .send({
@@ -523,7 +523,7 @@ describe("Update user props with wrong user prop order", () => {
     insertUser();
   });
 
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const res = await request(app)
       .patch(`/record/update-user`)
       .send({
@@ -548,7 +548,7 @@ describe("Update user props with wrong user prop order", () => {
 });
 
 describe("Update user props for user who belongs in table that doesn't exist", () => {
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const res = await request(app)
       .patch(`/record/update-user`)
       .send({
@@ -576,7 +576,7 @@ describe("Update user props with props missing", () => {
     insertUser();
   });
 
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const res = await request(app)
       .patch(`/record/update-user`)
       .send({
@@ -606,7 +606,7 @@ describe("Update user props with more props than required", () => {
     insertUser();
   });
 
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const res = await request(app)
       .patch(`/record/update-user`)
       .send({
@@ -637,7 +637,7 @@ describe("Update user props for user that doesn't exist", () => {
     createPhotoTable();
   });
 
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const res = await request(app)
       .patch(`/record/update-user`)
       .send({
@@ -659,7 +659,7 @@ describe("Update user props for user that doesn't exist", () => {
 });
 
 describe("Update user props for table that doesn't exist", () => {
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const res = await request(app)
       .patch(`/record/update-user`)
       .send({
@@ -689,7 +689,7 @@ describe("Update user props with new user id that already exists", () => {
     insertUser("test_table_2024", "987654321");
   });
 
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const res = await request(app)
       .patch(`/record/update-user`)
       .send({

@@ -1,10 +1,12 @@
 import { useEffect, useRef } from "react";
 import { read, utils } from "xlsx";
-import { Button } from "@/components/ui/button";
 import { z } from "zod";
+
 import fieldsStore from "./stores/fieldsStore";
 import dataStore from "./stores/dataStore";
 import navigationStore from "./stores/navigationStore";
+
+import { Button } from "@/components/ui/button";
 import operationStore from "@/global-stores/operationStore";
 
 const usersType = z
@@ -23,6 +25,7 @@ const usersType = z
       .refine(
         (user) => {
           const keys = Object.keys(user);
+
           return keys.length > 0 && keys.length < 11;
         },
         {
@@ -32,10 +35,11 @@ const usersType = z
       .refine(
         (user) => {
           const keys = Object.keys(user);
+
           return keys.length === new Set(keys).size;
         },
         {
-          message: "A user must have unique keys",
+          message: "A user must have unique props",
         }
       )
   )
@@ -46,30 +50,36 @@ const usersType = z
       if (users.length === 0) return false;
 
       const keys = Object.keys(users[0]);
-      const [firstKey] = keys;
-      return users.length === new Set(users.map((user) => user[firstKey])).size;
+      const firstKey = keys[0];
+
+      const allUsersFirstValue = users.map((user) => user[firstKey]);
+      const uniqueUsersFirstValue = new Set(allUsersFirstValue);
+
+      return users.length === uniqueUsersFirstValue.size;
     },
     {
-      message: "Users cannot have duplicate keys",
+      message: "Users cannot have duplicate primary keys",
     }
   )
   .refine(
     (users) => {
       if (users.length === 0) return false;
 
-      const set = new Set();
-      const keys = Object.keys(users[0]);
-      keys.forEach((key) => {
-        set.add(key);
-      });
+      const [firstUser, ...restUsers] = users;
+      const firstUserKeys = Object.keys(firstUser);
+      const uniqueKeys = new Set(firstUserKeys);
 
-      users.forEach((user) => {
-        Object.keys(user).forEach((key) => {
-          set.add(key);
+      restUsers.forEach((user) => {
+        const keys = Object.keys(user);
+
+        if (keys.length !== firstUserKeys.length) return false;
+
+        keys.forEach((key) => {
+          uniqueKeys.add(key);
         });
       });
 
-      return set.size === keys.length;
+      return uniqueKeys.size === firstUserKeys.length;
     },
     {
       message: "Users must have the same props",
@@ -198,7 +208,7 @@ function DragAndDropExcelFile() {
 
   return (
     <div
-      className="space-y-12 p-5 flex flex-col justify-evenly items-center border-2 border-zinc-300 border-dashed rounded-xl"
+      className="flex flex-col items-center justify-evenly space-y-12 rounded-xl border-2 border-dashed border-zinc-300 p-5"
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >

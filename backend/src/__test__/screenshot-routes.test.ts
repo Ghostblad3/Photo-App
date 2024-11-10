@@ -17,7 +17,7 @@ beforeEach(() => {
 });
 
 describe("Call an api route that doesn't exist", () => {
-  test("should return error", async () => {
+  it("should return error", async () => {
     const res = await request(app).get("/screenshot/random-route");
 
     expect(res.statusCode).toEqual(404);
@@ -32,7 +32,7 @@ describe("Add user screenshot", () => {
     insertUser();
   });
 
-  test("Should return success", async () => {
+  it("Should return success", async () => {
     const screenshot = fs.readFileSync("./src/dummy_data/images/1.png");
 
     const res = await request(app)
@@ -65,7 +65,7 @@ describe("Add user screenshot with wrong user prop id name", () => {
     insertUser();
   });
 
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const screenshot = fs.readFileSync("./src/dummy_data/images/1.png");
 
     const res = await request(app)
@@ -97,7 +97,7 @@ describe("Add user screenshot to wrong table", () => {
     insertUser();
   });
 
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const screenshot = fs.readFileSync("./src/dummy_data/images/1.png");
 
     const res = await request(app)
@@ -126,7 +126,7 @@ describe("Add user screenshot with wrong user id", () => {
     insertUser();
   });
 
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const screenshot = fs.readFileSync("./src/dummy_data/images/1.png");
 
     const res = await request(app)
@@ -156,7 +156,7 @@ describe("Update user screenshot date", () => {
     insertPhoto();
   });
 
-  test("Should return success", async () => {
+  it("Should return success", async () => {
     const res = await request(app)
       .patch("/screenshot/update-user-screenshot-date")
       .send({
@@ -183,7 +183,7 @@ describe("Update user screenshot date with wrong user id prop name", () => {
     insertPhoto();
   });
 
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const res = await request(app)
       .patch("/screenshot/update-user-screenshot-date")
       .send({
@@ -213,7 +213,7 @@ describe("Update user screenshot date with wrong user id", () => {
     insertPhoto();
   });
 
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const res = await request(app)
       .patch("/screenshot/update-user-screenshot-date")
       .send({
@@ -240,7 +240,7 @@ describe("Update user screenshot date using wrong table name", () => {
     insertPhoto();
   });
 
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const res = await request(app)
       .patch("/screenshot/update-user-screenshot-date")
       .send({
@@ -268,7 +268,7 @@ describe("Delete user screenshot", () => {
     await movePhotoToFolder();
   });
 
-  test("Should return success", async () => {
+  it("Should return success", async () => {
     const paramsObj = {
       userIdName: "user_asm",
       userId: "123456789",
@@ -295,7 +295,7 @@ describe("Delete user screenshot for user that doesn't have screenshot", () => {
     insertUser();
   });
 
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const paramsObj = {
       userIdName: "user_asm",
       userId: "123456789",
@@ -322,7 +322,7 @@ describe("Delete user screenshot with wrong user id name", () => {
     insertUser();
   });
 
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const paramsObj = {
       userIdName: "asmasm",
       userId: "123456789",
@@ -352,7 +352,7 @@ describe("Delete user screenshot with wrong user id", () => {
     insertUser();
   });
 
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const paramsObj = {
       userIdName: "user_asm",
       userId: "999999999",
@@ -379,7 +379,7 @@ describe("Delete user screenshot with wrong table name", () => {
     insertUser();
   });
 
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const paramsObj = {
       userIdName: "user_asm",
       userId: "999999999",
@@ -408,7 +408,7 @@ describe("Retrieve all user screenshots for specific day", () => {
     await movePhotoToFolder();
   });
 
-  test("Should return success", async () => {
+  it("Should return success", async () => {
     const paramsObj = {
       dayNumber: "1",
       tableName: "test_table_2024",
@@ -447,7 +447,7 @@ describe("Retrieve all user screenshots for specific day that doesn't exist", ()
     createPhotoTable();
   });
 
-  test("Should return success", async () => {
+  it("Should return success", async () => {
     const paramsObj = {
       dayNumber: "9",
       tableName: "test_table_2024",
@@ -469,7 +469,7 @@ describe("Retrieve all user screenshots for specific day that doesn't exist", ()
 });
 
 describe("Retrieve all user screenshots for specific day from table that doesn't exist", () => {
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const paramsObj = {
       dayNumber: "1",
       tableName: "test_2024",
@@ -498,7 +498,7 @@ describe("Retrieve all submitted days for user screenshots", () => {
     insertPhoto();
   });
 
-  test("Should return success", async () => {
+  it("Should return success", async () => {
     const paramsObj = {
       dayNumber: "1",
       tableName: "test_table_2024",
@@ -525,7 +525,7 @@ describe("Retrieve all submitted days for user screenshots when there aren't sub
     insertUser();
   });
 
-  test("Should return success", async () => {
+  it("Should return success", async () => {
     const paramsObj = {
       dayNumber: "1",
       tableName: "test_table_2024",
@@ -545,7 +545,7 @@ describe("Retrieve all submitted days for user screenshots when there aren't sub
 });
 
 describe("Retrieve all submitted days for user screenshots for table that doesn't exist", () => {
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const paramsObj = {
       dayNumber: "1",
       tableName: "test_2024",
@@ -573,7 +573,7 @@ describe("Retrieve user screenshot", () => {
     await movePhotoToFolder();
   });
 
-  test("Should return success", async () => {
+  it("Should return success", async () => {
     const paramsObj = {
       userIdName: "user_asm",
       userId: "123456789",
@@ -601,7 +601,7 @@ describe("Retrieve user screenshot for user id prop name that doesn't exist", ()
     insertPhoto();
   });
 
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const paramsObj = {
       userIdName: "asmasm",
       userId: "123456789",
@@ -632,7 +632,7 @@ describe("Retrieve user screenshot for user id that doesn't exist", () => {
     insertPhoto();
   });
 
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const paramsObj = {
       userIdName: "user_asm",
       userId: "999999999",
@@ -653,7 +653,7 @@ describe("Retrieve user screenshot for user id that doesn't exist", () => {
 });
 
 describe("Retrieve user screenshot for table that doesn't exist", () => {
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const paramsObj = {
       userIdName: "user_asm",
       userId: "123456789",
@@ -681,7 +681,7 @@ describe("Retrieve user data for users that have screenshot", () => {
     insertPhoto();
   });
 
-  test("Should return success", async () => {
+  it("Should return success", async () => {
     const paramsObj = {
       tableName: "test_table_2024",
     };
@@ -710,7 +710,7 @@ describe("Retrieve user data for users that have screenshot", () => {
 });
 
 describe("Retrieve user data for users that have screenshot for table that doesn't exist", () => {
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const paramsObj = {
       tableName: "test_2024",
     };
@@ -739,7 +739,7 @@ describe("Retrieve user screenshots for all days", () => {
     await movePhotoToFolder();
   });
 
-  test("Should return success", async () => {
+  it("Should return success", async () => {
     const paramsObj = {
       tableName: "test_table_2024",
     };
@@ -778,7 +778,7 @@ describe("Retrieve user screenshots for all days for table that doesn't exist", 
     await movePhotoToFolder();
   });
 
-  test("Should return error", async () => {
+  it("Should return error", async () => {
     const paramsObj = {
       tableName: "test_2024",
     };

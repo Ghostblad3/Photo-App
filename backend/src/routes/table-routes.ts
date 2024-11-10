@@ -1,10 +1,11 @@
 import express, { Request, Response, NextFunction } from "express";
-import { z } from "zod";
 import fs from "fs/promises";
+import { z } from "zod";
 import schemaValidator from "../middleware/validator-middleware";
 import { sqlite } from "../database/connection";
 import { getAverageScreenshotSizeInDirectory } from "../utils/util";
 import { tableNameType, columnNamesType } from "../zod/zod-types";
+import { Transaction } from "better-sqlite3";
 
 const tableRouter = express.Router();
 
@@ -57,7 +58,7 @@ tableRouter.post(
       primary key("photo_id"),
       foreign key("rec_id") references ${tableName}("rec_id") on delete cascade);`;
 
-    let tsx;
+    let tsx: Transaction<() => void>;
 
     // create table if not exists (no error if table already exists)
     tsx = sqlite.transaction(() => {
@@ -97,7 +98,7 @@ tableRouter.delete(
       req.params["query"]
     );
 
-    let result;
+    let result: { path: string }[];
 
     try {
       result = sqlite
@@ -123,7 +124,7 @@ tableRouter.delete(
       });
     } catch (e) {}
 
-    let tsx;
+    let tsx: Transaction<() => void>;
 
     tsx = sqlite.transaction(() => {
       sqlite.prepare(`drop table if exists "${tableName}_photos"`).run();
@@ -212,7 +213,7 @@ tableRouter.get(
       req.params["query"]
     );
 
-    let result;
+    let result: { name: string }[];
 
     try {
       result = sqlite
@@ -226,11 +227,11 @@ tableRouter.get(
       return next(new Error((e as Error).toString()));
     }
 
-    result = result
+    const mapedResult = result
       .filter((item) => !item.name.endsWith("_photos"))
       .map((item) => item.name);
 
-    if (!result.includes(tableName)) {
+    if (!mapedResult.includes(tableName)) {
       return next(new Error("table not found"));
     }
 

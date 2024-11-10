@@ -16,7 +16,7 @@ beforeEach(() => {
 });
 
 describe("Send json with invalid format to an api route", () => {
-  test("should return error", async () => {
+  it("should return error", async () => {
     const invalidJson = '{tableName="test_table_2024"}';
     const res = await request(app).delete(`/table/delete/${invalidJson}`);
 
@@ -26,7 +26,7 @@ describe("Send json with invalid format to an api route", () => {
 });
 
 describe("Call an api route that doesn't exist", () => {
-  test("should return error", async () => {
+  it("should return error", async () => {
     const res = await request(app).get("/table/random-route");
 
     expect(res.statusCode).toEqual(404);
@@ -40,7 +40,7 @@ describe("Get table names for user tables", () => {
     createUserTable("other_table_2024");
   });
 
-  test("should return success", async () => {
+  it("should return success", async () => {
     const res = await request(app).get("/table/names");
 
     expect(res.statusCode).toEqual(200);
@@ -62,7 +62,7 @@ describe("Delete a table that exists", () => {
     await movePhotoToFolder();
   });
 
-  test("should return success", async () => {
+  it("should return success", async () => {
     const obj = {
       tableName: "test_table_2024",
     };
@@ -81,7 +81,7 @@ describe("Delete a table that exists", () => {
 });
 
 describe("Delete a table that doesn't exist", () => {
-  test("should return error", async () => {
+  it("should return error", async () => {
     const obj = {
       tableName: "test_table_2024",
     };
@@ -100,7 +100,7 @@ describe("Delete a table that doesn't exist", () => {
 });
 
 describe("Create a new table", () => {
-  test("should return success", async () => {
+  it("should return success", async () => {
     const res = await request(app)
       .post("/table/create")
       .send({
@@ -124,7 +124,7 @@ describe("Create a new table that already exists", () => {
     await movePhotoToFolder();
   });
 
-  test("should return error", async () => {
+  it("should return error", async () => {
     const res = await request(app)
       .post("/table/create")
       .send({
@@ -147,7 +147,7 @@ describe("Count records of users in specific table ", () => {
     insertUser();
   });
 
-  test("should return success", async () => {
+  it("should return success", async () => {
     const obj = {
       tableName: "test_table_2024",
     };
@@ -166,7 +166,7 @@ describe("Count records of users in specific table ", () => {
 });
 
 describe("Count records in table that doesn't exist", () => {
-  test("should return error", async () => {
+  it("should return error", async () => {
     const obj = {
       tableName: "test_table_2024",
     };
@@ -194,7 +194,7 @@ describe("Count screenshots for users of specific table", () => {
     insertPhoto();
   });
 
-  test("should return success", async () => {
+  it("should return success", async () => {
     const obj = {
       tableName: "test_table_2024",
     };
@@ -221,7 +221,7 @@ describe("Get screenshot size of users of specific table", () => {
     await movePhotoToFolder();
   });
 
-  test("should return success", async () => {
+  it("should return success", async () => {
     const obj = {
       tableName: "test_table_2024",
     };
@@ -240,7 +240,7 @@ describe("Get screenshot size of users of specific table", () => {
 });
 
 describe("Get screenshot size for table that doesn't exist", () => {
-  test("should return error", async () => {
+  it("should return error", async () => {
     const obj = {
       tableName: "test_table_2024",
     };
@@ -263,7 +263,7 @@ describe("Get column names for users of specific table", () => {
     createUserTable();
   });
 
-  test("should return success", async () => {
+  it("should return success", async () => {
     const obj = {
       tableName: "test_table_2024",
     };
@@ -282,7 +282,7 @@ describe("Get column names for users of specific table", () => {
 });
 
 describe("Get column names for table that doesn't exist", () => {
-  test("should return error", async () => {
+  it("should return error", async () => {
     const obj = {
       tableName: "test_table_2024",
     };

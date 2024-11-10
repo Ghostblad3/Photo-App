@@ -76,27 +76,34 @@ app.all("/*", (_: Request, res: Response) => {
   res.status(404).send({ error: "route not found" });
 });
 
-let server: Server<typeof IncomingMessage, typeof ServerResponse>;
+let server: Server<typeof IncomingMessage, typeof ServerResponse> | undefined =
+  undefined;
 
-async function startServer() {
-  if (server) {
-    return Promise.resolve();
+(async () => {
+  if (process.env.ENVIRONMENT === "TEST") {
+    return;
   }
 
-  return new Promise<void>((resolve, _) => {
-    server = app.listen(process.env.PORT || 3000, async () => {
-      console.log(
-        `Server is running at http://localhost:${process.env.PORT || 3000}`
-      );
+  await startServer();
+})();
 
-      try {
-        await fs.access("./screenshots");
-      } catch (e) {
-        await fs.mkdir("./screenshots");
-      }
+async function startServer() {
+  return await new Promise<void>((resolve, _) => {
+    server =
+      server ||
+      app.listen(process.env.PORT || 3000, async () => {
+        console.log(
+          `Server is running at http://localhost:${process.env.PORT || 3000}!`
+        );
 
-      resolve();
-    });
+        try {
+          await fs.access("./screenshots");
+        } catch (e) {
+          await fs.mkdir("./screenshots");
+        }
+
+        resolve();
+      });
   });
 }
 
@@ -106,10 +113,12 @@ async function closeServer() {
   }
 
   return new Promise<void>((resolve, reject) => {
-    server.close((err) => {
+    server?.close((err) => {
       if (err) {
         reject();
       }
+
+      console.log("Closing gracefully");
 
       resolve();
     });

@@ -5,8 +5,8 @@ import schemaValidator from "../middleware/validator-middleware";
 import { sqlite } from "../database/connection";
 import {
   tableNameType,
-  userIdNameType,
-  userIdType,
+  userPropNameType,
+  userPropValueType,
   userType,
   usersType,
 } from "../zod/zod-types";
@@ -108,8 +108,8 @@ recordRouter.delete(
   "/remove-user/:query",
   schemaValidator(
     z.object({
-      userIdName: userIdNameType,
-      userId: userIdType,
+      userIdName: userPropNameType,
+      userId: userPropValueType,
       tableName: tableNameType,
     })
   ),
@@ -122,7 +122,7 @@ recordRouter.delete(
       tableName: string;
     };
 
-    let columnNames;
+    let columnNames: { name: string }[];
 
     try {
       columnNames = sqlite
@@ -141,13 +141,13 @@ recordRouter.delete(
 
     columnNames = columnNames.filter((item) => item.name !== "rec_id");
 
-    const [firstColumnName] = columnNames;
+    const firstColumnName = columnNames[0];
 
     if (firstColumnName.name !== userIdName) {
       return next(new Error("user does not have the correct properties"));
     }
 
-    let photoPath;
+    let photoPath: { path: string };
 
     try {
       photoPath = sqlite
@@ -162,7 +162,7 @@ recordRouter.delete(
       return next(new Error((e as Error).toString()));
     }
 
-    let countResult;
+    let countResult: { count: number };
 
     try {
       countResult = sqlite
@@ -257,7 +257,7 @@ recordRouter.delete(
       req.params["query"]
     );
 
-    let result;
+    let result: { path: string }[];
 
     try {
       result = sqlite
@@ -293,7 +293,7 @@ recordRouter.patch(
   schemaValidator(
     z.object({
       tableName: tableNameType,
-      userId: userIdType,
+      userId: userPropValueType,
       user: userType,
     })
   ),
@@ -323,10 +323,10 @@ recordRouter.patch(
       .map((item) => item.name)
       .filter((item) => item !== "rec_id");
 
-    const [firstColumnName] = columnNames;
+    const firstColumnName = columnNames[0];
 
     const userKeys = Object.keys(user);
-    const [userIdName] = userKeys;
+    const userIdName = userKeys[0];
 
     if (
       firstColumnName !== userIdName ||
@@ -372,7 +372,6 @@ recordRouter.patch(
     }
 
     let query = `update ${tableName} set `;
-
     let counter = 0;
     let length = Object.keys(user).length;
 
