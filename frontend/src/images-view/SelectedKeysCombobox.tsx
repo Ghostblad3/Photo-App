@@ -15,15 +15,17 @@ import {
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Label } from "@/components/ui/label";
-import availableKeysStore from "./stores/availableKeysStore";
+import useAvailableKeysStore from "./stores/availableKeysStore";
 
 function SelectedKeysCombobox() {
-  const selectedKeys = availableKeysStore((state) => state.props.selectedKeys);
-  const availableKeys = availableKeysStore(
+  const selectedKeys = useAvailableKeysStore(
+    (state) => state.props.selectedKeys
+  );
+  const availableKeys = useAvailableKeysStore(
     (state) => state.props.availableKeys
   );
   const { setAvailableKeys, setSelectedKeys, resetAvailableKeysStore } =
-    availableKeysStore((state) => state.actions);
+    useAvailableKeysStore((state) => state.actions);
 
   const [open, setOpen] = useState(false);
   const [values, setValues] = useState<{ value: string; label: string }[]>([]);

@@ -1,32 +1,35 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
+
+import useOperationStore from "../global-stores/operationStore";
+
 import { DataTable } from "./VirtualizedNew";
-import { Skeleton } from "@/components/ui/skeleton";
 import TableNamesCombobox from "./TableNamesCombobox";
 import Cards from "./Cards";
-import userDataStore from "./stores/userDataStore";
-import selectedTableInfoStore from "./stores/selectedTableInfoStore";
-import searchStore from "./stores/searchStore";
-import operationStore from "../global-stores/operationStore";
+import useUserDataStore from "./stores/userDataStore";
+import useSelectedTableInfoStore from "./stores/selectedTableInfoStore";
+import useSearchStore from "./stores/searchStore";
+
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 
 function Databases() {
-  const tableName = selectedTableInfoStore((state) => state.props.tableName);
+  const tableName = useSelectedTableInfoStore((state) => state.props.tableName);
   const {
     setColumnNames,
     setUserNumber,
     setScreenshotNumber,
     setScreenshotAverageSize,
     resetSelectedTableInfoStore,
-  } = selectedTableInfoStore((state) => state.actions);
-  const { setUserData, setUserKeys, resetUserData } = userDataStore(
+  } = useSelectedTableInfoStore((state) => state.actions);
+  const { setUserData, setUserKeys, resetUserData } = useUserDataStore(
     (state) => state.actions
   );
-  const resetSearchStore = searchStore(
+  const resetSearchStore = useSearchStore(
     (state) => state.actions.resetSearchStore
   );
   const { addOperation, changeOperationStatus, removeOperation } =
-    operationStore((state) => state.actions);
+    useOperationStore((state) => state.actions);
 
   const [tableInfoFetchStatus, setTableInfoFetchStatus] = useState<
     "nop" | "pending" | "success" | "error"
@@ -78,7 +81,7 @@ function Databases() {
         new Promise((res, rej) => {
           const asyncOperation = async () => {
             const response = await genericFetch(
-              `http://localhost:3000/table/table-column-names/{"tableName":"${tableName}"}`
+              `http://localhost:3000/table/table-column-names/${tableName}`
             );
 
             if (response === "error") {
@@ -103,7 +106,7 @@ function Databases() {
         new Promise((res, rej) => {
           const asyncOperation = async () => {
             const response = await genericFetch(
-              `http://localhost:3000/table/count-records/{"tableName":"${tableName}"}`
+              `http://localhost:3000/table/count-records/${tableName}`
             );
 
             if (response === "error") {
@@ -128,7 +131,7 @@ function Databases() {
         new Promise((res, rej) => {
           const asyncOperation = async () => {
             const response = await genericFetch(
-              `http://localhost:3000/table/count-screenshots/{"tableName":"${tableName}"}`
+              `http://localhost:3000/table/count-screenshots/${tableName}`
             );
 
             if (response === "error") {
@@ -153,7 +156,7 @@ function Databases() {
         new Promise((res, rej) => {
           const asyncOperation = async () => {
             const response = await genericFetch(
-              `http://localhost:3000/table/screenshots-size/{"tableName":"${tableName}"}`
+              `http://localhost:3000/table/screenshots-size/${tableName}`
             );
 
             if (response === "error") {
@@ -279,7 +282,7 @@ function Databases() {
       const time = Date.now();
 
       let response = await fetch(
-        `http://localhost:3000/record/get-user-data/{"tableName":"${tableName}"}`,
+        `http://localhost:3000/record/get-user-data/${tableName}`,
         {
           cache: "no-store",
         }
@@ -314,7 +317,7 @@ function Databases() {
       const { data } = receivedObject;
 
       response = await fetch(
-        `http://localhost:3000/screenshot/retrieve-user-data-with-screenshots/{"tableName":"${tableName}"}`,
+        `http://localhost:3000/screenshot/retrieve-user-data-with-screenshots/${tableName}`,
         {
           cache: "no-store",
         }
@@ -417,19 +420,19 @@ function Databases() {
   }, []);
 
   return (
-    <div className="flex flex-col min-h-full">
+    <div className="flex min-h-full w-full flex-col">
       <TableNamesCombobox />
       {tableInfoFetchStatus === "pending" && (
         <>
-          <div className="my-2 pl-2.5 w-full flex items-center gap-2.5">
-            <Skeleton className="rounded-lg h-6 w-[2.75rem] shadow-lg" />
-            <Skeleton className="h-[0.875rem] w-[9.25rem] shadow-lg" />
+          <div className="my-2 flex w-full items-center gap-2.5 pl-2.5">
+            <Skeleton className="h-6 w-11 rounded-lg shadow-lg" />
+            <Skeleton className="h-3.5 w-[9.25rem] shadow-lg" />
           </div>
-          <div className="grid lg:grid-cols-4 gap-5 auto-rows-fr p-2.5">
-            <Skeleton className="rounded-lg h-[6.875rem] shadow-lg" />
-            <Skeleton className="rounded-lg h-[6.875rem] shadow-lg" />
-            <Skeleton className="rounded-lg h-[6.875rem] shadow-lg" />
-            <Skeleton className="rounded-lg h-[6.875rem] shadow-lg" />
+          <div className="grid auto-rows-fr gap-5 p-2.5 lg:grid-cols-4">
+            <Skeleton className="h-[6.875rem] rounded-lg shadow-lg" />
+            <Skeleton className="h-[6.875rem] rounded-lg shadow-lg" />
+            <Skeleton className="h-[6.875rem] rounded-lg shadow-lg" />
+            <Skeleton className="h-[6.875rem] rounded-lg shadow-lg" />
           </div>
         </>
       )}
@@ -442,8 +445,8 @@ function Databases() {
         </Button>
       )}
       {userRecordsFetchStatus === "pending" && (
-        <div className="h-full m-2.5 flex flex-col max-w-full">
-          <div className="flex flex-wrap gap-2 mb-2.5 max-w-full">
+        <div className="m-2.5 flex h-full max-w-full flex-col">
+          <div className="mb-2.5 flex max-w-full flex-wrap gap-2">
             <Skeleton className="h-10 w-[18.75rem]" />
             <Skeleton className="h-10 w-[18.75rem]" />
           </div>

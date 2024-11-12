@@ -17,13 +17,15 @@ const initProps: { tableNames: string[] } = {
   tableNames: [],
 };
 
-const tableNamesStore = create<TableNamesProps & TableNamesActions>((set) => ({
-  props: initProps,
-  actions: {
-    setTableNames: (tableNames: string[]) =>
-      set(() => ({ props: { tableNames } })),
-    resetTableNamesStore: () => set(() => ({ props: initProps })),
-  },
-}));
+const useTableNamesStore = create<TableNamesProps & TableNamesActions>(
+  (set) => ({
+    props: initProps,
+    actions: {
+      setTableNames: (tableNames: string[]) =>
+        set(() => ({ props: { tableNames } })),
+      resetTableNamesStore: () => set(() => ({ props: initProps })),
+    },
+  })
+);
 
-export default tableNamesStore;
+export default useTableNamesStore;

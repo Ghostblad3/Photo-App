@@ -22,15 +22,20 @@ const initProps: {
   singleUserKeys: [],
 };
 
-const singleUserStore = create<SingleUserProps & SingleUserActions>((set) => ({
-  props: initProps,
-  actions: {
-    setSingleUserData: (singleUserData) =>
-      set({
-        props: { singleUserData, singleUserKeys: Object.keys(singleUserData) },
-      }),
-    resetSingleUserDataStore: () => set({ props: initProps }),
-  },
-}));
+const useSingleUserStore = create<SingleUserProps & SingleUserActions>(
+  (set) => ({
+    props: initProps,
+    actions: {
+      setSingleUserData: (singleUserData) =>
+        set({
+          props: {
+            singleUserData,
+            singleUserKeys: Object.keys(singleUserData),
+          },
+        }),
+      resetSingleUserDataStore: () => set({ props: initProps }),
+    },
+  })
+);
 
-export default singleUserStore;
+export default useSingleUserStore;

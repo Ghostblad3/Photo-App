@@ -6,16 +6,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import singleUserStore from "./stores/singleUserStore";
-import availableKeysStore from "./stores/availableKeysStore";
+import useSingleUserStore from "./stores/singleUserStore";
+import useAvailableKeysStore from "./stores/availableKeysStore";
 
 const ScreenshotDialog = memo(({ children }: { children: React.ReactNode }) => {
-  const singleUserData = singleUserStore((state) => state.props.singleUserData);
-  const availableKeys = availableKeysStore(
+  const singleUserData = useSingleUserStore(
+    (state) => state.props.singleUserData
+  );
+  const availableKeys = useAvailableKeysStore(
     (state) => state.props.availableKeys
   );
 
-  const { resetSingleUserDataStore } = singleUserStore(
+  const { resetSingleUserDataStore } = useSingleUserStore(
     (state) => state.actions
   );
 

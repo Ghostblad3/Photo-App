@@ -20,7 +20,7 @@ const initialProps = {
   searchValue: "",
 };
 
-const searchStore = create<SearchStoreProps & SearchStoreActions>((set) => ({
+const useSearchStore = create<SearchStoreProps & SearchStoreActions>((set) => ({
   props: initialProps,
   actions: {
     setSearchField: (searchField) =>
@@ -31,4 +31,4 @@ const searchStore = create<SearchStoreProps & SearchStoreActions>((set) => ({
   },
 }));
 
-export default searchStore;
+export default useSearchStore;

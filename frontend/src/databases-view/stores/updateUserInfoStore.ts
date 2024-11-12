@@ -26,21 +26,21 @@ const initialProps = {
   tableName: "",
 };
 
-const updateUserInfoStore = create<UpdateUserInfoProps & UpdateUserInfoActions>(
-  (set) => ({
-    props: initialProps,
-    actions: {
-      setShowDialog: (showDialog: boolean) =>
-        set((state) => ({ props: { ...state.props, showDialog } })),
-      setUserId: (userId: string) =>
-        set((state) => ({ props: { ...state.props, userId } })),
-      setUserIndex: (userIndex: string) =>
-        set((state) => ({ props: { ...state.props, userIndex } })),
-      setTableName: (tableName: string) =>
-        set((state) => ({ props: { ...state.props, tableName } })),
-      resetUpdateUserInfoStore: () => set(() => ({ props: initialProps })),
-    },
-  })
-);
+const useUpdateUserInfoStore = create<
+  UpdateUserInfoProps & UpdateUserInfoActions
+>((set) => ({
+  props: initialProps,
+  actions: {
+    setShowDialog: (showDialog: boolean) =>
+      set((state) => ({ props: { ...state.props, showDialog } })),
+    setUserId: (userId: string) =>
+      set((state) => ({ props: { ...state.props, userId } })),
+    setUserIndex: (userIndex: string) =>
+      set((state) => ({ props: { ...state.props, userIndex } })),
+    setTableName: (tableName: string) =>
+      set((state) => ({ props: { ...state.props, tableName } })),
+    resetUpdateUserInfoStore: () => set(() => ({ props: initialProps })),
+  },
+}));
 
-export default updateUserInfoStore;
+export default useUpdateUserInfoStore;

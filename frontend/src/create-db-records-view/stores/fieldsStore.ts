@@ -20,7 +20,7 @@ const initialProps: { fields: string[]; visibleFields: string[] } = {
   visibleFields: [],
 };
 
-const fieldsStore = create<FieldsProps & FieldsActions>((set) => ({
+const useFieldsStore = create<FieldsProps & FieldsActions>((set) => ({
   props: initialProps,
   actions: {
     setFields: (fields: string[]) =>
@@ -31,4 +31,4 @@ const fieldsStore = create<FieldsProps & FieldsActions>((set) => ({
   },
 }));
 
-export default fieldsStore;
+export default useFieldsStore;

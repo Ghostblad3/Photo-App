@@ -11,13 +11,16 @@ import {
   getFilteredRowModel,
 } from "@tanstack/react-table";
 import { useVirtualizer, notUndefined } from "@tanstack/react-virtual";
+
 import { columns } from "../databases-view/columns";
-import dataStore from "./stores/dataStore";
+
+import useDataStore from "./stores/dataStore";
 import navigationStore from "./stores/navigationStore";
+
 import { Button } from "@/components/ui/button";
 
 function Records<TData, TValue>() {
-  const displayableData = dataStore((state) => state.props.displayableData);
+  const displayableData = useDataStore((state) => state.props.displayableData);
   const allowLeft = navigationStore((state) => state.props.allowLeft);
   const allowRight = navigationStore((state) => state.props.allowRight);
   const { setAllowRight, setAllowLeft, incrementIndex } = navigationStore(
@@ -73,7 +76,7 @@ function Records<TData, TValue>() {
 
   return (
     <div className="w-full">
-      <div ref={parentRef} className="px-2.5 w-full overflow-auto h-[25rem]">
+      <div ref={parentRef} className="h-[25rem] w-full overflow-auto px-2.5">
         <table className="w-full">
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -128,7 +131,7 @@ function Records<TData, TValue>() {
                   {row.getVisibleCells().map((cell) => {
                     return (
                       <td key={cell.id} className="font-medium">
-                        <div className="pt-[0.25rem] pb-[0.344rem] pl-4 h-[2rem]">
+                        <div className="h-8 pb-[0.344rem] pl-4 pt-1">
                           {flexRender(
                             cell.column.columnDef.cell,
                             cell.getContext()
@@ -148,7 +151,7 @@ function Records<TData, TValue>() {
           </tbody>
         </table>
       </div>
-      <Button className="w-full mt-2.5" onClick={incrementIndex}>
+      <Button className="mt-2.5 w-full" onClick={incrementIndex}>
         Create table
       </Button>
     </div>

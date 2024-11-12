@@ -7,7 +7,7 @@ import {
   dayNumberType,
   screenshotType,
   columnNamesType,
-} from "../zod/zod-types";
+} from "../types/types";
 
 describe("tableName Zod schema", () => {
   it("case 1 - valid string - valid min length", () => {

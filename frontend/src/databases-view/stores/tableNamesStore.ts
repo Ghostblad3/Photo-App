@@ -11,12 +11,14 @@ interface TableNamesActions {
   };
 }
 
-const tableNamesStore = create<TableNamesProps & TableNamesActions>((set) => ({
-  tableNames: [],
-  actions: {
-    setTableNames: (tableNames: string[]) => set(() => ({ tableNames })),
-    resetTableNamesStore: () => set(() => ({ tableNames: [] })),
-  },
-}));
+const useTableNamesStore = create<TableNamesProps & TableNamesActions>(
+  (set) => ({
+    tableNames: [],
+    actions: {
+      setTableNames: (tableNames: string[]) => set(() => ({ tableNames })),
+      resetTableNamesStore: () => set(() => ({ tableNames: [] })),
+    },
+  })
+);
 
-export default tableNamesStore;
+export default useTableNamesStore;

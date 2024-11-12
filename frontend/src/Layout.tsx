@@ -45,18 +45,18 @@ function Layout() {
   return (
     <div className="h-dvh w-full overflow-y-hidden">
       <div className="flex size-full flex-col overflow-y-auto">
-        <div className="flex h-11 w-full shrink-0 items-center gap-2.5 bg-[#33A5BF] pl-2">
+        <div className="flex h-11 w-full shrink-0 items-center gap-2.5 bg-[#0d1b2a] pl-4">
           {isFixedMenu && (
             <MenuIcon
-              className="cursor-pointer"
+              className="cursor-pointer text-white"
               onClick={() => {
                 setIsVisible((prev) => !prev);
               }}
             />
           )}
           <img className="size-6" src={photo} alt="photo" />
-          <h1 className="xs:hidden mb-[0.127rem] text-lg text-white">
-            Next gen image management app
+          <h1 className="xs:hidden mb-[0.127rem] text-base text-white">
+            MY Dashboard
           </h1>
         </div>
         <div className="flex h-[calc(100%-2.75rem)] w-full">
@@ -67,7 +67,13 @@ function Layout() {
             isFixedMenu={isFixedMenu}
             setIsVisible={setIsVisible}
           />
-          <Content currentComponent={currentComponent} />
+          <div
+            className={`overflow-y-auto ${
+              isVisible && !isFixedMenu ? "w-[calc(100%-192px)]" : "w-full"
+            }`}
+          >
+            <Content currentComponent={currentComponent} />
+          </div>
         </div>
       </div>
     </div>

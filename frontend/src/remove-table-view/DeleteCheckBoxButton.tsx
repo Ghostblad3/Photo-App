@@ -1,20 +1,22 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+
+import useTableNamesStore from "./stores/tableNamesStore";
+
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import tableNamesStore from "./stores/tableNamesStore";
-import operationStore from "@/global-stores/operationStore";
+import useOperationStore from "@/global-stores/operationStore";
 
 function DeleteCheckBoxButton() {
-  const selectedTableName = tableNamesStore(
+  const selectedTableName = useTableNamesStore(
     (state) => state.props.selectedTableName
   );
-  const removeSelectedTable = tableNamesStore(
+  const removeSelectedTable = useTableNamesStore(
     (state) => state.actions.removeSelectedTable
   );
   const { addOperation, changeOperationStatus, removeOperation } =
-    operationStore((state) => state.actions);
+    useOperationStore((state) => state.actions);
 
   const [deleteTable, setDeleteTable] = useState(false);
   const [deleteStatus, setDeleteStatus] = useState<"nopending" | "pending">(
@@ -29,14 +31,10 @@ function DeleteCheckBoxButton() {
 
       addOperation(hash, "pending", "delete", "Deleting table", true);
 
-      const paramData = {
-        tableName: selectedTableName,
-      };
-
       const time = Date.now();
 
       const response = await fetch(
-        `http://localhost:3000/table/delete/${JSON.stringify(paramData)}`,
+        `http://localhost:3000/table/delete/${selectedTableName}`,
         {
           method: "DELETE",
         }

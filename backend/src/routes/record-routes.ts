@@ -1,15 +1,15 @@
 import express, { Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import fs from "fs/promises";
-import schemaValidator from "../middleware/validator-middleware";
-import { sqlite } from "../database/connection";
+import schemaValidator from "../middleware/schema-validator";
+import { sqlite } from "../db-connection/connection";
 import {
   tableNameType,
   userPropNameType,
   userPropValueType,
   userType,
   usersType,
-} from "../zod/zod-types";
+} from "../types/types";
 
 const recordRouter = express.Router();
 
@@ -105,7 +105,7 @@ recordRouter.post(
 );
 
 recordRouter.delete(
-  "/remove-user/:query",
+  "/remove-user/:userIdName/:userId/:tableName",
   schemaValidator(
     z.object({
       userIdName: userPropNameType,
@@ -114,9 +114,7 @@ recordRouter.delete(
     })
   ),
   async (req: Request, res: Response, next: NextFunction) => {
-    const { userIdName, userId, tableName } = JSON.parse(
-      req.params["query"]
-    ) as {
+    const { userIdName, userId, tableName } = req.params as {
       userIdName: string;
       userId: string;
       tableName: string;
@@ -212,16 +210,14 @@ recordRouter.delete(
 );
 
 recordRouter.get(
-  "/get-user-data/:query",
+  "/get-user-data/:tableName",
   schemaValidator(
     z.object({
       tableName: tableNameType,
     })
   ),
   (req: Request, res: Response) => {
-    const { tableName }: { tableName: string } = JSON.parse(
-      req.params["query"]
-    );
+    const { tableName } = req.params as { tableName: string };
 
     let result = sqlite
       .prepare(
@@ -246,16 +242,14 @@ recordRouter.get(
 );
 
 recordRouter.delete(
-  "/remove-all-users/:query",
+  "/remove-all-users/:tableName",
   schemaValidator(
     z.object({
       tableName: tableNameType,
     })
   ),
   async (req: Request, res: Response, next: NextFunction) => {
-    const { tableName }: { tableName: string } = JSON.parse(
-      req.params["query"]
-    );
+    const { tableName } = req.params as { tableName: string };
 
     let result: { path: string }[];
 

@@ -24,33 +24,35 @@ const initialProps: DeleteUserProps["props"] = {
   tableName: "",
 };
 
-const deleteUserStore = create<DeleteUserProps & DeleteUserActions>((set) => ({
-  props: initialProps,
-  actions: {
-    setProps: (userId: string, userIdName: string, tableName: string) => {
-      set({
-        props: {
-          showDialog: true,
-          userId,
-          userIdName,
-          tableName,
-        },
-      });
+const useDeleteUserStore = create<DeleteUserProps & DeleteUserActions>(
+  (set) => ({
+    props: initialProps,
+    actions: {
+      setProps: (userId: string, userIdName: string, tableName: string) => {
+        set({
+          props: {
+            showDialog: true,
+            userId,
+            userIdName,
+            tableName,
+          },
+        });
+      },
+      setShowDialog: (showDialog: boolean) => {
+        set({
+          props: {
+            ...initialProps,
+            showDialog,
+          },
+        });
+      },
+      resetDeleteUserStore: () => {
+        set({
+          props: initialProps,
+        });
+      },
     },
-    setShowDialog: (showDialog: boolean) => {
-      set({
-        props: {
-          ...initialProps,
-          showDialog,
-        },
-      });
-    },
-    resetDeleteUserStore: () => {
-      set({
-        props: initialProps,
-      });
-    },
-  },
-}));
+  })
+);
 
-export default deleteUserStore;
+export default useDeleteUserStore;

@@ -1,33 +1,38 @@
 import { Fragment, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Image } from "lucide-react";
+
+import useOperationStore from "../global-stores/operationStore";
+
 import ScreenshotDialog from "./ScreenshotDialog";
 import SelectedKeysCombobox from "./SelectedKeysCombobox";
 import SearchValueCombobox from "./SearchValueCombobox";
 import SearchFieldCombobox from "./SearchFieldCombobox";
-import selectedTableStore from "./stores/selectedTableStore";
-import userDataStore from "./stores/userDataStore";
-import singleUserStore from "./stores/singleUserStore";
-import availableKeysStore from "./stores/availableKeysStore";
-import operationStore from "../global-stores/operationStore";
+import useSelectedTableStore from "./stores/selectedTableStore";
+import useUserDataStore from "./stores/userDataStore";
+import useSingleUserStore from "./stores/singleUserStore";
+import useAvailableKeysStore from "./stores/availableKeysStore";
+
+import { Skeleton } from "@/components/ui/skeleton";
+import { Label } from "@/components/ui/label";
 
 function Grid() {
-  const selectedKeys = availableKeysStore((state) => state.props.selectedKeys);
-  const { setAvailableKeys } = availableKeysStore((state) => state.actions);
-  const tableName = selectedTableStore((state) => state.props.tableName);
-  const userData = userDataStore((state) => state.props.userData);
-  const userDataFiltered = userDataStore(
+  const selectedKeys = useAvailableKeysStore(
+    (state) => state.props.selectedKeys
+  );
+  const { setAvailableKeys } = useAvailableKeysStore((state) => state.actions);
+  const tableName = useSelectedTableStore((state) => state.props.tableName);
+  const userData = useUserDataStore((state) => state.props.userData);
+  const userDataFiltered = useUserDataStore(
     (state) => state.props.userDataFiltered
   );
-  const userKeys = userDataStore((state) => state.props.userKeys);
-  const { setUserData, resetUserDataStore } = userDataStore(
+  const userKeys = useUserDataStore((state) => state.props.userKeys);
+  const { setUserData, resetUserDataStore } = useUserDataStore(
     (state) => state.actions
   );
-  const { setSingleUserData } = singleUserStore((state) => state.actions);
+  const { setSingleUserData } = useSingleUserStore((state) => state.actions);
   const { addOperation, changeOperationStatus, removeOperation } =
-    operationStore((state) => state.actions);
+    useOperationStore((state) => state.actions);
 
   const [count, setCount] = useState(0);
   const [fetchUserDataStatus, setFetchUserDataStatus] = useState<
@@ -48,14 +53,10 @@ function Grid() {
 
       addOperation(hash, "pending", "fetch", "Fetching user data", true);
 
-      const paramsObj = JSON.stringify({
-        tableName,
-      });
-
       const startTime = Date.now();
 
       const countResponse = await fetch(
-        `http://localhost:3000/table/count-screenshots/${paramsObj}`,
+        `http://localhost:3000/table/count-screenshots/${tableName}`,
         {
           cache: "no-store",
         }
@@ -81,7 +82,7 @@ function Grid() {
       setCount(countData);
 
       const response = await fetch(
-        `http://localhost:3000/screenshot/retrieve-user-screenshots-all-days/${paramsObj}`,
+        `http://localhost:3000/screenshot/retrieve-user-screenshots-all-days/${tableName}`,
         {
           cache: "no-store",
         }
@@ -143,8 +144,8 @@ function Grid() {
 
   if (fetchUserDataStatus === "error") {
     return (
-      <div className="flex flex-shrink-0 m-2.5">
-        <span className="mx-auto tx-xl">
+      <div className="m-2.5 flex shrink-0">
+        <span className="mx-auto">
           <Label className="text-xl">No data to display</Label>
         </span>
       </div>
@@ -158,34 +159,34 @@ function Grid() {
           <div className="p-2.5">
             <Skeleton className="h-10 max-w-full" />
           </div>
-          <div className="w-full flex flex-wrap gap-2 mb-2.5 p-2.5">
+          <div className="mb-2.5 flex w-full flex-wrap gap-2 p-2.5">
             <Skeleton className="h-10 w-full max-w-[17.5rem]" />
-            <Skeleton className="h-10 w-full max-w-[17.5rem] ml-5" />
+            <Skeleton className="ml-5 h-10 w-full max-w-[17.5rem]" />
           </div>
         </>
       )}
       {fetchUserDataStatus === "success" && (
         <>
           <SelectedKeysCombobox />
-          <div className="flex flex-wrap gap-2 mb-2.5">
+          <div className="mb-2.5 flex flex-wrap gap-2">
             <SearchValueCombobox />
             <SearchFieldCombobox />
           </div>
         </>
       )}
-      <div className="m-2.5 grid grid-repeat-auto-fill-min-max gap-10">
+      <div className="grid-repeat-auto-fill-min-max m-2.5 grid gap-10">
         {fetchUserDataStatus === "pending" && (
           <>
             {Array.from({ length: count }).map((_, index) => (
               <Fragment key={index}>
-                <Skeleton className="h-[16.125rem] bg-white rounded-lg flex flex-col p-2.5 shadow-custom">
-                  <Skeleton className="h-[6.25rem] w-[6.563rem] mx-auto rounded-lg bg-slate-200">
-                    <div className="h-full w-full rounded-lg flex justify-center items-center bg-slate-200">
+                <Skeleton className="shadow-custom flex h-[16.125rem] flex-col rounded-lg bg-white p-2.5">
+                  <Skeleton className="mx-auto h-[6.25rem] w-[6.563rem] rounded-lg bg-slate-200">
+                    <div className="flex size-full items-center justify-center rounded-lg bg-slate-200">
                       <Image />
                     </div>
                   </Skeleton>
-                  <Skeleton className="max-w-20 h-5 mt-4" />
-                  <Skeleton className="max-w-28 h-5 mt-4" />
+                  <Skeleton className="mt-4 h-5 max-w-20" />
+                  <Skeleton className="mt-4 h-5 max-w-28" />
                 </Skeleton>
               </Fragment>
             ))}
@@ -197,7 +198,7 @@ function Grid() {
               <ScreenshotDialog key={item[userKeys[0]]}>
                 <div
                   key={item[userKeys[0]]}
-                  className="bg-white rounded-lg flex flex-col cursor-pointer"
+                  className="flex cursor-pointer flex-col rounded-lg bg-white"
                   onClick={() => {
                     const key = userKeys[0];
                     const user = userData.find((u) => u[key] === item[key]);
@@ -206,9 +207,9 @@ function Grid() {
                     }
                   }}
                 >
-                  <div className="w-full bg-slate-200 py-5 rounded-t-lg">
+                  <div className="w-full rounded-t-lg bg-slate-200 py-5">
                     <img
-                      className="h-[6.25rem] w-[6.563rem] mx-auto rounded-lg"
+                      className="mx-auto h-[6.25rem] w-[6.563rem] rounded-lg"
                       src={`data:image/png;base64,${item.screenshot}`}
                     />
                   </div>
@@ -216,12 +217,12 @@ function Grid() {
                     return (
                       <div
                         key={key}
-                        className="flex flex-col px-1 mt-1.5 mb-0.5"
+                        className="mb-0.5 mt-1.5 flex flex-col px-1"
                       >
-                        <p className="font-semibold block text-sm cursor-pointer">
+                        <p className="block cursor-pointer text-sm font-semibold">
                           {key}
                         </p>
-                        <p className="text-gray-700 dark:text-gray-300 text-base cursor-pointer">
+                        <p className="cursor-pointer text-base text-gray-700 dark:text-gray-300">
                           {item[key]}
                         </p>
                         <hr className="my-2" />

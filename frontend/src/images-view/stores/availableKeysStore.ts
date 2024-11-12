@@ -20,7 +20,7 @@ const initialProps: { availableKeys: string[]; selectedKeys: string[] } = {
   selectedKeys: [],
 };
 
-const availableKeysStore = create<AvailableKeysProps & AvailableKeysActions>(
+const useAvailableKeysStore = create<AvailableKeysProps & AvailableKeysActions>(
   (set) => ({
     props: initialProps,
     actions: {
@@ -33,4 +33,4 @@ const availableKeysStore = create<AvailableKeysProps & AvailableKeysActions>(
   })
 );
 
-export default availableKeysStore;
+export default useAvailableKeysStore;

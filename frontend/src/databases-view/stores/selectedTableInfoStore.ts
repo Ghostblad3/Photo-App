@@ -29,7 +29,7 @@ const initialProps = {
   screenshotAverageSize: "",
 };
 
-const selectedTableInfoStore = create<
+const useSelectedTableInfoStore = create<
   SelectTableInfoProps & SelectedTableInfoActions
 >((set) => ({
   props: initialProps,
@@ -73,4 +73,4 @@ const selectedTableInfoStore = create<
   },
 }));
 
-export default selectedTableInfoStore;
+export default useSelectedTableInfoStore;

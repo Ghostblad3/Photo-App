@@ -24,26 +24,28 @@ const initialProps = {
   index: 0,
 };
 
-const navitationStore = create<NavigationStore & NavigationActions>((set) => ({
-  props: initialProps,
-  actions: {
-    setAllowLeft: (allowLeft: boolean) =>
-      set((state) => ({ props: { ...state.props, allowLeft } })),
-    setAllowRight: (allowRight: boolean) =>
-      set((state) => ({ props: { ...state.props, allowRight } })),
-    incrementIndex: () =>
-      set((state) => ({
-        props: { ...state.props, index: state.props.index + 1 },
-      })),
-    decrementIndex: () =>
-      set((state) => ({
-        props: { ...state.props, index: state.props.index - 1 },
-      })),
-    resetNagivationStore: () =>
-      set(() => ({
-        props: initialProps,
-      })),
-  },
-}));
+const useNavitationStore = create<NavigationStore & NavigationActions>(
+  (set) => ({
+    props: initialProps,
+    actions: {
+      setAllowLeft: (allowLeft: boolean) =>
+        set((state) => ({ props: { ...state.props, allowLeft } })),
+      setAllowRight: (allowRight: boolean) =>
+        set((state) => ({ props: { ...state.props, allowRight } })),
+      incrementIndex: () =>
+        set((state) => ({
+          props: { ...state.props, index: state.props.index + 1 },
+        })),
+      decrementIndex: () =>
+        set((state) => ({
+          props: { ...state.props, index: state.props.index - 1 },
+        })),
+      resetNagivationStore: () =>
+        set(() => ({
+          props: initialProps,
+        })),
+    },
+  })
+);
 
-export default navitationStore;
+export default useNavitationStore;

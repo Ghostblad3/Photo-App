@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Check, ChevronsUpDown } from "lucide-react";
+
+import useOperationStore from "../global-stores/operationStore";
+
+import useTableNamesStore from "./stores/tableNamesStore";
+import useSelectedTableStore from "./stores/selectedTableStore";
+
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,19 +22,16 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
-import tableNamesStore from "./stores/tableNamesStore";
-import selectedTableStore from "./stores/selectedTableStore";
-import operationStore from "../global-stores/operationStore";
 
 function TableNamesCombobox() {
-  const tableName = selectedTableStore((state) => state.props.tableName);
-  const { setTableName, resetSelectedTableStore } = selectedTableStore(
+  const tableName = useSelectedTableStore((state) => state.props.tableName);
+  const { setTableName, resetSelectedTableStore } = useSelectedTableStore(
     (state) => state.actions
   );
   const { addOperation, changeOperationStatus, removeOperation } =
-    operationStore((state) => state.actions);
-  const tableNames = tableNamesStore((state) => state.props.tableNames);
-  const { setTableNames, resetTableNamesStore } = tableNamesStore(
+    useOperationStore((state) => state.actions);
+  const tableNames = useTableNamesStore((state) => state.props.tableNames);
+  const { setTableNames, resetTableNamesStore } = useTableNamesStore(
     (state) => state.actions
   );
 
@@ -106,29 +109,29 @@ function TableNamesCombobox() {
   return (
     <div className="p-2.5">
       {tableNamesFetchStatus === "pending" && (
-        <div className="space-y-10 flex flex-col">
+        <div className="flex flex-col space-y-10">
           <div>
-            <Skeleton className="h-8 max-w-[2.875rem] mb-1" />
+            <Skeleton className="mb-1 h-8 max-w-[2.875rem]" />
             <Skeleton className="h-6 max-w-full" />
           </div>
 
-          <div className="space-y-2.5 flex flex-col">
+          <div className="flex flex-col space-y-2.5">
             <Skeleton className="h-6 max-w-[2.875rem]" />
-            <Skeleton className="h-[2.5rem] max-w-full" />
+            <Skeleton className="h-10 max-w-full" />
           </div>
         </div>
       )}
       {tableNamesFetchStatus !== "pending" && (
-        <div className="space-y-10 flex flex-col">
+        <div className="flex flex-col space-y-10">
           <div>
-            <h1 className="font-bold text-2xl decoration-slate-100">
+            <h1 className="text-2xl font-bold decoration-slate-100">
               Select table
             </h1>
             <p className="text-slate-500">
               Select the name of the table that you want to work with
             </p>
           </div>
-          <div className="space-y-2.5 flex flex-col">
+          <div className="flex flex-col space-y-2.5">
             <p className="font-bold">Table name</p>
             <Popover open={open} onOpenChange={setOpen}>
               <PopoverTrigger asChild>
@@ -136,13 +139,13 @@ function TableNamesCombobox() {
                   variant="outline"
                   role="combobox"
                   aria-expanded={open}
-                  className="w-[100%] justify-between"
+                  className="w-full justify-between"
                   disabled={tableNamesFetchStatus === "error"}
                 >
                   {tableName !== ""
                     ? tableNames.find((item) => item === tableName)
                     : "Select table..."}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="p-0">

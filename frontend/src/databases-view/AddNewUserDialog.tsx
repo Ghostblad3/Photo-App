@@ -1,5 +1,13 @@
 import { memo, useEffect, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { CircleX } from "lucide-react";
+import { ReloadIcon } from "@radix-ui/react-icons";
+
+import useOperationStore from "../global-stores/operationStore";
+
+import useUserDataStore from "./stores/userDataStore";
+import useAddNewUserStore from "./stores/addNewUserStore";
+
 import {
   Dialog,
   DialogContent,
@@ -9,22 +17,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { CircleX } from "lucide-react";
-import { ReloadIcon } from "@radix-ui/react-icons";
-import userDataStore from "./stores/userDataStore";
-import addNewUserStore from "./stores/addNewUserStore";
-import operationStore from "../global-stores/operationStore";
 
 const AddNewUserDialog = memo(() => {
-  const userKeys = userDataStore((state) => state.props.userKeys);
-  const { addUser } = userDataStore((state) => state.actions);
-  const showDialog = addNewUserStore((state) => state.props.showDialog);
-  const tableName = addNewUserStore((state) => state.props.tableName);
-  const { setShowDialog, resetAddNewUserStore } = addNewUserStore(
+  const userKeys = useUserDataStore((state) => state.props.userKeys);
+  const { addUser } = useUserDataStore((state) => state.actions);
+  const showDialog = useAddNewUserStore((state) => state.props.showDialog);
+  const tableName = useAddNewUserStore((state) => state.props.tableName);
+  const { setShowDialog, resetAddNewUserStore } = useAddNewUserStore(
     (state) => state.actions
   );
   const { addOperation, changeOperationStatus, removeOperation } =
-    operationStore((state) => state.actions);
+    useOperationStore((state) => state.actions);
 
   const keysRef = useRef(
     userKeys.filter(
@@ -159,7 +162,7 @@ const AddNewUserDialog = memo(() => {
         {keysRef.current.map((key) => {
           return (
             <div key={key} className="mx-4">
-              <p className="space-y-1 font-semibold block text-sm">{key}</p>
+              <p className="block space-y-1 text-sm font-semibold">{key}</p>
               <Input
                 className="mt-1"
                 defaultValue={""}
@@ -175,8 +178,8 @@ const AddNewUserDialog = memo(() => {
               />
               {(fieldsModified[key] && userRef.current[key].length === 0) ||
                 (userRef.current[key].length > 50 && (
-                  <div className="flex items-center mt-2">
-                    <CircleX className="text-red-500 mr-1 h-5 w-5" />
+                  <div className="mt-2 flex items-center">
+                    <CircleX className="mr-1 size-5 text-red-500" />
                     <Label className="text-red-500">
                       Field must be between 1 and 50 characters
                     </Label>
@@ -186,12 +189,12 @@ const AddNewUserDialog = memo(() => {
           );
         })}
         <Button
-          className="w-[calc(100%_-_2rem)] mx-4"
+          className="mx-4 w-[calc(100%_-_2rem)]"
           onClick={addNewUserButtonHandler}
           disabled={!mutation.isIdle}
         >
           {mutation.isPending && (
-            <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+            <ReloadIcon className="mr-2 size-4 animate-spin" />
           )}
           Submit
         </Button>

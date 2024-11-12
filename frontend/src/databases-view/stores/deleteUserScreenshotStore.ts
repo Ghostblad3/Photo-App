@@ -26,7 +26,7 @@ const initialProps = {
   tableName: "",
 };
 
-const deleteUserScreenshotStore = create<
+const useDeleteUserScreenshotStore = create<
   DeleteUserScreenshotProps & DeleteUserScreenshotActions
 >((set) => ({
   props: initialProps,
@@ -71,4 +71,4 @@ const deleteUserScreenshotStore = create<
   },
 }));
 
-export default deleteUserScreenshotStore;
+export default useDeleteUserScreenshotStore;

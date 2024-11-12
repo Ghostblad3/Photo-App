@@ -1,11 +1,11 @@
 import express, { Request, Response, NextFunction } from "express";
+import { Transaction } from "better-sqlite3";
 import fs from "fs/promises";
 import { z } from "zod";
-import schemaValidator from "../middleware/validator-middleware";
-import { sqlite } from "../database/connection";
-import { getAverageScreenshotSizeInDirectory } from "../utils/util";
-import { tableNameType, columnNamesType } from "../zod/zod-types";
-import { Transaction } from "better-sqlite3";
+import schemaValidator from "../middleware/schema-validator";
+import { sqlite } from "../db-connection/connection";
+import { getAverageScreenshotSizeInDirectory } from "../utils/utils";
+import { tableNameType, columnNamesType } from "../types/types";
 
 const tableRouter = express.Router();
 
@@ -50,13 +50,13 @@ tableRouter.post(
     queryA += `primary key("rec_id"));`;
 
     const queryB = `create table ${tableName}_photos (
-      photo_id integer not null,
-      dayNumber text not null,
-      path text not null unique,
-      photo_timestamp text not null,
-      rec_id integer not null unique,
-      primary key("photo_id"),
-      foreign key("rec_id") references ${tableName}("rec_id") on delete cascade);`;
+                    photo_id integer not null,
+                    dayNumber text not null,
+                    path text not null unique,
+                    photo_timestamp text not null,
+                    rec_id integer not null unique,
+                    primary key("photo_id"),
+                    foreign key("rec_id") references ${tableName}("rec_id") on delete cascade);`;
 
     let tsx: Transaction<() => void>;
 
@@ -87,16 +87,14 @@ tableRouter.post(
 );
 
 tableRouter.delete(
-  "/delete/:query",
+  "/delete/:tableName",
   schemaValidator(
     z.object({
       tableName: tableNameType,
     })
   ),
   async (req: Request, res: Response, next: NextFunction) => {
-    const { tableName }: { tableName: string } = JSON.parse(
-      req.params["query"]
-    );
+    const { tableName } = req.params as { tableName: string };
 
     let result: { path: string }[];
 
@@ -144,16 +142,14 @@ tableRouter.delete(
 );
 
 tableRouter.get(
-  "/count-records/:query",
+  "/count-records/:tableName",
   schemaValidator(
     z.object({
       tableName: tableNameType,
     })
   ),
   (req: Request, res: Response) => {
-    const { tableName }: { tableName: string } = JSON.parse(
-      req.params["query"]
-    );
+    const { tableName } = req.params as { tableName: string };
 
     const result = sqlite
       .prepare(
@@ -173,16 +169,14 @@ tableRouter.get(
 );
 
 tableRouter.get(
-  "/count-screenshots/:query",
+  "/count-screenshots/:tableName",
   schemaValidator(
     z.object({
       tableName: tableNameType,
     })
   ),
   (req: Request, res: Response) => {
-    const { tableName }: { tableName: string } = JSON.parse(
-      req.params["query"]
-    );
+    const { tableName } = req.params as { tableName: string };
 
     const result = sqlite
       .prepare(
@@ -202,16 +196,14 @@ tableRouter.get(
 );
 
 tableRouter.get(
-  "/screenshots-size/:query",
+  "/screenshots-size/:tableName",
   schemaValidator(
     z.object({
       tableName: tableNameType,
     })
   ),
   async (req: Request, res: Response, next: NextFunction) => {
-    const { tableName }: { tableName: string } = JSON.parse(
-      req.params["query"]
-    );
+    const { tableName } = req.params as { tableName: string };
 
     let result: { name: string }[];
 
@@ -255,16 +247,14 @@ tableRouter.get(
 );
 
 tableRouter.get(
-  "/table-column-names/:query",
+  "/table-column-names/:tableName",
   schemaValidator(
     z.object({
       tableName: tableNameType,
     })
   ),
   (req: Request, res: Response) => {
-    const { tableName }: { tableName: string } = JSON.parse(
-      req.params["query"]
-    );
+    const { tableName } = req.params as { tableName: string };
 
     const result = sqlite
       .prepare(

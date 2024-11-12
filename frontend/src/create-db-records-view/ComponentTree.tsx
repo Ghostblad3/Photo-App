@@ -1,22 +1,24 @@
 import { useEffect } from "react";
-import { Button } from "@/components/ui/button.tsx";
 import { ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
+
 import DragAndDropExcelFile from "./DragAndDropExcelFile";
 import Fields from "./Fields";
 import CreateTable from "./CreateTable";
-import fieldsStore from "./stores/fieldsStore";
+import useFieldsStore from "./stores/fieldsStore";
 import navigationStore from "./stores/navigationStore";
 import Records from "./Records";
-import dataStore from "./stores/dataStore";
+import useDataStore from "./stores/dataStore";
+
+import { Button } from "@/components/ui/button.tsx";
 
 function ComponentTree() {
-  const fields = fieldsStore((state) => state.props.fields);
-  const visibleFields = fieldsStore((state) => state.props.visibleFields);
-  const resetFieldsStore = fieldsStore(
+  const fields = useFieldsStore((state) => state.props.fields);
+  const visibleFields = useFieldsStore((state) => state.props.visibleFields);
+  const resetFieldsStore = useFieldsStore(
     (state) => state.actions.resetFieldsStore
   );
-  const data = dataStore((state) => state.props.data);
-  const resetDataStore = dataStore((state) => state.actions.resetDataStore);
+  const data = useDataStore((state) => state.props.data);
+  const resetDataStore = useDataStore((state) => state.actions.resetDataStore);
   const index = navigationStore((state) => state.props.index);
   const allowLeft = navigationStore((state) => state.props.allowLeft);
   const allowRight = navigationStore((state) => state.props.allowRight);
@@ -45,24 +47,24 @@ function ComponentTree() {
   }
 
   return (
-    <div className="w-full flex flex-col gap-5">
+    <div className="flex w-full flex-col gap-5">
       <div className="flex justify-between">
-        {!allowLeft && <span className="h-10 w-10"></span>}
+        {!allowLeft && <span className="size-10"></span>}
 
         {allowLeft && (
           <Button onClick={handleLeftButtonClick} variant="outline" size="icon">
-            <ChevronLeftIcon className="h-4 w-4" />
+            <ChevronLeftIcon className="size-4" />
           </Button>
         )}
 
-        {!allowRight && <span className="h-10 w-10"></span>}
+        {!allowRight && <span className="size-10"></span>}
         {allowRight && (
           <Button
             onClick={handleRightButtonClick}
             variant="outline"
             size="icon"
           >
-            <ChevronRightIcon className="h-4 w-4" />
+            <ChevronRightIcon className="size-4" />
           </Button>
         )}
       </div>

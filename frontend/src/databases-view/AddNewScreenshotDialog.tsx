@@ -1,22 +1,25 @@
 import { useEffect, memo } from "react";
+
+import DragAndDropPng from "./DragAndDropPng";
+import ImageCrop from "./ImageCrop";
+import useAddNewScreenshotStore from "./stores/addNewScreenshotStore";
+
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import DragAndDropPng from "./DragAndDropPng";
-import ImageCrop from "./ImageCrop";
-import addNewScreenshotStore from "./stores/addNewScreenshotStore";
 
 const AddNewScreenshotDialog = memo(() => {
-  const screenshotAsBase64 = addNewScreenshotStore(
+  const screenshotAsBase64 = useAddNewScreenshotStore(
     (state) => state.props.screenshotAsBase64
   );
-  const showDialog = addNewScreenshotStore((state) => state.props.showDialog);
-  const { setShowDialog, resetAddNewScreenshotStore } = addNewScreenshotStore(
-    (state) => state.actions
+  const showDialog = useAddNewScreenshotStore(
+    (state) => state.props.showDialog
   );
+  const { setShowDialog, resetAddNewScreenshotStore } =
+    useAddNewScreenshotStore((state) => state.actions);
 
   useEffect(() => {
     return () => {

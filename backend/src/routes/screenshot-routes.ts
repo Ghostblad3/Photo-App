@@ -2,15 +2,15 @@ import express, { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 import fs from "fs/promises";
 import crypto from "crypto";
-import schemaValidator from "../middleware/validator-middleware";
-import { sqlite } from "../database/connection";
+import schemaValidator from "../middleware/schema-validator";
+import { sqlite } from "../db-connection/connection";
 import {
   userPropValueType,
   tableNameType,
   dayNumberType,
   userPropNameType,
   screenshotType,
-} from "../zod/zod-types";
+} from "../types/types";
 
 const screenshotRouter = express.Router();
 
@@ -219,7 +219,7 @@ screenshotRouter.post(
 
 // Delete the screenshot of a user
 screenshotRouter.delete(
-  "/delete-user-screenshot/:query",
+  "/delete-user-screenshot/:userIdName/:userId/:tableName",
   schemaValidator(
     z.object({
       userIdName: userPropNameType,
@@ -228,13 +228,11 @@ screenshotRouter.delete(
     })
   ),
   async (req: Request, res: Response, next: NextFunction) => {
-    const {
-      userIdName,
-      userId,
-      tableName,
-    }: { userIdName: string; userId: string; tableName: string } = JSON.parse(
-      req.params["query"]
-    );
+    const { userIdName, userId, tableName } = req.params as {
+      userIdName: string;
+      userId: string;
+      tableName: string;
+    };
 
     let columnNames: { name: string }[];
 
@@ -404,7 +402,7 @@ screenshotRouter.patch(
 
 // Retrieves the screenshots of users for a specific table for a given date
 screenshotRouter.get(
-  "/retrieve-user-screenshots-single-day/:query",
+  "/retrieve-user-screenshots-single-day/:dayNumber/:tableName",
   schemaValidator(
     z.object({
       dayNumber: dayNumberType,
@@ -412,8 +410,10 @@ screenshotRouter.get(
     })
   ),
   async (req: Request, res: Response, next: NextFunction) => {
-    const { tableName, dayNumber }: { tableName: string; dayNumber: string } =
-      JSON.parse(req.params["query"]);
+    const { tableName, dayNumber } = req.params as {
+      tableName: string;
+      dayNumber: string;
+    };
 
     let result: {
       [key: string]: string;
@@ -475,16 +475,14 @@ screenshotRouter.get(
 
 // Retrieves the submitted days for a given table
 screenshotRouter.get(
-  "/retrieve-submitted-days/:query",
+  "/retrieve-submitted-days/:tableName",
   schemaValidator(
     z.object({
       tableName: tableNameType,
     })
   ),
   (req: Request, res: Response) => {
-    const { tableName }: { tableName: string } = JSON.parse(
-      req.params["query"]
-    );
+    const { tableName } = req.params as { tableName: string };
 
     const result = sqlite
       .prepare(
@@ -506,16 +504,14 @@ screenshotRouter.get(
 
 // Retrieves the screenshots of users of specific table for all days
 screenshotRouter.get(
-  "/retrieve-user-screenshots-all-days/:query",
+  "/retrieve-user-screenshots-all-days/:tableName",
   schemaValidator(
     z.object({
       tableName: tableNameType,
     })
   ),
   async (req: Request, res: Response, next: NextFunction) => {
-    const { tableName }: { tableName: string } = JSON.parse(
-      req.params["query"]
-    );
+    const { tableName } = req.params as { tableName: string };
 
     let result: {
       [key: string]: string;
@@ -585,7 +581,7 @@ screenshotRouter.get(
 );
 
 screenshotRouter.get(
-  "/retrieve-user-screenshot/:query",
+  "/retrieve-user-screenshot/:userIdName/:userId/:tableName",
   schemaValidator(
     z.object({
       userIdName: userPropNameType,
@@ -594,13 +590,11 @@ screenshotRouter.get(
     })
   ),
   async (req: Request, res: Response, next: NextFunction) => {
-    const {
-      userIdName,
-      userId,
-      tableName,
-    }: { userIdName: string; userId: string; tableName: string } = JSON.parse(
-      req.params["query"]
-    );
+    const { userIdName, userId, tableName } = req.params as {
+      userIdName: string;
+      userId: string;
+      tableName: string;
+    };
 
     let columnNames: { name: string }[];
 
@@ -710,17 +704,14 @@ screenshotRouter.get(
 );
 
 screenshotRouter.get(
-  "/retrieve-user-data-with-screenshots/:query",
+  "/retrieve-user-data-with-screenshots/:tableName",
   schemaValidator(
     z.object({
       tableName: tableNameType,
     })
   ),
   async (req: Request, res: Response, next: NextFunction) => {
-    const { tableName }: { tableName: string } = JSON.parse(
-      req.params["query"]
-    );
-
+    const { tableName } = req.params as { tableName: string };
     let columnNamesResult: { name: string }[];
 
     try {

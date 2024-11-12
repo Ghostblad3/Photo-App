@@ -1,17 +1,19 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Skeleton } from "@/components/ui/skeleton";
+
 import DeleteCheckBoxButton from "./DeleteCheckBoxButton";
 import TableNamesCombobox from "./TableNamesCombobox";
-import tableNamesStore from "./stores/tableNamesStore";
-import operationStore from "@/global-stores/operationStore";
+import useTableNamesStore from "./stores/tableNamesStore";
+
+import { Skeleton } from "@/components/ui/skeleton";
+import useOperationStore from "@/global-stores/operationStore";
 
 function DeleteTable() {
-  const { setTableNames, resetTableNamesStore } = tableNamesStore(
+  const { setTableNames, resetTableNamesStore } = useTableNamesStore(
     (state) => state.actions
   );
   const { addOperation, changeOperationStatus, removeOperation } =
-    operationStore((state) => state.actions);
+    useOperationStore((state) => state.actions);
 
   const [fetchStatus, setFetchStatus] = useState<"pending" | "success">(
     "pending"
@@ -87,13 +89,13 @@ function DeleteTable() {
   return (
     <>
       {fetchStatus === "pending" && (
-        <div className="w-full border space-y-12 p-5 rounded-md">
+        <div className="w-full space-y-12 rounded-md border p-5">
           <div className="space-y-1">
             <Skeleton className="h-8 max-w-[8.75rem]" />
             <Skeleton className="h-6 max-w-[21.188rem]" />
           </div>
 
-          <div className="space-y-2.5 flex flex-col">
+          <div className="flex flex-col space-y-2.5">
             <Skeleton className="h-6 max-w-[5.625rem]" />
             <Skeleton className="h-10 max-w-full" />
           </div>
@@ -105,7 +107,7 @@ function DeleteTable() {
       )}
 
       {fetchStatus === "success" && (
-        <div className="w-full border space-y-12 p-5 rounded-md">
+        <div className="w-full space-y-12 rounded-md border p-5">
           <TableNamesCombobox />
 
           <DeleteCheckBoxButton />

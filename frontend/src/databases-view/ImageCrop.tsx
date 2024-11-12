@@ -1,13 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import ReactCrop, { Crop, PixelCrop } from "react-image-crop";
+import { ReloadIcon } from "@radix-ui/react-icons";
+
+import useOperationStore from "../global-stores/operationStore";
+
+import useUserDataStore from "./stores/userDataStore";
+import addNewScreenshotStore from "./stores/addNewScreenshotStore";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { ReloadIcon } from "@radix-ui/react-icons";
-import userDataStore from "./stores/userDataStore";
-import operationStore from "../global-stores/operationStore";
-import addNewScreenshotStore from "./stores/addNewScreenshotStore";
+
 import "react-image-crop/dist/ReactCrop.css";
 
 const aspect = 16 / 9;
@@ -22,9 +26,9 @@ function ImageCrop() {
   const setShowDialog = addNewScreenshotStore(
     (state) => state.actions.setShowDialog
   );
-  const { updateUser } = userDataStore((state) => state.actions);
+  const { updateUser } = useUserDataStore((state) => state.actions);
   const { addOperation, changeOperationStatus, removeOperation } =
-    operationStore((state) => state.actions);
+    useOperationStore((state) => state.actions);
 
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -216,26 +220,6 @@ function ImageCrop() {
         error: { message: string };
       } = JSON.parse(responseString);
 
-      // const response = await fetch(
-      //   "http://localhost:3000/screenshot/add-user-screenshot",
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //     body: JSON.stringify({
-      //       userIdName,
-      //       userId,
-      //       dayNumber: inputRef.current,
-      //       tableName,
-      //       screenshot: {
-      //         type: "Buffer",
-      //         data: array,
-      //       },
-      //     }),
-      //   }
-      // );
-
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const { data } = result;
@@ -285,7 +269,7 @@ function ImageCrop() {
   return (
     <>
       {mutation.isIdle && (
-        <div className="w-full flex flex-col justify-center">
+        <div className="flex w-full flex-col justify-center">
           {!!screenshotAsBase64 && (
             <ReactCrop
               crop={crop}
@@ -318,7 +302,7 @@ function ImageCrop() {
             </ReactCrop>
           )}
           {!!completedCrop && (
-            <div className="flex flex-col justify-center w-full mt-2.5 gap-2.5 px-5">
+            <div className="mt-2.5 flex w-full flex-col justify-center gap-2.5 px-5">
               <div className="flex gap-5">
                 <label htmlFor="scale-input">Scale: </label>
                 <input
@@ -363,7 +347,7 @@ function ImageCrop() {
               />
               <Button onClick={processImage} disabled={!buttonEnabled}>
                 {mutation.isPending && (
-                  <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                  <ReloadIcon className="mr-2 size-4 animate-spin" />
                 )}
                 Save cropped image
               </Button>
@@ -372,13 +356,10 @@ function ImageCrop() {
         </div>
       )}
       {!mutation.isIdle && (
-        <div className="flex flex-col justify-center items-center h-[12.5rem]">
+        <div className="flex h-[12.5rem] flex-col items-center justify-center">
           <h1 className="text-xl">Uploading</h1>
-          <div className="flex justify-center items-center gap-2.5 w-full mt-10">
-            <Progress
-              value={progress}
-              className="w-[60%] h-2.5 mt-[0.188rem]"
-            />
+          <div className="mt-10 flex w-full items-center justify-center gap-2.5">
+            <Progress value={progress} className="mt-[0.188rem] h-2.5 w-3/5" />
             <p className="">{progress} %</p>
           </div>
         </div>

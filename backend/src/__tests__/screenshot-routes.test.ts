@@ -1,7 +1,7 @@
 import request from "supertest";
 import fs from "fs";
 import { app } from "../server";
-import { resetInMemoryDb } from "../database/connection";
+import { resetInMemoryDb } from "../db-connection/connection";
 import {
   createUserTable,
   createPhotoTable,
@@ -276,7 +276,7 @@ describe("Delete user screenshot", () => {
     };
 
     const res = await request(app).delete(
-      `/screenshot/delete-user-screenshot/${JSON.stringify(paramsObj)}`
+      "/screenshot/delete-user-screenshot/user_asm/123456789/test_table_2024"
     );
 
     expect(res.statusCode).toEqual(200);
@@ -303,7 +303,7 @@ describe("Delete user screenshot for user that doesn't have screenshot", () => {
     };
 
     const res = await request(app).delete(
-      `/screenshot/delete-user-screenshot/${JSON.stringify(paramsObj)}`
+      "/screenshot/delete-user-screenshot/user_asm/123456789/test_table_2024"
     );
 
     expect(res.statusCode).toEqual(404);
@@ -330,7 +330,7 @@ describe("Delete user screenshot with wrong user id name", () => {
     };
 
     const res = await request(app).delete(
-      `/screenshot/delete-user-screenshot/${JSON.stringify(paramsObj)}`
+      "/screenshot/delete-user-screenshot/asmasm/123456789/test_table_2024"
     );
 
     expect(res.statusCode).toEqual(400);
@@ -360,7 +360,7 @@ describe("Delete user screenshot with wrong user id", () => {
     };
 
     const res = await request(app).delete(
-      `/screenshot/delete-user-screenshot/${JSON.stringify(paramsObj)}`
+      "/screenshot/delete-user-screenshot/user_asm/999999999/test_table_2024"
     );
 
     expect(res.statusCode).toEqual(404);
@@ -387,7 +387,7 @@ describe("Delete user screenshot with wrong table name", () => {
     };
 
     const res = await request(app).delete(
-      `/screenshot/delete-user-screenshot/${JSON.stringify(paramsObj)}`
+      "/screenshot/delete-user-screenshot/user_asm/999999999/test_2024"
     );
 
     expect(res.statusCode).toEqual(404);
@@ -415,9 +415,7 @@ describe("Retrieve all user screenshots for specific day", () => {
     };
 
     const res = await request(app).get(
-      `/screenshot/retrieve-user-screenshots-single-day/${JSON.stringify(
-        paramsObj
-      )}`
+      "/screenshot/retrieve-user-screenshots-single-day/1/test_table_2024"
     );
 
     expect(res.statusCode).toEqual(200);
@@ -454,9 +452,7 @@ describe("Retrieve all user screenshots for specific day that doesn't exist", ()
     };
 
     const res = await request(app).get(
-      `/screenshot/retrieve-user-screenshots-single-day/${JSON.stringify(
-        paramsObj
-      )}`
+      "/screenshot/retrieve-user-screenshots-single-day/9/test_table_2024"
     );
 
     expect(res.statusCode).toEqual(200);
@@ -476,9 +472,7 @@ describe("Retrieve all user screenshots for specific day from table that doesn't
     };
 
     const res = await request(app).get(
-      `/screenshot/retrieve-user-screenshots-single-day/${JSON.stringify(
-        paramsObj
-      )}`
+      "/screenshot/retrieve-user-screenshots-single-day/1/test_2024"
     );
 
     expect(res.statusCode).toEqual(404);
@@ -500,12 +494,11 @@ describe("Retrieve all submitted days for user screenshots", () => {
 
   it("Should return success", async () => {
     const paramsObj = {
-      dayNumber: "1",
       tableName: "test_table_2024",
     };
 
     const res = await request(app).get(
-      `/screenshot/retrieve-submitted-days/${JSON.stringify(paramsObj)}`
+      "/screenshot/retrieve-submitted-days/test_table_2024"
     );
 
     expect(res.statusCode).toEqual(200);
@@ -527,12 +520,11 @@ describe("Retrieve all submitted days for user screenshots when there aren't sub
 
   it("Should return success", async () => {
     const paramsObj = {
-      dayNumber: "1",
       tableName: "test_table_2024",
     };
 
     const res = await request(app).get(
-      `/screenshot/retrieve-submitted-days/${JSON.stringify(paramsObj)}`
+      "/screenshot/retrieve-submitted-days/test_table_2024"
     );
 
     expect(res.statusCode).toEqual(200);
@@ -547,12 +539,11 @@ describe("Retrieve all submitted days for user screenshots when there aren't sub
 describe("Retrieve all submitted days for user screenshots for table that doesn't exist", () => {
   it("Should return error", async () => {
     const paramsObj = {
-      dayNumber: "1",
       tableName: "test_2024",
     };
 
     const res = await request(app).get(
-      `/screenshot/retrieve-submitted-days/${JSON.stringify(paramsObj)}`
+      "/screenshot/retrieve-submitted-days/test_2024"
     );
 
     expect(res.statusCode).toEqual(404);
@@ -581,7 +572,7 @@ describe("Retrieve user screenshot", () => {
     };
 
     const res = await request(app).get(
-      `/screenshot/retrieve-user-screenshot/${JSON.stringify(paramsObj)}`
+      "/screenshot/retrieve-user-screenshot/user_asm/123456789/test_table_2024"
     );
 
     expect(res.statusCode).toEqual(200);
@@ -609,7 +600,7 @@ describe("Retrieve user screenshot for user id prop name that doesn't exist", ()
     };
 
     const res = await request(app).get(
-      `/screenshot/retrieve-user-screenshot/${JSON.stringify(paramsObj)}`
+      "/screenshot/retrieve-user-screenshot/asmasm/123456789/test_table_2024"
     );
 
     expect(res.statusCode).toEqual(400);
@@ -640,7 +631,7 @@ describe("Retrieve user screenshot for user id that doesn't exist", () => {
     };
 
     const res = await request(app).get(
-      `/screenshot/retrieve-user-screenshot/${JSON.stringify(paramsObj)}`
+      "/screenshot/retrieve-user-screenshot/user_asm/999999999/test_table_2024"
     );
 
     expect(res.statusCode).toEqual(404);
@@ -661,7 +652,7 @@ describe("Retrieve user screenshot for table that doesn't exist", () => {
     };
 
     const res = await request(app).get(
-      `/screenshot/retrieve-user-screenshot/${JSON.stringify(paramsObj)}`
+      "/screenshot/retrieve-user-screenshot/user_asm/123456789/test_2024"
     );
 
     expect(res.statusCode).toEqual(404);
@@ -682,14 +673,8 @@ describe("Retrieve user data for users that have screenshot", () => {
   });
 
   it("Should return success", async () => {
-    const paramsObj = {
-      tableName: "test_table_2024",
-    };
-
     const res = await request(app).get(
-      `/screenshot/retrieve-user-data-with-screenshots/${JSON.stringify(
-        paramsObj
-      )}`
+      "/screenshot/retrieve-user-data-with-screenshots/test_table_2024"
     );
 
     expect(res.statusCode).toEqual(200);
@@ -711,14 +696,8 @@ describe("Retrieve user data for users that have screenshot", () => {
 
 describe("Retrieve user data for users that have screenshot for table that doesn't exist", () => {
   it("Should return error", async () => {
-    const paramsObj = {
-      tableName: "test_2024",
-    };
-
     const res = await request(app).get(
-      `/screenshot/retrieve-user-data-with-screenshots/${JSON.stringify(
-        paramsObj
-      )}`
+      "/screenshot/retrieve-user-data-with-screenshots/test_2024"
     );
 
     expect(res.statusCode).toEqual(404);
@@ -745,9 +724,7 @@ describe("Retrieve user screenshots for all days", () => {
     };
 
     const res = await request(app).get(
-      `/screenshot/retrieve-user-screenshots-all-days/${JSON.stringify(
-        paramsObj
-      )}`
+      "/screenshot/retrieve-user-screenshots-all-days/test_table_2024"
     );
 
     expect(res.statusCode).toEqual(200);
@@ -784,9 +761,7 @@ describe("Retrieve user screenshots for all days for table that doesn't exist", 
     };
 
     const res = await request(app).get(
-      `/screenshot/retrieve-user-screenshots-all-days/${JSON.stringify(
-        paramsObj
-      )}`
+      "/screenshot/retrieve-user-screenshots-all-days/test_2024"
     );
 
     expect(res.statusCode).toEqual(404);

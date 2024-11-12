@@ -1,5 +1,13 @@
 import { memo, useEffect, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { CircleX } from "lucide-react";
+import { ReloadIcon } from "@radix-ui/react-icons";
+
+import useOperationStore from "../global-stores/operationStore";
+
+import useUpdateUserInfoStore from "./stores/updateUserInfoStore";
+import useUserDataStore from "./stores/userDataStore";
+
 import {
   Dialog,
   DialogContent,
@@ -9,25 +17,20 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CircleX } from "lucide-react";
-import { ReloadIcon } from "@radix-ui/react-icons";
-import updateUserInfoStore from "./stores/updateUserInfoStore";
-import userDataStore from "./stores/userDataStore";
-import operationStore from "../global-stores/operationStore";
 
 const UpdateUserDialog = memo(() => {
-  const showDialog = updateUserInfoStore((state) => state.props.showDialog);
-  const userId = updateUserInfoStore((state) => state.props.userId);
-  const userIndex = updateUserInfoStore((state) => state.props.userIndex);
-  const tableName = updateUserInfoStore((state) => state.props.tableName);
-  const { setShowDialog, resetUpdateUserInfoStore } = updateUserInfoStore(
+  const showDialog = useUpdateUserInfoStore((state) => state.props.showDialog);
+  const userId = useUpdateUserInfoStore((state) => state.props.userId);
+  const userIndex = useUpdateUserInfoStore((state) => state.props.userIndex);
+  const tableName = useUpdateUserInfoStore((state) => state.props.tableName);
+  const { setShowDialog, resetUpdateUserInfoStore } = useUpdateUserInfoStore(
     (state) => state.actions
   );
-  const userData = userDataStore((state) => state.props.userData);
-  const userKeys = userDataStore((state) => state.props.userKeys);
-  const { updateUser } = userDataStore((state) => state.actions);
+  const userData = useUserDataStore((state) => state.props.userData);
+  const userKeys = useUserDataStore((state) => state.props.userKeys);
+  const { updateUser } = useUserDataStore((state) => state.actions);
   const { addOperation, changeOperationStatus, removeOperation } =
-    operationStore((state) => state.actions);
+    useOperationStore((state) => state.actions);
 
   const userObjRef = useRef<{ [key: string]: string }>(
     userData[parseInt(userIndex)]
@@ -171,7 +174,7 @@ const UpdateUserDialog = memo(() => {
         {keysRef.current.map((key) => {
           return (
             <div key={key} className="mx-4">
-              <p className="space-y-1 font-semibold block text-sm">{key}</p>
+              <p className="block space-y-1 text-sm font-semibold">{key}</p>
               <Input
                 className="mt-1"
                 defaultValue={userObjRef.current[key]}
@@ -182,8 +185,8 @@ const UpdateUserDialog = memo(() => {
               />
               {(fieldsModified[key] && userRef.current[key].length === 0) ||
                 (userRef.current[key].length > 50 && (
-                  <div className="flex items-center mt-2">
-                    <CircleX className="text-red-500 mr-1 h-5 w-5" />
+                  <div className="mt-2 flex items-center">
+                    <CircleX className="mr-1 size-5 text-red-500" />
                     <Label className="text-red-500">
                       Field must be between 1 and 50 characters
                     </Label>
@@ -193,12 +196,12 @@ const UpdateUserDialog = memo(() => {
           );
         })}
         <Button
-          className="w-[calc(100%_-_2rem)] mx-4"
+          className="mx-4 w-[calc(100%_-_2rem)]"
           onClick={updateUserButtonHandler}
           disabled={buttonDisabled}
         >
           {mutation.isPending && (
-            <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+            <ReloadIcon className="mr-2 size-4 animate-spin" />
           )}
           Update
         </Button>

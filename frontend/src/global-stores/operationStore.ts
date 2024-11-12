@@ -45,7 +45,7 @@ const initProps: {
   showQueue: [],
 };
 
-const operationStore = create<OperationStoreProps & OperationStoreActions>(
+const useOperationStore = create<OperationStoreProps & OperationStoreActions>(
   (set) => ({
     props: initProps,
     actions: {
@@ -114,4 +114,4 @@ const operationStore = create<OperationStoreProps & OperationStoreActions>(
   })
 );
 
-export default operationStore;
+export default useOperationStore;

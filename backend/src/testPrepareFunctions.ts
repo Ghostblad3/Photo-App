@@ -1,4 +1,4 @@
-import { sqlite } from "./database/connection";
+import { sqlite } from "./db-connection/connection";
 import fs from "fs/promises";
 
 function createUserTable(tableName: string = "test_table_2024") {
@@ -61,7 +61,7 @@ function insertPhoto(
 async function movePhotoToFolder(
   tableName: string = "test_table_2024",
   path: string = "./screenshots",
-  photoLocation: string = "./src/dummy_photo/1.png"
+  photoLocation: string = "./src/dummy-photo/1.png"
 ) {
   try {
     await fs.access(`${path}/${tableName}`);

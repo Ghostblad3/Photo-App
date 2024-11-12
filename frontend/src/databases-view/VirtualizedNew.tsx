@@ -12,19 +12,18 @@ import {
 import { useVirtualizer, notUndefined } from "@tanstack/react-virtual";
 import { ImageOff, ImagePlus, PenLine, UserPlus, UserX } from "lucide-react";
 
-
 import { columns } from "./columns";
 import SearchValueCombobox from "./SearchValueCombobox";
 import SearchFieldCombobox from "./SearchFieldCombobox";
 import Dialogs from "./Dialogs";
-import userDataStore from "./stores/userDataStore";
-import screenshotStore from "./stores/screenshotStore";
-import selectedTableInfoStore from "./stores/selectedTableInfoStore";
-import addNewUserStore from "./stores/addNewUserStore";
-import deleteUserScreenshotStore from "./stores/deleteUserScreenshotStore";
-import updateUserInfoStore from "./stores/updateUserInfoStore";
+import useUserDataStore from "./stores/userDataStore";
+import useScreenshotStore from "./stores/screenshotStore";
+import useSelectedTableInfoStore from "./stores/selectedTableInfoStore";
+import useAddNewUserStore from "./stores/addNewUserStore";
+import useDeleteUserScreenshotStore from "./stores/deleteUserScreenshotStore";
+import useUpdateUserInfoStore from "./stores/updateUserInfoStore";
 import addNewScreenshotStore from "./stores/addNewScreenshotStore";
-import deleteUserStore from "./stores/deleteUserStore";
+import useDeleteUserStore from "./stores/deleteUserStore";
 
 import {
   ContextMenu,
@@ -34,36 +33,36 @@ import {
 } from "@/components/ui/context-menu";
 
 export function DataTable<TData, TValue>() {
-  const filteredUserData = userDataStore(
+  const filteredUserData = useUserDataStore(
     (state) => state.props.filteredUserData
   );
-  const { resetUserData } = userDataStore((state) => state.actions);
+  const { resetUserData } = useUserDataStore((state) => state.actions);
   const {
     setShowDialog: setScreenshowShowDialog,
     setUserInfo: setScreenshowUserInfo,
     setTableName: setScreenshowTableName,
     setKeyName: setScreenshotKeyName,
-  } = screenshotStore((state) => state.actions);
+  } = useScreenshotStore((state) => state.actions);
   const { setTableName, setUserIdName, setUserId, setShowDialog } =
     addNewScreenshotStore((state) => state.actions);
-  const tableName = selectedTableInfoStore((state) => state.props.tableName);
+  const tableName = useSelectedTableInfoStore((state) => state.props.tableName);
   const {
     setShowDialog: setAddNewUserShowDialog,
     setTableName: setAddNewUserTableName,
-  } = addNewUserStore((state) => state.actions);
+  } = useAddNewUserStore((state) => state.actions);
   const {
     setShowDialog: setDeleteUserScreenshotShowDialog,
     setUserId: setDeleteUserScreenshotUserId,
     setUserIdName: setDeleteUserScreenshotUserIdName,
     setTableName: setDeleteUserScreenshotTableName,
-  } = deleteUserScreenshotStore((state) => state.actions);
+  } = useDeleteUserScreenshotStore((state) => state.actions);
   const {
     setShowDialog: setUpdateUserInfoShowDialog,
     setTableName: setUpdateUserInfoTableName,
     setUserId: setUpdateUserInfoUserId,
     setUserIndex: setUpdateUserInfoUserIndex,
-  } = updateUserInfoStore((state) => state.actions);
-  const { setProps } = deleteUserStore((state) => state.actions);
+  } = useUpdateUserInfoStore((state) => state.actions);
+  const { setProps } = useDeleteUserStore((state) => state.actions);
 
   useEffect(() => {
     return () => {

@@ -2,12 +2,12 @@ import { useEffect, useRef } from "react";
 import { read, utils } from "xlsx";
 import { z } from "zod";
 
-import fieldsStore from "./stores/fieldsStore";
-import dataStore from "./stores/dataStore";
+import useFieldsStore from "./stores/fieldsStore";
+import useDataStore from "./stores/dataStore";
 import navigationStore from "./stores/navigationStore";
 
 import { Button } from "@/components/ui/button";
-import operationStore from "@/global-stores/operationStore";
+import useOperationStore from "@/global-stores/operationStore";
 
 const usersType = z
   .array(
@@ -87,15 +87,17 @@ const usersType = z
   );
 
 function DragAndDropExcelFile() {
-  const { setFields, setVisibleFields } = fieldsStore((state) => state.actions);
-  const data = dataStore((state) => state.props.data);
-  const { setData } = dataStore((state) => state.actions);
+  const { setFields, setVisibleFields } = useFieldsStore(
+    (state) => state.actions
+  );
+  const data = useDataStore((state) => state.props.data);
+  const { setData } = useDataStore((state) => state.actions);
   const { setAllowLeft, setAllowRight, incrementIndex } = navigationStore(
     (state) => state.actions
   );
   const allowLeft = navigationStore((state) => state.props.allowLeft);
   const { addOperation, changeOperationStatus, removeOperation } =
-    operationStore((state) => state.actions);
+    useOperationStore((state) => state.actions);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -166,8 +168,6 @@ function DragAndDropExcelFile() {
       if (timeDiff < 2000) {
         await new Promise((resolve) => setTimeout(resolve, 2000 - timeDiff));
       }
-
-      console.log(result);
 
       if (!result.success) {
         changeOperationStatus(

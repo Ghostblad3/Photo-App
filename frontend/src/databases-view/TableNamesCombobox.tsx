@@ -17,26 +17,26 @@ import {
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import tableNamesStore from "./stores/tableNamesStore";
-import searchStore from "./stores/searchStore";
-import selectedTableInfoStore from "./stores/selectedTableInfoStore";
-import operationStore from "../global-stores/operationStore";
+import useTableNamesStore from "./stores/tableNamesStore";
+import useSearchStore from "./stores/searchStore";
+import useSelectedTableInfoStore from "./stores/selectedTableInfoStore";
+import useOperationStore from "../global-stores/operationStore";
 
 function TableNamesCombobox() {
-  const tableNames = tableNamesStore((state) => state.tableNames);
+  const tableNames = useTableNamesStore((state) => state.tableNames);
   const { setTableNames, resetTableNamesStore: resetTableNames } =
-    tableNamesStore((state) => state.actions);
-  const resetSearchStore = searchStore(
+    useTableNamesStore((state) => state.actions);
+  const resetSearchStore = useSearchStore(
     (state) => state.actions.resetSearchStore
   );
-  const setSelectedTableName = selectedTableInfoStore(
+  const setSelectedTableName = useSelectedTableInfoStore(
     (state) => state.actions.setTableName
   );
-  const selectedTableName = selectedTableInfoStore(
+  const selectedTableName = useSelectedTableInfoStore(
     (state) => state.props.tableName
   );
   const { addOperation, changeOperationStatus, removeOperation } =
-    operationStore((state) => state.actions);
+    useOperationStore((state) => state.actions);
 
   const hash = useRef(crypto.randomUUID());
   const [open, setOpen] = useState(false);

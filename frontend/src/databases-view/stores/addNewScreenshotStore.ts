@@ -29,7 +29,7 @@ const initialProps = {
   screenshotAsBase64: "",
 };
 
-const addNewScreesnotStore = create<
+const useAddNewScreensotStore = create<
   AddNewScreenshotProps & AddNewScreenshotActions
 >((set) => ({
   props: initialProps,
@@ -61,4 +61,4 @@ const addNewScreesnotStore = create<
   },
 }));
 
-export default addNewScreesnotStore;
+export default useAddNewScreensotStore;

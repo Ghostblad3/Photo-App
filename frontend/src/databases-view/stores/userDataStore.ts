@@ -33,7 +33,7 @@ const initProps: {
   userKeys: [],
 };
 
-const userDataStore = create<UserDataProps & UserDataActions>((set) => ({
+const useUserDataStore = create<UserDataProps & UserDataActions>((set) => ({
   props: initProps,
   actions: {
     setUserData: (userData: { [key: string]: string }[]) =>
@@ -86,4 +86,4 @@ const userDataStore = create<UserDataProps & UserDataActions>((set) => ({
   },
 }));
 
-export default userDataStore;
+export default useUserDataStore;

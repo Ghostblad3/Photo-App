@@ -23,7 +23,7 @@ const initialProps: {
   displayableData: [],
 };
 
-const dataStore = create<DataStore & DataActions>((set) => ({
+const useDataStore = create<DataStore & DataActions>((set) => ({
   props: initialProps,
   actions: {
     setData: (data: { [key: string]: string }[]) =>
@@ -34,4 +34,4 @@ const dataStore = create<DataStore & DataActions>((set) => ({
   },
 }));
 
-export default dataStore;
+export default useDataStore;

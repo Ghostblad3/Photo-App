@@ -1,21 +1,23 @@
 import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
+
+import useFieldsStore from "./stores/fieldsStore";
+import useNavitationStore from "./stores/navigationStore";
+import useDataStore from "./stores/dataStore";
+
 import { Checkbox } from "@/components/ui/checkbox";
-import fieldsStore from "./stores/fieldsStore";
-import navitationStore from "./stores/navigationStore";
-import dataStore from "./stores/dataStore";
+import { Button } from "@/components/ui/button";
 
 function Fields() {
-  const setVisibleFields = fieldsStore(
+  const setVisibleFields = useFieldsStore(
     (state) => state.actions.setVisibleFields
   );
-  const fields = fieldsStore((state) => state.props.fields);
-  const visibleFields = fieldsStore((state) => state.props.visibleFields);
-  const { setAllowLeft, setAllowRight, incrementIndex } = navitationStore(
+  const fields = useFieldsStore((state) => state.props.fields);
+  const visibleFields = useFieldsStore((state) => state.props.visibleFields);
+  const { setAllowLeft, setAllowRight, incrementIndex } = useNavitationStore(
     (state) => state.actions
   );
-  const data = dataStore((state) => state.props.data);
-  const setDisplayableData = dataStore(
+  const data = useDataStore((state) => state.props.data);
+  const setDisplayableData = useDataStore(
     (state) => state.actions.setDisplayableData
   );
 
@@ -50,9 +52,9 @@ function Fields() {
   return (
     <>
       {fields.length > 0 && (
-        <div className="w-full border space-y-12 p-5 rounded-md">
+        <div className="w-full space-y-12 rounded-md border p-5">
           <div className="space-y-1">
-            <h1 className="font-bold text-2xl decoration-slate-100">
+            <h1 className="text-2xl font-bold decoration-slate-100">
               Select fields
             </h1>
             <p className="text-slate-500">
@@ -60,7 +62,7 @@ function Fields() {
             </p>
           </div>
 
-          <div className="flex flex-col flex-wrap gap-2.5 h-[6.25rem]">
+          <div className="flex h-[6.25rem] flex-col flex-wrap gap-2.5">
             {fields.map((item) => (
               <div key={item} className="flex items-center space-x-2">
                 <Checkbox

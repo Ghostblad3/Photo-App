@@ -1,5 +1,5 @@
 import request from "supertest";
-import { resetInMemoryDb } from "../database/connection";
+import { resetInMemoryDb } from "../db-connection/connection";
 import { app } from "../server";
 import {
   createUserTable,
@@ -13,16 +13,6 @@ jest.setTimeout(30000);
 
 beforeEach(() => {
   resetInMemoryDb();
-});
-
-describe("Send json with invalid format to an api route", () => {
-  it("should return error", async () => {
-    const invalidJson = '{tableName="test_table_2024"}';
-    const res = await request(app).delete(`/table/delete/${invalidJson}`);
-
-    expect(res.statusCode).toEqual(400);
-    expect(res.body).toEqual({ error: "invalid JSON format" });
-  });
 });
 
 describe("Call an api route that doesn't exist", () => {
@@ -67,9 +57,7 @@ describe("Delete a table that exists", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(app).delete(
-      `/table/delete/${JSON.stringify(obj)}`
-    );
+    const res = await request(app).delete("/table/delete/test_table_2024");
 
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual({
@@ -86,9 +74,7 @@ describe("Delete a table that doesn't exist", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(app).delete(
-      `/table/delete/${JSON.stringify(obj)}`
-    );
+    const res = await request(app).delete("/table/delete/test_table_2024");
 
     expect(res.statusCode).toEqual(404);
     expect(res.body).toEqual({
@@ -152,9 +138,7 @@ describe("Count records of users in specific table ", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(app).get(
-      `/table/count-records/${JSON.stringify(obj)}`
-    );
+    const res = await request(app).get("/table/count-records/test_table_2024");
 
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual({
@@ -171,9 +155,7 @@ describe("Count records in table that doesn't exist", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(app).get(
-      `/table/count-records/${JSON.stringify(obj)}`
-    );
+    const res = await request(app).get("/table/count-records/test_table_2024");
 
     expect(res.statusCode).toEqual(404);
     expect(res.body).toEqual({
@@ -199,9 +181,7 @@ describe("Count screenshots for users of specific table", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(app).get(
-      `/table/count-records/${JSON.stringify(obj)}`
-    );
+    const res = await request(app).get("/table/count-records/test_table_2024");
 
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual({
@@ -227,7 +207,7 @@ describe("Get screenshot size of users of specific table", () => {
     };
 
     const res = await request(app).get(
-      `/table/screenshots-size/${JSON.stringify(obj)}`
+      "/table/screenshots-size/test_table_2024"
     );
 
     expect(res.statusCode).toEqual(200);
@@ -246,7 +226,7 @@ describe("Get screenshot size for table that doesn't exist", () => {
     };
 
     const res = await request(app).get(
-      `/table/screenshots-size/${JSON.stringify(obj)}`
+      "/table/screenshots-size/test_table_2024"
     );
 
     expect(res.statusCode).toEqual(404);
@@ -269,7 +249,7 @@ describe("Get column names for users of specific table", () => {
     };
 
     const res = await request(app).get(
-      `/table/table-column-names/${JSON.stringify(obj)}`
+      "/table/table-column-names/test_table_2024"
     );
 
     expect(res.statusCode).toEqual(200);
@@ -288,7 +268,7 @@ describe("Get column names for table that doesn't exist", () => {
     };
 
     const res = await request(app).get(
-      `/table/table-column-names/${JSON.stringify(obj)}`
+      "/table/table-column-names/test_table_2024"
     );
 
     expect(res.statusCode).toEqual(404);

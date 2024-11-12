@@ -13,16 +13,16 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import tableNamesStore from "./stores/tableNamesStore";
+import useTableNamesStore from "./stores/tableNamesStore";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
 function TableNamesCombobox() {
-  const tableNames = tableNamesStore((state) => state.props.tableNames);
-  const selectedTableName = tableNamesStore(
+  const tableNames = useTableNamesStore((state) => state.props.tableNames);
+  const selectedTableName = useTableNamesStore(
     (state) => state.props.selectedTableName
   );
-  const { setSelectedTableName } = tableNamesStore((state) => state.actions);
+  const { setSelectedTableName } = useTableNamesStore((state) => state.actions);
   const [open, setOpen] = useState(false);
 
   return (

@@ -15,7 +15,7 @@ const initialProps = {
   tableName: "",
 };
 
-const selectedTableStore = create<SelectedTableProps & SelectedTableActions>(
+const useSelectedTableStore = create<SelectedTableProps & SelectedTableActions>(
   (set) => ({
     props: initialProps,
     actions: {
@@ -25,4 +25,4 @@ const selectedTableStore = create<SelectedTableProps & SelectedTableActions>(
   })
 );
 
-export default selectedTableStore;
+export default useSelectedTableStore;

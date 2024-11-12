@@ -51,57 +51,54 @@ function Menu({
     <div
       className={`${isFixed} ${
         !isVisible ? "animate-killAnimation" : ""
-      } top-[2.75rem] h-full overflow-y-auto w-[15.625rem] bg-[#192a33] flex flex-col @apply text-[white] flex-[0_0_auto]`}
+      } top-11 flex h-[calc(100vh-44px)] w-48 flex-[0_0_auto] flex-col overflow-y-auto bg-[#1b263b] text-[black]`}
     >
-      <div className="mt-[4.375rem] text-lg items-center justify-center flex gap-2.5">
+      <div className="mt-[4.375rem] flex items-center justify-center gap-2.5 text-lg text-[#adb5bd]">
         <Aperture />
-        <h1>Image manager</h1>
+        <h1 className="text-sm">Image manager</h1>
       </div>
-      <div className="mt-7 border-[0.063rem] border-[solid] border-[white]"></div>
-      <div>
-        <ul className="mt-20 flex flex-col flex-grow flex-shrink-0 h-full overflow-y-auto gap-1.5">
-          <li
-            onClick={() => handleClick(0)}
-            style={{
-              color: `${currentComponent === 0 ? "white" : "#b1b1af"}`,
-            }}
-            className="h-10 cursor-pointer flex gap-4 items-center pl-8 mx-2.5 hover:text-white hover:underline"
-          >
-            <Database />
-            <span className="mt-[-0.063rem]">Database</span>
-          </li>
-          <li
-            onClick={() => handleClick(1)}
-            style={{
-              color: `${currentComponent === 1 ? "white" : "#b1b1af"}`,
-            }}
-            className="h-10 cursor-pointer flex gap-4 items-center pl-8 mx-2.5 hover:text-white hover:underline"
-          >
-            <UserRoundPlus />
-            <span className="mt-[-0.063rem]">Add records</span>
-          </li>
-          <li
-            onClick={() => handleClick(2)}
-            style={{
-              color: `${currentComponent === 2 ? "white" : "#b1b1af"}`,
-            }}
-            className="h-10 cursor-pointer flex gap-4 items-center pl-8 mx-2.5 hover:text-white hover:underline"
-          >
-            <FileX />
-            <span className="mt-[-0.063rem]">Remove table</span>
-          </li>
-          <li
-            onClick={() => handleClick(3)}
-            style={{
-              color: `${currentComponent === 3 ? "white" : "#b1b1af"}`,
-            }}
-            className="h-10 cursor-pointer flex gap-4 items-center pl-8 mx-2.5 hover:text-white hover:underline"
-          >
-            <Images />
-            <span className="mt-[-0.063rem]">Images</span>
-          </li>
-        </ul>
-      </div>
+      <ul className="mt-20 flex shrink-0 grow flex-col gap-1.5 overflow-y-auto">
+        <li
+          onClick={() => handleClick(0)}
+          style={{
+            color: `${currentComponent === 0 ? "white" : "#adb5bd"}`,
+          }}
+          className="mx-2.5 flex h-10 cursor-pointer items-center gap-4 pl-6 hover:text-white hover:underline"
+        >
+          <Database className="size-[1.3rem]" />
+          <span className="mt-[-0.063rem] text-sm">Database</span>
+        </li>
+        <li
+          onClick={() => handleClick(1)}
+          style={{
+            color: `${currentComponent === 1 ? "white" : "#adb5bd"}`,
+          }}
+          className="mx-2.5 flex h-10 cursor-pointer items-center gap-4 pl-6 hover:text-white hover:underline"
+        >
+          <UserRoundPlus className="size-[1.3rem]" />
+          <span className="mt-[-0.063rem] text-sm">Add records</span>
+        </li>
+        <li
+          onClick={() => handleClick(2)}
+          style={{
+            color: `${currentComponent === 2 ? "white" : "#adb5bd"}`,
+          }}
+          className="mx-2.5 flex h-10 cursor-pointer items-center gap-4 pl-6 hover:text-white hover:underline"
+        >
+          <FileX className="size-[1.3rem]" />
+          <span className="mt-[-0.063rem] text-sm">Remove table</span>
+        </li>
+        <li
+          onClick={() => handleClick(3)}
+          style={{
+            color: `${currentComponent === 3 ? "white" : "#adb5bd"}`,
+          }}
+          className="mx-2.5 flex h-10 cursor-pointer items-center gap-4 pl-6 hover:text-white hover:underline"
+        >
+          <Images className="size-[1.3rem]" />
+          <span className="mt-[-0.063rem] text-sm">Images</span>
+        </li>
+      </ul>
     </div>
   );
 }

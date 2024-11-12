@@ -1,24 +1,28 @@
 import { useState } from "react";
+
 import { Switch } from "../components/ui/switch";
+
 import Card from "./Card";
-import selectedTableInfoStore from "./stores/selectedTableInfoStore";
+import useSelectedTableInfoStore from "./stores/selectedTableInfoStore";
 
 function Cards() {
   const [showCards, setShowCards] = useState(true);
-  const columnNames = selectedTableInfoStore(
+  const columnNames = useSelectedTableInfoStore(
     (state) => state.props.columnNames
   );
-  const userNumber = selectedTableInfoStore((state) => state.props.userNumber);
-  const screenshotNumber = selectedTableInfoStore(
+  const userNumber = useSelectedTableInfoStore(
+    (state) => state.props.userNumber
+  );
+  const screenshotNumber = useSelectedTableInfoStore(
     (state) => state.props.screenshotNumber
   );
-  const screenshotAverageSize = selectedTableInfoStore(
+  const screenshotAverageSize = useSelectedTableInfoStore(
     (state) => state.props.screenshotAverageSize
   );
 
   return (
     <>
-      <div className="my-2 pl-2.5 flex items-center gap-2.5">
+      <div className="my-2 flex items-center gap-2.5 pl-2.5">
         <Switch
           id="airplane-mode"
           onCheckedChange={() => setShowCards((prev) => !prev)}
@@ -26,11 +30,11 @@ function Cards() {
         <p className="font-semibold">Show table information</p>
       </div>
       {showCards && (
-        <div className="grid lg:grid-cols-4 gap-5 auto-rows-fr p-2.5">
+        <div className="grid auto-rows-fr gap-5 p-2.5 lg:grid-cols-4">
           {columnNames.length !== 0 && (
             <>
               <Card>
-                <span className="text-center text-xl mb-5">
+                <span className="mb-5 text-center text-xl">
                   User properties
                 </span>
                 {columnNames.map((item) => (
@@ -38,17 +42,17 @@ function Cards() {
                 ))}
               </Card>
               <Card>
-                <span className="text-center text-xl mb-5">User number</span>
+                <span className="mb-5 text-center text-xl">User number</span>
                 <p>{userNumber}</p>
               </Card>
               <Card>
-                <span className="text-center text-xl mb-5">
+                <span className="mb-5 text-center text-xl">
                   Screenshot number
                 </span>
                 <p>{screenshotNumber}</p>
               </Card>
               <Card>
-                <span className="text-center text-xl mb-5">
+                <span className="mb-5 text-center text-xl">
                   Average screenshot size
                 </span>
                 <p>

@@ -1,18 +1,23 @@
 import express, { Express, Request, Response, NextFunction } from "express";
-import dotenv from "dotenv";
+import { Server, IncomingMessage, ServerResponse } from "http";
+import helmet from "helmet";
 import cors from "cors";
 import fs from "fs/promises";
-import { getErrorCodeAndMessage, errorLogger } from "./utils/util";
-import { Server, IncomingMessage, ServerResponse } from "http";
+import dotenv from "dotenv";
+import { getErrorCodeAndMessage, errorLogger } from "./utils/utils";
 import tableRouter from "./routes/table-routes";
 import screenshotRouter from "./routes/screenshot-routes";
 import recordRouter from "./routes/record-routes";
 
 dotenv.config();
+
 const app: Express = express();
 
 app.use(express.json());
+app.use(helmet());
 app.use(cors());
+app.disable("x-powered-by");
+
 app.use("/table", tableRouter);
 app.use("/screenshot", screenshotRouter);
 app.use("/record", recordRouter);
@@ -24,7 +29,7 @@ app.use(
     },
     req: Request,
     res: Response,
-    next: NextFunction
+    _next: NextFunction
   ) => {
     if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
       return res.status(400).send({ error: "invalid JSON format" });

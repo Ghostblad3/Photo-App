@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react";
+
 import Databases from "./databases-view/Databases";
 import Alerts from "./Alerts";
 const ImagesView = lazy(() => import("./images-view/ImagesView"));
@@ -11,8 +12,8 @@ const DeleteTableView = lazy(
 
 function Content({ currentComponent }: { currentComponent: number }) {
   return (
-    <div className="w-[calc(100%-250px)]">
-      <div className="h-full w-full p-2.5 bg-white overflow-y-auto">
+    <div className="size-full">
+      <div className="h-full overflow-y-auto p-2.5">
         {currentComponent === 0 && <Databases />}
         {currentComponent === 1 && (
           <Suspense fallback={<></>}>

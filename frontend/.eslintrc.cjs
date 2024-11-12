@@ -1,3 +1,5 @@
+const { set } = require("zod");
+
 module.exports = {
   root: true,
   env: { browser: true, es2020: true },
@@ -38,6 +40,12 @@ module.exports = {
           "index",
         ],
         "newlines-between": "always",
+      },
+    ],
+    "tailwindcss/no-custom-classname": [
+      "error",
+      {
+        whitelist: ["my-custom-class", "animate-killAnimation"], // Replace with your custom classes
       },
     ],
   },

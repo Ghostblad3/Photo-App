@@ -1,5 +1,5 @@
 import request from "supertest";
-import { resetInMemoryDb } from "../database/connection";
+import { resetInMemoryDb } from "../db-connection/connection";
 import { app } from "../server";
 import {
   createUserTable,
@@ -196,13 +196,7 @@ describe("Get all user data for a specific table", () => {
   });
 
   it("Should return success", async () => {
-    const paramsObj = {
-      tableName: "test_table_2024",
-    };
-
-    const res = await request(app).get(
-      `/record/get-user-data/${JSON.stringify(paramsObj)}`
-    );
+    const res = await request(app).get("/record/get-user-data/test_table_2024");
 
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual({
@@ -217,13 +211,7 @@ describe("Get all user data for a specific table", () => {
 
 describe("Get all user data for a table that doesn't exist", () => {
   it("Should return error", async () => {
-    const paramsObj = {
-      tableName: "test_table_2024",
-    };
-
-    const res = await request(app).get(
-      `/record/get-user-data/${JSON.stringify(paramsObj)}`
-    );
+    const res = await request(app).get("/record/get-user-data/test_table_2024");
 
     expect(res.statusCode).toEqual(404);
     expect(res.body).toEqual({
@@ -244,14 +232,8 @@ describe("Remove user", () => {
   });
 
   it("Should return success", async () => {
-    const paramsObj = {
-      userIdName: "user_asm",
-      userId: "123456789",
-      tableName: "test_table_2024",
-    };
-
     const res = await request(app).delete(
-      `/record/remove-user/${JSON.stringify(paramsObj)}`
+      "/record/remove-user/user_asm/123456789/test_table_2024"
     );
 
     expect(res.statusCode).toEqual(200);
@@ -270,14 +252,8 @@ describe("Remove user that doesn't exist", () => {
   });
 
   it("Should return error", async () => {
-    const paramsObj = {
-      userIdName: "user_asm",
-      userId: "123456789",
-      tableName: "test_table_2024",
-    };
-
     const res = await request(app).delete(
-      `/record/remove-user/${JSON.stringify(paramsObj)}`
+      "/record/remove-user/user_asm/123456789/test_table_2024"
     );
 
     expect(res.statusCode).toEqual(404);
@@ -291,14 +267,8 @@ describe("Remove user that doesn't exist", () => {
 
 describe("Remove user from table that doesn't exist", () => {
   it("Should return error", async () => {
-    const paramsObj = {
-      userIdName: "user_asm",
-      userId: "123456789",
-      tableName: "test_table_2024",
-    };
-
     const res = await request(app).delete(
-      `/record/remove-user/${JSON.stringify(paramsObj)}`
+      "/record/remove-user/user_asm/123456789/test_table_2024"
     );
 
     expect(res.statusCode).toEqual(404);
@@ -317,14 +287,8 @@ describe("Remove user with wrong id name", () => {
   });
 
   it("Should return error", async () => {
-    const paramsObj = {
-      userIdName: "asmasm",
-      userId: "123456789",
-      tableName: "test_table_2024",
-    };
-
     const res = await request(app).delete(
-      `/record/remove-user/${JSON.stringify(paramsObj)}`
+      "/record/remove-user/asmasm/123456789/test_table_2024"
     );
 
     expect(res.statusCode).toEqual(400);
@@ -347,14 +311,8 @@ describe("Remove user with no screenshot", () => {
   });
 
   it("Should return success", async () => {
-    const paramsObj = {
-      userIdName: "user_asm",
-      userId: "123456789",
-      tableName: "test_table_2024",
-    };
-
     const res = await request(app).delete(
-      `/record/remove-user/${JSON.stringify(paramsObj)}`
+      "/record/remove-user/user_asm/123456789/test_table_2024"
     );
 
     expect(res.statusCode).toEqual(200);
@@ -374,12 +332,8 @@ describe("Remove all users from a table", () => {
   });
 
   it("Should return success", async () => {
-    const paramsObj = {
-      tableName: "test_table_2024",
-    };
-
     const res = await request(app).delete(
-      `/record/remove-all-users/${JSON.stringify(paramsObj)}`
+      "/record/remove-all-users/test_table_2024"
     );
 
     expect(res.statusCode).toEqual(200);
@@ -398,12 +352,8 @@ describe("Remove all users from a table that doesn't have any user", () => {
   });
 
   it("Should return success", async () => {
-    const paramsObj = {
-      tableName: "test_table_2024",
-    };
-
     const res = await request(app).delete(
-      `/record/remove-all-users/${JSON.stringify(paramsObj)}`
+      "/record/remove-all-users/test_table_2024"
     );
 
     expect(res.statusCode).toEqual(200);
@@ -423,12 +373,8 @@ describe("Remove all users from a table that doesn't have any user with screensh
   });
 
   it("Should return success", async () => {
-    const paramsObj = {
-      tableName: "test_table_2024",
-    };
-
     const res = await request(app).delete(
-      `/record/remove-all-users/${JSON.stringify(paramsObj)}`
+      "/record/remove-all-users/test_table_2024"
     );
 
     expect(res.statusCode).toEqual(200);
@@ -442,12 +388,8 @@ describe("Remove all users from a table that doesn't have any user with screensh
 
 describe("Remove all users from a table that doesn't exist", () => {
   it("Should return error", async () => {
-    const paramsObj = {
-      tableName: "test_table_2024",
-    };
-
     const res = await request(app).delete(
-      `/record/remove-all-users/${JSON.stringify(paramsObj)}`
+      "/record/remove-all-users/test_table_2024"
     );
 
     expect(res.statusCode).toEqual(404);

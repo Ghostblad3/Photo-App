@@ -1,25 +1,28 @@
 import { memo, useEffect, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Image } from "lucide-react";
+
+import useOperationStore from "../global-stores/operationStore";
+
+import useScreenshotStore from "./stores/screenshotStore";
+
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useQuery } from "@tanstack/react-query";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Image } from "lucide-react";
-import screenshotStore from "./stores/screenshotStore";
-import operationStore from "../global-stores/operationStore";
 
 const ScreenshotDialog = memo(() => {
-  const { showDialog, userInfo, keyName, tableName } = screenshotStore(
+  const { showDialog, userInfo, keyName, tableName } = useScreenshotStore(
     (state) => state.props
   );
-  const { setShowDialog, resetScreenshotStore } = screenshotStore(
+  const { setShowDialog, resetScreenshotStore } = useScreenshotStore(
     (state) => state.actions
   );
   const { addOperation, changeOperationStatus, removeOperation } =
-    operationStore((state) => state.actions);
+    useOperationStore((state) => state.actions);
 
   const hash = useRef<string>(crypto.randomUUID());
 
@@ -41,18 +44,10 @@ const ScreenshotDialog = memo(() => {
         false
       );
 
-      const paramObj = {
-        userIdName: keyName,
-        userId: userInfo[keyName],
-        tableName: tableName,
-      };
-
       const timeNow = new Date();
 
       const response = await fetch(
-        `http://localhost:3000/screenshot/retrieve-user-screenshot/${JSON.stringify(
-          paramObj
-        )}`,
+        `http://localhost:3000/screenshot/retrieve-user-screenshot/${keyName}/${userInfo[keyName]}/${tableName}`,
         {
           cache: "no-store",
         }
@@ -132,8 +127,8 @@ const ScreenshotDialog = memo(() => {
         <>
           {isLoading && (
             <div className="bg-slate-100 p-4">
-              <Skeleton className="h-[6.25rem] max-w-[6.563rem] mx-auto rounded-lg bg-slate-200 shadow-custom">
-                <div className="w-full h-full flex justify-center items-center bg-slate-200">
+              <Skeleton className="shadow-custom mx-auto h-[6.25rem] max-w-[6.563rem] rounded-lg bg-slate-200">
+                <div className="flex size-full items-center justify-center bg-slate-200">
                   <Image />
                 </div>
               </Skeleton>
@@ -142,15 +137,15 @@ const ScreenshotDialog = memo(() => {
           {isSuccess && (
             <div className="bg-slate-100 p-4">
               <img
-                className="h-[6.25rem] w-[6.563rem] mx-auto rounded-lg "
+                className="mx-auto h-[6.25rem] w-[6.563rem] rounded-lg "
                 src={`data:image/png;base64,${data}`}
               />
             </div>
           )}
           {Object.keys(userInfo).map((key) => (
             <div key={key} className="mx-4">
-              <p className="font-semibold block text-sm">{key}</p>
-              <p className="text-gray-700 dark:text-gray-300 text-base">
+              <p className="block text-sm font-semibold">{key}</p>
+              <p className="text-base text-gray-700 dark:text-gray-300">
                 {userInfo[key]}
               </p>
               <hr className="my-2" />

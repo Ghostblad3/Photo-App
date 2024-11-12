@@ -20,19 +20,21 @@ const initialProps = {
   tableName: "",
 };
 
-const addNewUserStore = create<AddNewUserProps & AddNewUserActions>((set) => ({
-  props: initialProps,
-  actions: {
-    setShowDialog: (showDialog: boolean) =>
-      set((state) => ({
-        props: { ...state.props, showDialog },
-      })),
-    setTableName: (tableName: string) =>
-      set((state) => ({
-        props: { ...state.props, tableName },
-      })),
-    resetAddNewUserStore: () => set(() => ({ props: initialProps })),
-  },
-}));
+const useAddNewUserStore = create<AddNewUserProps & AddNewUserActions>(
+  (set) => ({
+    props: initialProps,
+    actions: {
+      setShowDialog: (showDialog: boolean) =>
+        set((state) => ({
+          props: { ...state.props, showDialog },
+        })),
+      setTableName: (tableName: string) =>
+        set((state) => ({
+          props: { ...state.props, tableName },
+        })),
+      resetAddNewUserStore: () => set(() => ({ props: initialProps })),
+    },
+  })
+);
 
-export default addNewUserStore;
+export default useAddNewUserStore;

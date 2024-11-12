@@ -26,25 +26,27 @@ const initialProps = {
   keyName: "",
 };
 
-const screenshotStore = create<ScreenshotProps & ScreenshotActions>((set) => ({
-  props: initialProps,
-  actions: {
-    setShowDialog: (showDialog: boolean) => {
-      set((state) => ({ props: { ...state.props, showDialog } }));
+const useScreenshotStore = create<ScreenshotProps & ScreenshotActions>(
+  (set) => ({
+    props: initialProps,
+    actions: {
+      setShowDialog: (showDialog: boolean) => {
+        set((state) => ({ props: { ...state.props, showDialog } }));
+      },
+      setUserInfo: (userInfo: { [key: string]: string }) => {
+        set((state) => ({ props: { ...state.props, userInfo } }));
+      },
+      setTableName: (tableName: string) => {
+        set((state) => ({ props: { ...state.props, tableName } }));
+      },
+      setKeyName: (keyName: string) => {
+        set((state) => ({ props: { ...state.props, keyName } }));
+      },
+      resetScreenshotStore: () => {
+        set(() => ({ props: initialProps }));
+      },
     },
-    setUserInfo: (userInfo: { [key: string]: string }) => {
-      set((state) => ({ props: { ...state.props, userInfo } }));
-    },
-    setTableName: (tableName: string) => {
-      set((state) => ({ props: { ...state.props, tableName } }));
-    },
-    setKeyName: (keyName: string) => {
-      set((state) => ({ props: { ...state.props, keyName } }));
-    },
-    resetScreenshotStore: () => {
-      set(() => ({ props: initialProps }));
-    },
-  },
-}));
+  })
+);
 
-export default screenshotStore;
+export default useScreenshotStore;

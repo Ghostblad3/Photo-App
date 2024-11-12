@@ -1,20 +1,24 @@
 import { useState, useRef, ChangeEvent, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { CircleAlert } from "lucide-react";
+
+import useDataStore from "./stores/dataStore";
+import useNavitationStore from "./stores/navigationStore";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CircleAlert } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import operationStore from "@/global-stores/operationStore";
-import dataStore from "./stores/dataStore";
-import navitationStore from "./stores/navigationStore";
+import useOperationStore from "@/global-stores/operationStore";
 
 function CreateTable() {
   const { addOperation, changeOperationStatus, removeOperation } =
-    operationStore((state) => state.actions);
-  const displayableData = dataStore((state) => state.props.displayableData);
-  const resetDataStore = dataStore((state) => state.actions.resetDataStore);
-  const { resetNagivationStore } = navitationStore((state) => state.actions);
-  const setAllowRight = navitationStore((state) => state.actions.setAllowRight);
+    useOperationStore((state) => state.actions);
+  const displayableData = useDataStore((state) => state.props.displayableData);
+  const resetDataStore = useDataStore((state) => state.actions.resetDataStore);
+  const { resetNagivationStore } = useNavitationStore((state) => state.actions);
+  const setAllowRight = useNavitationStore(
+    (state) => state.actions.setAllowRight
+  );
 
   const inputRef = useRef("");
   const [inputErrors, setInputErrors] = useState<{
@@ -202,22 +206,22 @@ function CreateTable() {
   }
 
   return (
-    <div className="w-full border space-y-12 p-5 rounded-md">
+    <div className="w-full space-y-12 rounded-md border p-5">
       <div className="space-y-1">
-        <h1 className="font-bold text-2xl decoration-slate-100">
+        <h1 className="text-2xl font-bold decoration-slate-100">
           Create New Table
         </h1>
         <p className="text-slate-500">Enter a name for your new table.</p>
       </div>
 
-      <div className="space-y-2.5 flex flex-col">
+      <div className="flex flex-col space-y-2.5">
         <Label htmlFor="name" className="font-bold">
           Table Name
         </Label>
         <Input id="name" placeholder="Table name" onChange={inputHandler} />
         {inputErrors.typeOne && (
           <div className="flex gap-2.5">
-            <CircleAlert className="flex-shrink-0 text-red-500" />
+            <CircleAlert className="shrink-0 text-red-500" />
             <p className="text-red-500">
               The table name must be between 5 and 20 characters.
             </p>
@@ -225,7 +229,7 @@ function CreateTable() {
         )}
         {inputErrors.typeTwo && (
           <div className="flex gap-2.5">
-            <CircleAlert className="flex-shrink-0 text-red-500" />
+            <CircleAlert className="shrink-0 text-red-500" />
             <p className="text-red-500">
               The table name must not end with "_photos".
             </p>
@@ -233,7 +237,7 @@ function CreateTable() {
         )}
         {inputErrors.typeThree && (
           <div className="flex gap-2.5">
-            <CircleAlert className="flex-shrink-0 text-red-500" />
+            <CircleAlert className="shrink-0 text-red-500" />
             <p className="text-red-500">
               The table name must contain only letters, numbers, and
               underscores. It can only start with letters and underscores.

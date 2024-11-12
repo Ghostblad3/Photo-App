@@ -15,15 +15,15 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import searchStore from "./stores/searchStore";
-import userDataStore from "./stores/userDataStore";
+import useSearchStore from "./stores/searchStore";
+import useUserDataStore from "./stores/userDataStore";
 
 function SearchFieldCombobox() {
-  const searchField = searchStore((state) => state.props.searchField);
-  const { setSearchField, setSearchValue } = searchStore(
+  const searchField = useSearchStore((state) => state.props.searchField);
+  const { setSearchField, setSearchValue } = useSearchStore(
     (state) => state.actions
   );
-  const userData = userDataStore((state) => state.props.userData);
+  const userData = useUserDataStore((state) => state.props.userData);
 
   const [open, setOpen] = useState(false);
   const [values] = useState(
