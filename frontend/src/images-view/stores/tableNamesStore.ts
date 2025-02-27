@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface TableNamesProps {
   props: {
@@ -13,19 +13,19 @@ interface TableNamesActions {
   };
 }
 
-const initProps: { tableNames: string[] } = {
+const initialProps: { tableNames: string[] } = {
   tableNames: [],
 };
 
 const useTableNamesStore = create<TableNamesProps & TableNamesActions>(
   (set) => ({
-    props: initProps,
+    props: initialProps,
     actions: {
       setTableNames: (tableNames: string[]) =>
         set(() => ({ props: { tableNames } })),
-      resetTableNamesStore: () => set(() => ({ props: initProps })),
+      resetTableNamesStore: () => set(() => ({ props: initialProps })),
     },
   })
 );
 
-export default useTableNamesStore;
+export { useTableNamesStore };

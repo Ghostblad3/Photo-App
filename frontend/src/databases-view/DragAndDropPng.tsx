@@ -1,25 +1,25 @@
-import { useRef } from "react";
-import { Button } from "@/components/ui/button";
-import addNewScreenshotStore from "./stores/addNewScreenshotStore";
+import { useRef, DragEvent, ChangeEvent } from 'react';
+import { useAddNewScreenshotStore } from './stores/addNewScreenshotStore';
+import { Button } from '@/components/ui/button';
 
 function DragAndDropPng() {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const setScreenshotAsBase64 = addNewScreenshotStore(
+  const setScreenshotAsBase64 = useAddNewScreenshotStore(
     (state) => state.actions.setScreenshotAsBase64
   );
 
-  function handleDragOver(event: React.DragEvent<HTMLDivElement>) {
+  function handleDragOver(event: DragEvent<HTMLDivElement>) {
     event.preventDefault();
   }
 
-  function handleDrop(event: React.DragEvent<HTMLDivElement>) {
+  function handleDrop(event: DragEvent<HTMLDivElement>) {
     event.preventDefault();
 
     fileReader(event.dataTransfer.files[0]);
   }
 
-  async function inputOnChange(event: React.ChangeEvent<HTMLInputElement>) {
+  async function inputOnChange(event: ChangeEvent<HTMLInputElement>) {
     const e = event.target as HTMLInputElement;
     const files = e.files;
 
@@ -31,8 +31,7 @@ function DragAndDropPng() {
   function fileReader(file: File) {
     const reader = new FileReader();
     reader.onload = (e) => {
-      if (e.target && typeof e.target.result === "string") {
-        // setImage(e.target?.result);
+      if (e.target && typeof e.target.result === 'string') {
         setScreenshotAsBase64(e.target?.result);
       }
     };
@@ -44,7 +43,7 @@ function DragAndDropPng() {
     <div
       onDragOver={handleDragOver}
       onDrop={handleDrop}
-      className="h-[25rem] w-[calc(100%-2.5rem)] mx-4 flex flex-col justify-evenly items-center border-2 border-zinc-300 border-dashed rounded-xl"
+      className="mx-4 flex h-[25rem] w-[calc(100%-2.5rem)] flex-col items-center justify-evenly rounded-xl border-2 border-dashed border-zinc-300"
     >
       <input
         type="file"
@@ -54,11 +53,8 @@ function DragAndDropPng() {
         hidden
         ref={inputRef}
       />
-
       <h1 className="text-3xl text-slate-400">Drag and drop a png file here</h1>
-
       <h3 className="text-lg text-slate-400">Or, if you prefer...</h3>
-
       <Button onClick={() => inputRef!.current!.click()}>
         Select a png file from your computer
       </Button>
@@ -66,4 +62,4 @@ function DragAndDropPng() {
   );
 }
 
-export default DragAndDropPng;
+export { DragAndDropPng };

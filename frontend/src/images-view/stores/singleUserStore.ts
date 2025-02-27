@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface SingleUserProps {
   props: {
@@ -14,7 +14,7 @@ interface SingleUserActions {
   };
 }
 
-const initProps: {
+const initialProps: {
   singleUserData: { [key: string]: string };
   singleUserKeys: string[];
 } = {
@@ -24,7 +24,7 @@ const initProps: {
 
 const useSingleUserStore = create<SingleUserProps & SingleUserActions>(
   (set) => ({
-    props: initProps,
+    props: initialProps,
     actions: {
       setSingleUserData: (singleUserData) =>
         set({
@@ -33,9 +33,9 @@ const useSingleUserStore = create<SingleUserProps & SingleUserActions>(
             singleUserKeys: Object.keys(singleUserData),
           },
         }),
-      resetSingleUserDataStore: () => set({ props: initProps }),
+      resetSingleUserDataStore: () => set({ props: initialProps }),
     },
   })
 );
 
-export default useSingleUserStore;
+export { useSingleUserStore };

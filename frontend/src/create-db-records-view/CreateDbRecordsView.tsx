@@ -1,4 +1,4 @@
-import ComponentTree from "./ComponentTree";
+import { ComponentTree } from './ComponentTree';
 
 function CreateDbRecordsView() {
   return (
@@ -8,4 +8,4 @@ function CreateDbRecordsView() {
   );
 }
 
-export default CreateDbRecordsView;
+export { CreateDbRecordsView };

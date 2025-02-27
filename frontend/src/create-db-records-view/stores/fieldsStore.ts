@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface FieldsProps {
   props: {
@@ -31,4 +31,4 @@ const useFieldsStore = create<FieldsProps & FieldsActions>((set) => ({
   },
 }));
 
-export default useFieldsStore;
+export { useFieldsStore };

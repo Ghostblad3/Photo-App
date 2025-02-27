@@ -1,4 +1,6 @@
-function Card({ children }: { children: React.ReactNode }) {
+import { ReactNode } from 'react';
+
+function Card({ children }: { children: ReactNode }) {
   return (
     <div className="flex flex-col items-center rounded-lg bg-white p-2.5 shadow-lg">
       {children}
@@ -6,4 +8,4 @@ function Card({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default Card;
+export { Card };

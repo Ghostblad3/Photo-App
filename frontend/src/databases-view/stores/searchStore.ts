@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface SearchStoreProps {
   props: {
@@ -16,8 +16,8 @@ interface SearchStoreActions {
 }
 
 const initialProps = {
-  searchField: "",
-  searchValue: "",
+  searchField: '',
+  searchValue: '',
 };
 
 const useSearchStore = create<SearchStoreProps & SearchStoreActions>((set) => ({
@@ -31,4 +31,4 @@ const useSearchStore = create<SearchStoreProps & SearchStoreActions>((set) => ({
   },
 }));
 
-export default useSearchStore;
+export { useSearchStore };

@@ -1,21 +1,19 @@
-import { useEffect, useRef, memo } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { ReloadIcon } from "@radix-ui/react-icons";
-
-import useOperationStore from "../global-stores/operationStore";
-
-import useUserDataStore from "./stores/userDataStore";
-import useDeleteUserScreenshotStore from "./stores/deleteUserScreenshotStore";
-
+import { useEffect, useRef, memo } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { ReloadIcon } from '@radix-ui/react-icons';
+import { useOperationStore } from '../global-stores/operationStore';
+import { useUserDataStore } from './stores/userDataStore';
+import { useDeleteUserScreenshotStore } from './stores/deleteUserScreenshotStore';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { delay } from '@/utils/delay';
 
 const DeleteUserScreenshotDialog = memo(() => {
   const { deleteUserScreenshot } = useUserDataStore((state) => state.actions);
@@ -48,9 +46,9 @@ const DeleteUserScreenshotDialog = memo(() => {
     mutationFn: async () => {
       addOperation(
         hash.current,
-        "pending",
-        "delete",
-        "Deleting user screenshot",
+        'pending',
+        'delete',
+        'Deleting user screenshot',
         true
       );
 
@@ -59,25 +57,25 @@ const DeleteUserScreenshotDialog = memo(() => {
       const response = await fetch(
         `http://localhost:3000/screenshot/delete-user-screenshot/${userIdName}/${userId}/${tableName}`,
         {
-          method: "DELETE",
+          method: 'DELETE',
         }
       );
 
       const timeDiff = Date.now() - time;
 
       if (timeDiff < 500) {
-        await new Promise((resolve) => setTimeout(resolve, 500 - timeDiff));
+        await delay(500, timeDiff);
       }
 
       if (!response.ok) {
-        throw new Error("Failed to delete user screenshot");
+        throw new Error('Failed to delete user screenshot');
       }
     },
     onError: () => {
       modifyStatus(
         hash.current,
-        "error",
-        "Failed to delete user screenshot",
+        'error',
+        'Failed to delete user screenshot',
         true
       );
     },
@@ -86,8 +84,8 @@ const DeleteUserScreenshotDialog = memo(() => {
 
       modifyStatus(
         hash.current,
-        "success",
-        "Successfully deleted user screenshot",
+        'success',
+        'Successfully deleted user screenshot',
         true
       );
     },
@@ -99,12 +97,12 @@ const DeleteUserScreenshotDialog = memo(() => {
 
   async function modifyStatus(
     hash: string,
-    status: "pending" | "success" | "error",
+    status: 'pending' | 'success' | 'error',
     message: string,
     show: boolean
   ) {
     changeOperationStatus(hash, status, message, show);
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    await delay(5000);
     removeOperation(hash);
   }
 
@@ -159,4 +157,4 @@ const DeleteUserScreenshotDialog = memo(() => {
   );
 });
 
-export default DeleteUserScreenshotDialog;
+export { DeleteUserScreenshotDialog };

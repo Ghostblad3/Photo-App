@@ -1,13 +1,12 @@
-import { useEffect, useRef } from "react";
-import { read, utils } from "xlsx";
-import { z } from "zod";
-
-import useFieldsStore from "./stores/fieldsStore";
-import useDataStore from "./stores/dataStore";
-import navigationStore from "./stores/navigationStore";
-
-import { Button } from "@/components/ui/button";
-import useOperationStore from "@/global-stores/operationStore";
+import { useEffect, useRef, DragEvent, ChangeEvent } from 'react';
+import { read, utils } from 'xlsx';
+import { z } from 'zod';
+import { useFieldsStore } from './stores/fieldsStore';
+import { useDataStore } from './stores/dataStore';
+import { useNavigationStore } from './stores/navigationStore';
+import { Button } from '@/components/ui/button';
+import { useOperationStore } from '@/global-stores/operationStore';
+import { delay } from '@/utils/delay';
 
 const usersType = z
   .array(
@@ -29,7 +28,7 @@ const usersType = z
           return keys.length > 0 && keys.length < 11;
         },
         {
-          message: "A user must have at least 1 and at most 10 keys",
+          message: 'A user must have at least 1 and at most 10 keys',
         }
       )
       .refine(
@@ -39,7 +38,7 @@ const usersType = z
           return keys.length === new Set(keys).size;
         },
         {
-          message: "A user must have unique props",
+          message: 'A user must have unique props',
         }
       )
   )
@@ -58,7 +57,7 @@ const usersType = z
       return users.length === uniqueUsersFirstValue.size;
     },
     {
-      message: "Users cannot have duplicate primary keys",
+      message: 'Users cannot have duplicate primary keys',
     }
   )
   .refine(
@@ -82,7 +81,7 @@ const usersType = z
       return uniqueKeys.size === firstUserKeys.length;
     },
     {
-      message: "Users must have the same props",
+      message: 'Users must have the same props',
     }
   );
 
@@ -92,10 +91,10 @@ function DragAndDropExcelFile() {
   );
   const data = useDataStore((state) => state.props.data);
   const { setData } = useDataStore((state) => state.actions);
-  const { setAllowLeft, setAllowRight, incrementIndex } = navigationStore(
+  const { setAllowLeft, setAllowRight, incrementIndex } = useNavigationStore(
     (state) => state.actions
   );
-  const allowLeft = navigationStore((state) => state.props.allowLeft);
+  const allowLeft = useNavigationStore((state) => state.props.allowLeft);
   const { addOperation, changeOperationStatus, removeOperation } =
     useOperationStore((state) => state.actions);
 
@@ -114,17 +113,17 @@ function DragAndDropExcelFile() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function handleDragOver(event: React.DragEvent<HTMLDivElement>) {
+  function handleDragOver(event: DragEvent<HTMLDivElement>) {
     event.preventDefault();
   }
 
-  function handleDrop(event: React.DragEvent<HTMLDivElement>) {
+  function handleDrop(event: DragEvent<HTMLDivElement>) {
     event.preventDefault();
 
     fileReader(event.dataTransfer.files[0]);
   }
 
-  async function inputOnChange(event: React.ChangeEvent<HTMLInputElement>) {
+  async function inputOnChange(event: ChangeEvent<HTMLInputElement>) {
     const e = event.target;
     const files = e.files;
 
@@ -138,9 +137,9 @@ function DragAndDropExcelFile() {
 
     addOperation(
       hash,
-      "pending",
-      "create",
-      "Creating users from the excel file",
+      'pending',
+      'create',
+      'Creating users from the excel file',
       true
     );
 
@@ -148,7 +147,7 @@ function DragAndDropExcelFile() {
     reader.onload = async (e) => {
       const time = Date.now();
 
-      const workbook = read(e?.target?.result, { type: "string" });
+      const workbook = read(e?.target?.result, { type: 'string' });
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
       const json = utils.sheet_to_json(worksheet).map((row) => {
@@ -165,29 +164,30 @@ function DragAndDropExcelFile() {
       const result = usersType.safeParse(json);
 
       const timeDiff = Date.now() - time;
+
       if (timeDiff < 2000) {
-        await new Promise((resolve) => setTimeout(resolve, 2000 - timeDiff));
+        await delay(2000, timeDiff);
       }
 
       if (!result.success) {
         changeOperationStatus(
           hash,
-          "error",
-          "Failed to create users due to parse error in the excel file",
+          'error',
+          'Failed to create users due to parse error in the excel file',
           true
         );
-        remove(hash);
+        await remove(hash);
 
         return;
       }
 
       changeOperationStatus(
         hash,
-        "success",
-        "Successfully created users from the excel file",
+        'success',
+        'Successfully created users from the excel file',
         true
       );
-      remove(hash);
+      await remove(hash);
 
       setFields(Object.keys(json[0]));
       setData(json);
@@ -202,7 +202,7 @@ function DragAndDropExcelFile() {
   }
 
   async function remove(hash: string) {
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    await delay(5000);
     removeOperation(hash);
   }
 
@@ -231,4 +231,4 @@ function DragAndDropExcelFile() {
   );
 }
 
-export default DragAndDropExcelFile;
+export { DragAndDropExcelFile };

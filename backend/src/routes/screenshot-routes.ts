@@ -24,7 +24,7 @@ screenshotRouter.post(
       dayNumber: dayNumberType,
       tableName: tableNameType,
       screenshot: screenshotType,
-    })
+    }),
   ),
   async (req: Request, res: Response, next: NextFunction) => {
     const {
@@ -47,7 +47,7 @@ screenshotRouter.post(
       columnNames = sqlite
         .prepare(
           `select name
-          from pragma_table_info(?)`
+           from pragma_table_info(?)`,
         )
         .all(tableName) as { name: string }[];
     } catch (e) {
@@ -59,7 +59,7 @@ screenshotRouter.post(
     }
 
     columnNames = columnNames.filter(
-      (columnName) => columnName.name !== "rec_id"
+      (columnName) => columnName.name !== "rec_id",
     );
 
     const firstColumn = columnNames[0];
@@ -76,8 +76,8 @@ screenshotRouter.post(
       result = sqlite
         .prepare(
           `select count(*) as count
-          from "${tableName}"
-          where ${userIdName} = ?`
+           from "${tableName}"
+           where ${userIdName} = ?`,
         )
         .get(userId) as { count: number };
     } catch (e) {
@@ -125,8 +125,8 @@ screenshotRouter.post(
       idResult = sqlite
         .prepare(
           `select rec_id
-          from ${tableName}
-          where ${userIdName} = ?`
+           from ${tableName}
+           where ${userIdName} = ?`,
         )
         .get(userId) as { rec_id: string };
     } catch (e) {
@@ -140,8 +140,8 @@ screenshotRouter.post(
       countResult = sqlite
         .prepare(
           `select count(*) as count, path
-          from ${tableName}_photos
-          where rec_id = ?`
+           from ${tableName}_photos
+           where rec_id = ?`,
         )
         .get(rec_id) as { count: number; path: string };
     } catch (e) {
@@ -177,7 +177,8 @@ screenshotRouter.post(
         sqlite
           .prepare(
             `insert into ${tableName}_photos
-            (dayNumber, path, photo_timestamp, rec_id) values (?, ?, ?, ?)`
+                 (dayNumber, path, photo_timestamp, rec_id)
+             values (?, ?, ?, ?)`,
           )
           .run(dayNumber, screenshotFilePath, photo_timestamp, rec_id);
       } catch (e) {
@@ -200,8 +201,10 @@ screenshotRouter.post(
         sqlite
           .prepare(
             `update ${tableName}_photos
-            set dayNumber = ?, path = ?, photo_timestamp = ?
-            where rec_id = ?`
+             set dayNumber = ?,
+                 path = ?,
+                 photo_timestamp = ?
+             where rec_id = ?`,
           )
           .run(dayNumber, screenshotFilePath, new Date().toISOString(), rec_id);
       } catch (e) {
@@ -214,7 +217,7 @@ screenshotRouter.post(
       data: { photo_timestamp },
       error: { message: "" },
     });
-  }
+  },
 );
 
 // Delete the screenshot of a user
@@ -225,7 +228,7 @@ screenshotRouter.delete(
       userIdName: userPropNameType,
       userId: userPropValueType,
       tableName: tableNameType,
-    })
+    }),
   ),
   async (req: Request, res: Response, next: NextFunction) => {
     const { userIdName, userId, tableName } = req.params as {
@@ -239,8 +242,8 @@ screenshotRouter.delete(
     try {
       columnNames = sqlite
         .prepare(
-          `select name 
-          from pragma_table_info(?)`
+          `select name
+           from pragma_table_info(?)`,
         )
         .all(tableName) as { name: string }[];
     } catch (e) {
@@ -252,7 +255,7 @@ screenshotRouter.delete(
     }
 
     columnNames = columnNames.filter(
-      (columnName) => columnName.name !== "rec_id"
+      (columnName) => columnName.name !== "rec_id",
     );
 
     const firstColumn = columnNames[0];
@@ -268,8 +271,8 @@ screenshotRouter.delete(
       exists = sqlite
         .prepare(
           `select count(*) as count
-          from ${tableName}
-          where ${userIdName} = ?`
+           from ${tableName}
+           where ${userIdName} = ?`,
         )
         .get(userId) as { count: number };
     } catch (e) {
@@ -287,9 +290,10 @@ screenshotRouter.delete(
     try {
       result = sqlite
         .prepare(
-          `select path, ${tableName}.rec_id from ${tableName}_photos
-          inner join ${tableName} on ${tableName}_photos.rec_id = ${tableName}.rec_id
-          where ${tableName}.${userIdName} = ?`
+          `select path, ${tableName}.rec_id
+           from ${tableName}_photos
+                    inner join ${tableName} on ${tableName}_photos.rec_id = ${tableName}.rec_id
+           where ${tableName}.${userIdName} = ?`,
         )
         .get(userId) as { path: string; rec_id: string } | undefined;
     } catch (e) {
@@ -309,8 +313,9 @@ screenshotRouter.delete(
     try {
       sqlite
         .prepare(
-          `delete from ${tableName}_photos
-          where rec_id = ?`
+          `delete
+           from ${tableName}_photos
+           where rec_id = ?`,
         )
         .run(rec_id);
     } catch (e) {
@@ -322,7 +327,7 @@ screenshotRouter.delete(
       data: {},
       error: { message: "" },
     });
-  }
+  },
 );
 
 // Update the date of the screenshot
@@ -334,7 +339,7 @@ screenshotRouter.patch(
       userId: userPropValueType,
       dayNumber: dayNumberType,
       tableName: tableNameType,
-    })
+    }),
   ),
   (req: Request, res: Response) => {
     const {
@@ -352,7 +357,7 @@ screenshotRouter.patch(
     let columnNames = sqlite
       .prepare(
         `select name
-        from pragma_table_info(?)`
+         from pragma_table_info(?)`,
       )
       .all(tableName) as { name: string }[];
 
@@ -361,7 +366,7 @@ screenshotRouter.patch(
     }
 
     columnNames = columnNames.filter(
-      (columnName) => columnName.name !== "rec_id"
+      (columnName) => columnName.name !== "rec_id",
     );
 
     const firstColumn = columnNames[0];
@@ -373,8 +378,9 @@ screenshotRouter.patch(
 
     const idResult = sqlite
       .prepare(
-        `select rec_id from ${tableName} 
-        where ${name} = ?`
+        `select rec_id
+         from ${tableName}
+         where ${name} = ?`,
       )
       .get(userId) as { rec_id: string } | undefined;
 
@@ -386,9 +392,9 @@ screenshotRouter.patch(
 
     sqlite
       .prepare(
-        `update "${tableName}_photos" 
-        set dayNumber = ? 
-        where rec_id = ?`
+        `update "${tableName}_photos"
+         set dayNumber = ?
+         where rec_id = ?`,
       )
       .run(dayNumber, rec_id);
 
@@ -397,7 +403,7 @@ screenshotRouter.patch(
       data: {},
       error: { message: "" },
     });
-  }
+  },
 );
 
 // Retrieves the screenshots of users for a specific table for a given date
@@ -407,7 +413,7 @@ screenshotRouter.get(
     z.object({
       dayNumber: dayNumberType,
       tableName: tableNameType,
-    })
+    }),
   ),
   async (req: Request, res: Response, next: NextFunction) => {
     const { tableName, dayNumber } = req.params as {
@@ -426,9 +432,10 @@ screenshotRouter.get(
     try {
       result = sqlite
         .prepare(
-          `select * from ${tableName}_photos
-          inner join ${tableName} on ${tableName}_photos.rec_id = ${tableName}.rec_id
-          where dayNumber = ?`
+          `select *
+           from ${tableName}_photos
+                    inner join ${tableName} on ${tableName}_photos.rec_id = ${tableName}.rec_id
+           where dayNumber = ?`,
         )
         .all(dayNumber) as {
         [key: string]: string;
@@ -470,7 +477,7 @@ screenshotRouter.get(
       data: final,
       error: { message: "" },
     });
-  }
+  },
 );
 
 // Retrieves the submitted days for a given table
@@ -479,7 +486,7 @@ screenshotRouter.get(
   schemaValidator(
     z.object({
       tableName: tableNameType,
-    })
+    }),
   ),
   (req: Request, res: Response) => {
     const { tableName } = req.params as { tableName: string };
@@ -487,8 +494,8 @@ screenshotRouter.get(
     const result = sqlite
       .prepare(
         `select dayNumber
-        from ${tableName}_photos
-        group by dayNumber`
+         from ${tableName}_photos
+         group by dayNumber`,
       )
       .all() as { dayNumber: string }[];
 
@@ -499,7 +506,7 @@ screenshotRouter.get(
       data: days,
       error: { message: "" },
     });
-  }
+  },
 );
 
 // Retrieves the screenshots of users of specific table for all days
@@ -508,7 +515,7 @@ screenshotRouter.get(
   schemaValidator(
     z.object({
       tableName: tableNameType,
-    })
+    }),
   ),
   async (req: Request, res: Response, next: NextFunction) => {
     const { tableName } = req.params as { tableName: string };
@@ -524,8 +531,9 @@ screenshotRouter.get(
     try {
       result = sqlite
         .prepare(
-          `select * from ${tableName}
-          inner join ${tableName}_photos on ${tableName}_photos.photo_id = ${tableName}.rec_id`
+          `select *
+           from ${tableName}
+                    inner join ${tableName}_photos on ${tableName}_photos.photo_id = ${tableName}.rec_id`,
         )
         .all() as {
         [key: string]: string;
@@ -560,8 +568,9 @@ screenshotRouter.get(
         try {
           sqlite
             .prepare(
-              `delete from ${tableName}_photos
-              where rec_id = ?`
+              `delete
+               from ${tableName}_photos
+               where rec_id = ?`,
             )
             .run(element.rec_id);
         } catch (e) {
@@ -577,7 +586,7 @@ screenshotRouter.get(
       data: final,
       error: { message: "" },
     });
-  }
+  },
 );
 
 screenshotRouter.get(
@@ -587,7 +596,7 @@ screenshotRouter.get(
       userIdName: userPropNameType,
       userId: userPropValueType,
       tableName: tableNameType,
-    })
+    }),
   ),
   async (req: Request, res: Response, next: NextFunction) => {
     const { userIdName, userId, tableName } = req.params as {
@@ -602,7 +611,7 @@ screenshotRouter.get(
       columnNames = sqlite
         .prepare(
           `select name
-          from pragma_table_info(?)`
+           from pragma_table_info(?)`,
         )
         .all(tableName) as { name: string }[];
     } catch (e) {
@@ -614,7 +623,7 @@ screenshotRouter.get(
     }
 
     columnNames = columnNames.filter(
-      (columnName) => columnName.name !== "rec_id"
+      (columnName) => columnName.name !== "rec_id",
     );
 
     const firstColumn = columnNames[0];
@@ -632,8 +641,8 @@ screenshotRouter.get(
       exists = sqlite
         .prepare(
           `select count(*) as count, rec_id
-          from ${tableName}
-          where ${tableName}.${userIdName} = ?`
+           from ${tableName}
+           where ${tableName}.${userIdName} = ?`,
         )
         .get(userId) as {
         count: number;
@@ -658,9 +667,10 @@ screenshotRouter.get(
     try {
       result = sqlite
         .prepare(
-          `select path from ${tableName}_photos
-          inner join ${tableName} on ${tableName}_photos.rec_id = ${tableName}.rec_id
-          where ${tableName}.${userIdName} = ?`
+          `select path
+           from ${tableName}_photos
+                    inner join ${tableName} on ${tableName}_photos.rec_id = ${tableName}.rec_id
+           where ${tableName}.${userIdName} = ?`,
         )
         .get(userId) as
         | {
@@ -680,13 +690,17 @@ screenshotRouter.get(
 
     try {
       await fs.access(path);
-      screenshot = await fs.readFile(path, { encoding: "base64" })!;
+      screenshot = (await fs.readFile(path, { encoding: "base64" }))!;
     } catch (e) {
       const { rec_id } = exists;
 
       try {
         sqlite
-          .prepare(`delete from ${tableName}_photos where rec_id = ?`)
+          .prepare(
+            `delete
+                    from ${tableName}_photos
+                    where rec_id = ?`,
+          )
           .run(rec_id);
       } catch (e) {
         return next(new Error((e as Error).toString()));
@@ -700,7 +714,7 @@ screenshotRouter.get(
       data: screenshot,
       error: { message: "" },
     });
-  }
+  },
 );
 
 screenshotRouter.get(
@@ -708,7 +722,7 @@ screenshotRouter.get(
   schemaValidator(
     z.object({
       tableName: tableNameType,
-    })
+    }),
   ),
   async (req: Request, res: Response, next: NextFunction) => {
     const { tableName } = req.params as { tableName: string };
@@ -718,7 +732,7 @@ screenshotRouter.get(
       columnNamesResult = sqlite
         .prepare(
           `select name
-          from pragma_table_info(?)`
+           from pragma_table_info(?)`,
         )
         .all(tableName) as { name: string }[];
     } catch (e) {
@@ -726,7 +740,7 @@ screenshotRouter.get(
     }
 
     columnNamesResult = columnNamesResult.filter(
-      (columnName) => columnName.name !== "rec_id"
+      (columnName) => columnName.name !== "rec_id",
     );
 
     let query = `select `;
@@ -747,8 +761,9 @@ screenshotRouter.get(
     try {
       result = sqlite
         .prepare(
-          `select * from ${tableName}_photos
-          inner join ${tableName} on ${tableName}_photos.rec_id = ${tableName}.rec_id`
+          `select *
+           from ${tableName}_photos
+                    inner join ${tableName} on ${tableName}_photos.rec_id = ${tableName}.rec_id`,
         )
         .all() as {
         [key: string]: string | number;
@@ -781,7 +796,7 @@ screenshotRouter.get(
       data: final,
       error: { message: "" },
     });
-  }
+  },
 );
 
 screenshotRouter.all("/*", (_: Request, res: Response) => {

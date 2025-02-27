@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface TableNamesProps {
   tableNames: string[];
@@ -21,4 +21,4 @@ const useTableNamesStore = create<TableNamesProps & TableNamesActions>(
   })
 );
 
-export default useTableNamesStore;
+export { useTableNamesStore };

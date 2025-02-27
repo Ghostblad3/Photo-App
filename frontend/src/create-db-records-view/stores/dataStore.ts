@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface DataStore {
   props: {
@@ -34,4 +34,4 @@ const useDataStore = create<DataStore & DataActions>((set) => ({
   },
 }));
 
-export default useDataStore;
+export { useDataStore };

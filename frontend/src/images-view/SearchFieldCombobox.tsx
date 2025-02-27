@@ -1,22 +1,22 @@
-import { useEffect, useState } from "react";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from 'react';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import { useSearchStore } from './stores/searchStore';
+import { useUserDataStore } from './stores/userDataStore';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
-} from "@/components/ui/command";
+} from '@/components/ui/command';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import useSearchStore from "./stores/searchStore";
-import useUserDataStore from "./stores/userDataStore";
+} from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 function SearchFieldCombobox() {
   const searchField = useSearchStore((state) => state.props.searchField);
@@ -44,7 +44,7 @@ function SearchFieldCombobox() {
     if (userData.length === 0) return;
 
     const values = Object.keys((userData as { [key: string]: string }[])[0])
-      .filter((key) => key !== "screenshot")
+      .filter((key) => key !== 'screenshot')
       .map((key) => {
         return { value: key.toLowerCase(), label: key };
       });
@@ -53,19 +53,19 @@ function SearchFieldCombobox() {
   }, [userData]);
 
   return (
-    <div className="p-2.5 mb-2.5 flex w-full max-w-[18.75rem]">
+    <div className="mb-2.5 flex w-full max-w-[18.75rem] p-2.5">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-[100%] justify-between"
+            className="w-full justify-between"
           >
-            {searchField !== ""
+            {searchField !== ''
               ? values.find((item) => item.label === searchField)?.label
               : `Select by column name...`}
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="popover-content-width-full p-0">
@@ -81,7 +81,7 @@ function SearchFieldCombobox() {
                       value={item.label}
                       onSelect={(currentValue) => {
                         if (searchField.toLowerCase() === currentValue) {
-                          setSearchField("");
+                          setSearchField('');
                           setOpen(false);
                           return;
                         }
@@ -92,10 +92,10 @@ function SearchFieldCombobox() {
                     >
                       <Check
                         className={cn(
-                          "mr-2 h-4 w-4",
+                          'mr-2 h-4 w-4',
                           searchField === item.label
-                            ? "opacity-100"
-                            : "opacity-0"
+                            ? 'opacity-100'
+                            : 'opacity-0'
                         )}
                       />
                       {item.label}
@@ -111,4 +111,4 @@ function SearchFieldCombobox() {
   );
 }
 
-export default SearchFieldCombobox;
+export { SearchFieldCombobox };

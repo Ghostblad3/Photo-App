@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface SelectedTableProps {
   props: { tableName: string };
@@ -12,7 +12,7 @@ interface SelectedTableActions {
 }
 
 const initialProps = {
-  tableName: "",
+  tableName: '',
 };
 
 const useSelectedTableStore = create<SelectedTableProps & SelectedTableActions>(
@@ -25,4 +25,4 @@ const useSelectedTableStore = create<SelectedTableProps & SelectedTableActions>(
   })
 );
 
-export default useSelectedTableStore;
+export { useSelectedTableStore };

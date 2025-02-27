@@ -1,11 +1,11 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
-import path from "path";
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react-swc';
+import path from 'path';
 // https://vitejs.dev/config/
-const isProduction = process.env.NODE_ENV === "production";
+const isProduction = process.env.NODE_ENV === 'production';
 
 const profiling = isProduction && {
-  "react-dom/client": "react-dom/profiling",
+  'react-dom/client': 'react-dom/profiling',
 };
 
 export default defineConfig({
@@ -15,7 +15,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      '@': path.resolve(__dirname, './src'),
       ...profiling,
     },
   },

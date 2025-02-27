@@ -1,5 +1,5 @@
-import { Aperture, Database, FileX, Images, UserRoundPlus } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Dispatch, SetStateAction } from 'react';
+import { Aperture, Database, FileX, Images, UserRoundPlus } from 'lucide-react';
 
 function Menu({
   currentComponent,
@@ -9,10 +9,10 @@ function Menu({
   setIsVisible,
 }: {
   currentComponent: number;
-  setCurrentComponent: React.Dispatch<React.SetStateAction<number>>;
+  setCurrentComponent: Dispatch<SetStateAction<number>>;
   isVisible: boolean;
   isFixedMenu: boolean;
-  setIsVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsVisible: Dispatch<SetStateAction<boolean>>;
 }) {
   const mountRef = useRef(true);
   const [unmount, setUnmount] = useState(false);
@@ -43,14 +43,14 @@ function Menu({
     }
   }, [isVisible]);
 
-  const isFixed = isFixedMenu ? "z-[1000] fixed left-0" : "";
+  const isFixed = isFixedMenu ? 'z-[1000] fixed left-0' : '';
 
   if (unmount || (mountRef.current && isFixed)) return null;
 
   return (
     <div
       className={`${isFixed} ${
-        !isVisible ? "animate-killAnimation" : ""
+        !isVisible ? 'animate-killAnimation' : ''
       } top-11 flex h-[calc(100vh-44px)] w-48 flex-[0_0_auto] flex-col overflow-y-auto bg-[#1b263b] text-[black]`}
     >
       <div className="mt-[4.375rem] flex items-center justify-center gap-2.5 text-lg text-[#adb5bd]">
@@ -61,7 +61,7 @@ function Menu({
         <li
           onClick={() => handleClick(0)}
           style={{
-            color: `${currentComponent === 0 ? "white" : "#adb5bd"}`,
+            color: `${currentComponent === 0 ? 'white' : '#adb5bd'}`,
           }}
           className="mx-2.5 flex h-10 cursor-pointer items-center gap-4 pl-6 hover:text-white hover:underline"
         >
@@ -71,7 +71,7 @@ function Menu({
         <li
           onClick={() => handleClick(1)}
           style={{
-            color: `${currentComponent === 1 ? "white" : "#adb5bd"}`,
+            color: `${currentComponent === 1 ? 'white' : '#adb5bd'}`,
           }}
           className="mx-2.5 flex h-10 cursor-pointer items-center gap-4 pl-6 hover:text-white hover:underline"
         >
@@ -81,7 +81,7 @@ function Menu({
         <li
           onClick={() => handleClick(2)}
           style={{
-            color: `${currentComponent === 2 ? "white" : "#adb5bd"}`,
+            color: `${currentComponent === 2 ? 'white' : '#adb5bd'}`,
           }}
           className="mx-2.5 flex h-10 cursor-pointer items-center gap-4 pl-6 hover:text-white hover:underline"
         >
@@ -91,7 +91,7 @@ function Menu({
         <li
           onClick={() => handleClick(3)}
           style={{
-            color: `${currentComponent === 3 ? "white" : "#adb5bd"}`,
+            color: `${currentComponent === 3 ? 'white' : '#adb5bd'}`,
           }}
           className="mx-2.5 flex h-10 cursor-pointer items-center gap-4 pl-6 hover:text-white hover:underline"
         >
@@ -103,4 +103,4 @@ function Menu({
   );
 }
 
-export default Menu;
+export { Menu };

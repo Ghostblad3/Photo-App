@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface DeleteUserProps {
   props: {
@@ -17,11 +17,11 @@ interface DeleteUserActions {
   };
 }
 
-const initialProps: DeleteUserProps["props"] = {
+const initialProps: DeleteUserProps['props'] = {
   showDialog: false,
-  userId: "",
-  userIdName: "",
-  tableName: "",
+  userId: '',
+  userIdName: '',
+  tableName: '',
 };
 
 const useDeleteUserStore = create<DeleteUserProps & DeleteUserActions>(
@@ -55,4 +55,4 @@ const useDeleteUserStore = create<DeleteUserProps & DeleteUserActions>(
   })
 );
 
-export default useDeleteUserStore;
+export { useDeleteUserStore };

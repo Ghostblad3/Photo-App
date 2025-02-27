@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface DeleteUserScreenshotProps {
   props: {
@@ -21,9 +21,9 @@ interface DeleteUserScreenshotActions {
 
 const initialProps = {
   showDialog: false,
-  userId: "",
-  userIdName: "",
-  tableName: "",
+  userId: '',
+  userIdName: '',
+  tableName: '',
 };
 
 const useDeleteUserScreenshotStore = create<
@@ -71,4 +71,4 @@ const useDeleteUserScreenshotStore = create<
   },
 }));
 
-export default useDeleteUserScreenshotStore;
+export { useDeleteUserScreenshotStore };

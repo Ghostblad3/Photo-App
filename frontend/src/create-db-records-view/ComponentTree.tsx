@@ -1,33 +1,31 @@
-import { useEffect } from "react";
-import { ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
-
-import DragAndDropExcelFile from "./DragAndDropExcelFile";
-import Fields from "./Fields";
-import CreateTable from "./CreateTable";
-import useFieldsStore from "./stores/fieldsStore";
-import navigationStore from "./stores/navigationStore";
-import Records from "./Records";
-import useDataStore from "./stores/dataStore";
-
-import { Button } from "@/components/ui/button.tsx";
+import { useEffect } from 'react';
+import { ChevronLeftIcon, ChevronRightIcon } from '@radix-ui/react-icons';
+import { DragAndDropExcelFile } from './DragAndDropExcelFile';
+import { Fields } from './Fields';
+import { CreateTable } from './CreateTable';
+import { useFieldsStore } from './stores/fieldsStore';
+import { useNavigationStore } from './stores/navigationStore';
+import { Records } from './Records';
+import { useDataStore } from './stores/dataStore';
+import { Button } from '@/components/ui/button.tsx';
 
 function ComponentTree() {
   const fields = useFieldsStore((state) => state.props.fields);
   const visibleFields = useFieldsStore((state) => state.props.visibleFields);
   const resetFieldsStore = useFieldsStore(
-    (state) => state.actions.resetFieldsStore
+    (state) => state.actions.resetFieldsStore,
   );
   const data = useDataStore((state) => state.props.data);
   const resetDataStore = useDataStore((state) => state.actions.resetDataStore);
-  const index = navigationStore((state) => state.props.index);
-  const allowLeft = navigationStore((state) => state.props.allowLeft);
-  const allowRight = navigationStore((state) => state.props.allowRight);
-  const { decrementIndex, incrementIndex, resetNagivationStore } =
-    navigationStore((state) => state.actions);
+  const index = useNavigationStore((state) => state.props.index);
+  const allowLeft = useNavigationStore((state) => state.props.allowLeft);
+  const allowRight = useNavigationStore((state) => state.props.allowRight);
+  const { decrementIndex, incrementIndex, resetNavigationStore } =
+    useNavigationStore((state) => state.actions);
 
   useEffect(() => {
     return () => {
-      resetNagivationStore();
+      resetNavigationStore();
       resetFieldsStore();
       resetDataStore();
     };
@@ -50,13 +48,11 @@ function ComponentTree() {
     <div className="flex w-full flex-col gap-5">
       <div className="flex justify-between">
         {!allowLeft && <span className="size-10"></span>}
-
         {allowLeft && (
           <Button onClick={handleLeftButtonClick} variant="outline" size="icon">
             <ChevronLeftIcon className="size-4" />
           </Button>
         )}
-
         {!allowRight && <span className="size-10"></span>}
         {allowRight && (
           <Button
@@ -68,7 +64,6 @@ function ComponentTree() {
           </Button>
         )}
       </div>
-
       {(fields.length === 0 || index === 0) && <DragAndDropExcelFile />}
       {fields.length > 0 && index === 1 && <Fields />}
       {visibleFields.length > 0 && index === 2 && <Records />}
@@ -77,4 +72,4 @@ function ComponentTree() {
   );
 }
 
-export default ComponentTree;
+export { ComponentTree };

@@ -1,22 +1,20 @@
-import { memo, useEffect, useRef, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { CircleX } from "lucide-react";
-import { ReloadIcon } from "@radix-ui/react-icons";
-
-import useOperationStore from "../global-stores/operationStore";
-
-import useUserDataStore from "./stores/userDataStore";
-import useAddNewUserStore from "./stores/addNewUserStore";
-
+import { memo, useEffect, useRef, useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { CircleX } from 'lucide-react';
+import { ReloadIcon } from '@radix-ui/react-icons';
+import { useOperationStore } from '../global-stores/operationStore';
+import { useUserDataStore } from './stores/userDataStore';
+import { useAddNewUserStore } from './stores/addNewUserStore';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { delay } from '@/utils/delay';
 
 const AddNewUserDialog = memo(() => {
   const userKeys = useUserDataStore((state) => state.props.userKeys);
@@ -32,14 +30,14 @@ const AddNewUserDialog = memo(() => {
   const keysRef = useRef(
     userKeys.filter(
       (key) =>
-        key !== "has_screenshot" &&
-        key !== "screenshot_day" &&
-        key !== "photo_timestamp"
+        key !== 'has_screenshot' &&
+        key !== 'screenshot_day' &&
+        key !== 'photo_timestamp'
     )
   );
   const userRef = useRef<{ [key: string]: string }>(
     keysRef.current.reduce((acc: { [key: string]: string }, key) => {
-      acc[key] = "";
+      acc[key] = '';
       return acc;
     }, {})
   );
@@ -75,18 +73,18 @@ const AddNewUserDialog = memo(() => {
     mutationFn: async (user: { [key: string]: string }) => {
       addOperation(
         hash.current,
-        "pending",
-        "create",
-        "Creating a new user",
+        'pending',
+        'create',
+        'Creating a new user',
         true
       );
 
       const time = new Date();
 
-      const response = await fetch("http://localhost:3000/record/add-users", {
-        method: "POST",
+      const response = await fetch('http://localhost:3000/record/add-users', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           tableName,
@@ -97,33 +95,33 @@ const AddNewUserDialog = memo(() => {
       const timeDiff = Date.now() - time.getTime();
 
       if (timeDiff < 500) {
-        await new Promise((resolve) => setTimeout(resolve, 500 - timeDiff));
+        await delay(500, timeDiff);
       }
 
       if (!response.ok) {
-        throw new Error("Failed to create a new user");
+        throw new Error('Failed to create a new user');
       }
     },
-    onError: () => {
-      changeOperationStatus(
+    onError: async () => {
+      await modifyStatus(
         hash.current,
-        "error",
-        "Failed to create a new user",
+        'error',
+        'Failed to create a new user',
         true
       );
     },
-    onSuccess: (_, variables, __) => {
+    onSuccess: async (_, variables, __) => {
       addUser({
         ...variables,
-        has_screenshot: "no",
-        screenshot_day: "-",
-        photo_timestamp: "-",
+        has_screenshot: 'no',
+        screenshot_day: '-',
+        photo_timestamp: '-',
       });
 
-      modifyStatus(
+      await modifyStatus(
         hash.current,
-        "success",
-        "Successfully created a new user",
+        'success',
+        'Successfully created a new user',
         true
       );
     },
@@ -135,12 +133,14 @@ const AddNewUserDialog = memo(() => {
 
   async function modifyStatus(
     hash: string,
-    status: "pending" | "success" | "error",
+    status: 'pending' | 'success' | 'error',
     message: string,
     show: boolean
   ) {
     changeOperationStatus(hash, status, message, show);
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+
+    await delay(5000);
+
     removeOperation(hash);
   }
 
@@ -165,7 +165,7 @@ const AddNewUserDialog = memo(() => {
               <p className="block space-y-1 text-sm font-semibold">{key}</p>
               <Input
                 className="mt-1"
-                defaultValue={""}
+                defaultValue={''}
                 onChange={(e) => {
                   userRef.current[key] = e.target.value;
 
@@ -203,4 +203,4 @@ const AddNewUserDialog = memo(() => {
   );
 });
 
-export default AddNewUserDialog;
+export { AddNewUserDialog };

@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface AddNewUserProps {
   props: {
@@ -17,7 +17,7 @@ interface AddNewUserActions {
 
 const initialProps = {
   showDialog: false,
-  tableName: "",
+  tableName: '',
 };
 
 const useAddNewUserStore = create<AddNewUserProps & AddNewUserActions>(
@@ -37,4 +37,4 @@ const useAddNewUserStore = create<AddNewUserProps & AddNewUserActions>(
   })
 );
 
-export default useAddNewUserStore;
+export { useAddNewUserStore };

@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface AddNewScreenshotProps {
   props: {
@@ -23,13 +23,13 @@ interface AddNewScreenshotActions {
 
 const initialProps = {
   showDialog: false,
-  tableName: "",
-  userIdName: "",
-  userId: "",
-  screenshotAsBase64: "",
+  tableName: '',
+  userIdName: '',
+  userId: '',
+  screenshotAsBase64: '',
 };
 
-const useAddNewScreensotStore = create<
+const useAddNewScreenshotStore = create<
   AddNewScreenshotProps & AddNewScreenshotActions
 >((set) => ({
   props: initialProps,
@@ -61,4 +61,4 @@ const useAddNewScreensotStore = create<
   },
 }));
 
-export default useAddNewScreensotStore;
+export { useAddNewScreenshotStore };

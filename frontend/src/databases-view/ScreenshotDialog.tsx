@@ -1,18 +1,16 @@
-import { memo, useEffect, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Image } from "lucide-react";
-
-import useOperationStore from "../global-stores/operationStore";
-
-import useScreenshotStore from "./stores/screenshotStore";
-
-import { Skeleton } from "@/components/ui/skeleton";
+import { memo, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Image } from 'lucide-react';
+import { useOperationStore } from '../global-stores/operationStore';
+import { useScreenshotStore } from './stores/screenshotStore';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
+import { delay } from '@/utils/delay';
 
 const ScreenshotDialog = memo(() => {
   const { showDialog, userInfo, keyName, tableName } = useScreenshotStore(
@@ -34,13 +32,13 @@ const ScreenshotDialog = memo(() => {
   }, []);
 
   const { data, isLoading, isSuccess, isError } = useQuery({
-    queryKey: ["screenshot", hash.current],
+    queryKey: ['screenshot', hash.current],
     queryFn: async () => {
       addOperation(
         hash.current,
-        "pending",
-        "fetch",
-        "Fetching user screenshot",
+        'pending',
+        'fetch',
+        'Fetching user screenshot',
         false
       );
 
@@ -49,18 +47,18 @@ const ScreenshotDialog = memo(() => {
       const response = await fetch(
         `http://localhost:3000/screenshot/retrieve-user-screenshot/${keyName}/${userInfo[keyName]}/${tableName}`,
         {
-          cache: "no-store",
+          cache: 'no-store',
         }
       );
 
       if (!response.ok) {
-        throw new Error("Failed to fetch user screenshot");
+        throw new Error('Failed to fetch user screenshot');
       }
 
       const timeDiff = Date.now() - timeNow.getTime();
 
       if (timeDiff < 500) {
-        await new Promise((resolve) => setTimeout(resolve, 500 - timeDiff));
+        await delay(500, timeDiff);
       }
 
       const receivedObject: {
@@ -77,39 +75,43 @@ const ScreenshotDialog = memo(() => {
   });
 
   useEffect(() => {
-    if (isSuccess) {
-      modifyStatus(
-        hash.current,
-        "success",
-        "Successfully fetched user screenshot",
-        false
-      );
-    }
+    (async () => {
+      if (isSuccess) {
+        await modifyStatus(
+          hash.current,
+          'success',
+          'Successfully fetched user screenshot',
+          false
+        );
+      }
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuccess]);
 
   useEffect(() => {
-    if (isError) {
-      modifyStatus(
-        hash.current,
-        "error",
-        "Failed to fetch user screenshot",
-        true
-      );
+    (async () => {
+      if (isError) {
+        await modifyStatus(
+          hash.current,
+          'error',
+          'Failed to fetch user screenshot',
+          true
+        );
 
-      setShowDialog(false);
-    }
+        setShowDialog(false);
+      }
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isError]);
 
   async function modifyStatus(
     hash: string,
-    status: "pending" | "success" | "error",
+    status: 'pending' | 'success' | 'error',
     message: string,
     show: boolean
   ) {
     changeOperationStatus(hash, status, message, show);
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    await delay(5000);
     removeOperation(hash);
   }
 
@@ -127,7 +129,7 @@ const ScreenshotDialog = memo(() => {
         <>
           {isLoading && (
             <div className="bg-slate-100 p-4">
-              <Skeleton className="shadow-custom mx-auto h-[6.25rem] max-w-[6.563rem] rounded-lg bg-slate-200">
+              <Skeleton className="mx-auto h-[6.25rem] max-w-[6.563rem] rounded-lg bg-slate-200 shadow-custom">
                 <div className="flex size-full items-center justify-center bg-slate-200">
                   <Image />
                 </div>
@@ -139,6 +141,7 @@ const ScreenshotDialog = memo(() => {
               <img
                 className="mx-auto h-[6.25rem] w-[6.563rem] rounded-lg "
                 src={`data:image/png;base64,${data}`}
+                alt="user screenshot"
               />
             </div>
           )}
@@ -157,4 +160,4 @@ const ScreenshotDialog = memo(() => {
   );
 });
 
-export default ScreenshotDialog;
+export { ScreenshotDialog };

@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface UpdateUserInfoProps {
   props: {
@@ -21,9 +21,9 @@ interface UpdateUserInfoActions {
 
 const initialProps = {
   showDialog: false,
-  userId: "",
-  userIndex: "",
-  tableName: "",
+  userId: '',
+  userIndex: '',
+  tableName: '',
 };
 
 const useUpdateUserInfoStore = create<
@@ -43,4 +43,4 @@ const useUpdateUserInfoStore = create<
   },
 }));
 
-export default useUpdateUserInfoStore;
+export { useUpdateUserInfoStore };

@@ -1,20 +1,18 @@
-import { Fragment, useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Image } from "lucide-react";
-
-import useOperationStore from "../global-stores/operationStore";
-
-import ScreenshotDialog from "./ScreenshotDialog";
-import SelectedKeysCombobox from "./SelectedKeysCombobox";
-import SearchValueCombobox from "./SearchValueCombobox";
-import SearchFieldCombobox from "./SearchFieldCombobox";
-import useSelectedTableStore from "./stores/selectedTableStore";
-import useUserDataStore from "./stores/userDataStore";
-import useSingleUserStore from "./stores/singleUserStore";
-import useAvailableKeysStore from "./stores/availableKeysStore";
-
-import { Skeleton } from "@/components/ui/skeleton";
-import { Label } from "@/components/ui/label";
+import { Fragment, useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Image } from 'lucide-react';
+import { useOperationStore } from '../global-stores/operationStore';
+import { ScreenshotDialog } from './ScreenshotDialog';
+import { SelectedKeysCombobox } from './SelectedKeysCombobox';
+import { SearchValueCombobox } from './SearchValueCombobox';
+import { SearchFieldCombobox } from './SearchFieldCombobox';
+import { useSelectedTableStore } from './stores/selectedTableStore';
+import { useUserDataStore } from './stores/userDataStore';
+import { useSingleUserStore } from './stores/singleUserStore';
+import { useAvailableKeysStore } from './stores/availableKeysStore';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Label } from '@/components/ui/label';
+import { delay } from '@/utils/delay';
 
 function Grid() {
   const selectedKeys = useAvailableKeysStore(
@@ -36,8 +34,8 @@ function Grid() {
 
   const [count, setCount] = useState(0);
   const [fetchUserDataStatus, setFetchUserDataStatus] = useState<
-    "pending" | "success" | "error"
-  >("pending");
+    'pending' | 'success' | 'error'
+  >('pending');
 
   useEffect(() => {
     return () => {
@@ -47,25 +45,25 @@ function Grid() {
   }, []);
 
   useQuery({
-    queryKey: ["user-data", tableName],
+    queryKey: ['user-data', tableName],
     queryFn: async () => {
       const hash = crypto.randomUUID();
 
-      addOperation(hash, "pending", "fetch", "Fetching user data", true);
+      addOperation(hash, 'pending', 'fetch', 'Fetching user data', true);
 
       const startTime = Date.now();
 
       const countResponse = await fetch(
         `http://localhost:3000/table/count-screenshots/${tableName}`,
         {
-          cache: "no-store",
+          cache: 'no-store',
         }
       );
 
       if (!countResponse.ok) {
-        changeOperationStatus(hash, "error", "Failed to fetch user data", true);
-        remove(hash);
-        setFetchUserDataStatus("error");
+        changeOperationStatus(hash, 'error', 'Failed to fetch user data', true);
+        await remove(hash);
+        setFetchUserDataStatus('error');
 
         resetUserDataStore();
         return {};
@@ -84,14 +82,14 @@ function Grid() {
       const response = await fetch(
         `http://localhost:3000/screenshot/retrieve-user-screenshots-all-days/${tableName}`,
         {
-          cache: "no-store",
+          cache: 'no-store',
         }
       );
 
       if (!response.ok) {
-        changeOperationStatus(hash, "error", "Failed to fetch user data", true);
-        remove(hash);
-        setFetchUserDataStatus("error");
+        changeOperationStatus(hash, 'error', 'Failed to fetch user data', true);
+        await remove(hash);
+        setFetchUserDataStatus('error');
 
         resetUserDataStore();
         return {};
@@ -107,42 +105,43 @@ function Grid() {
 
       const timeTaken = Date.now() - startTime;
 
-      if (timeTaken < 500)
-        await new Promise((resolve) => setTimeout(resolve, 500 - timeTaken));
+      if (timeTaken < 500) {
+        await delay(500, timeTaken);
+      }
 
       changeOperationStatus(
         hash,
-        "success",
-        "Successfully fetched user data",
+        'success',
+        'Successfully fetched user data',
         false
       );
-      remove(hash);
+      await remove(hash);
 
       if (data.length === 0) {
         resetUserDataStore();
         return {};
       }
 
-      const [firstObject] = data;
+      const firstObject = data[0];
       const keys = Object.keys(firstObject).filter(
-        (key) => key !== "screenshot"
+        (key) => key !== 'screenshot'
       );
 
       setUserData(data);
       setAvailableKeys(keys);
-      setFetchUserDataStatus("success");
+      setFetchUserDataStatus('success');
 
       return {};
     },
-    enabled: tableName !== "",
+    enabled: tableName !== '',
   });
 
   async function remove(hash: string) {
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    await delay(5000);
     removeOperation(hash);
   }
 
-  if (fetchUserDataStatus === "error") {
+  if (fetchUserDataStatus === 'error') {
     return (
       <div className="m-2.5 flex shrink-0">
         <span className="mx-auto">
@@ -154,7 +153,7 @@ function Grid() {
 
   return (
     <>
-      {fetchUserDataStatus === "pending" && (
+      {fetchUserDataStatus === 'pending' && (
         <>
           <div className="p-2.5">
             <Skeleton className="h-10 max-w-full" />
@@ -165,7 +164,7 @@ function Grid() {
           </div>
         </>
       )}
-      {fetchUserDataStatus === "success" && (
+      {fetchUserDataStatus === 'success' && (
         <>
           <SelectedKeysCombobox />
           <div className="mb-2.5 flex flex-wrap gap-2">
@@ -175,11 +174,11 @@ function Grid() {
         </>
       )}
       <div className="grid-repeat-auto-fill-min-max m-2.5 grid gap-10">
-        {fetchUserDataStatus === "pending" && (
+        {fetchUserDataStatus === 'pending' && (
           <>
             {Array.from({ length: count }).map((_, index) => (
               <Fragment key={index}>
-                <Skeleton className="shadow-custom flex h-[16.125rem] flex-col rounded-lg bg-white p-2.5">
+                <Skeleton className="flex h-[16.125rem] flex-col rounded-lg bg-white p-2.5 shadow-custom">
                   <Skeleton className="mx-auto h-[6.25rem] w-[6.563rem] rounded-lg bg-slate-200">
                     <div className="flex size-full items-center justify-center rounded-lg bg-slate-200">
                       <Image />
@@ -192,7 +191,7 @@ function Grid() {
             ))}
           </>
         )}
-        {fetchUserDataStatus === "success" &&
+        {fetchUserDataStatus === 'success' &&
           userDataFiltered.map((item: { [key: string]: string }) => {
             return (
               <ScreenshotDialog key={item[userKeys[0]]}>
@@ -238,4 +237,4 @@ function Grid() {
   );
 }
 
-export default Grid;
+export { Grid };

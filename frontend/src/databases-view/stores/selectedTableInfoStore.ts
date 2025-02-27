@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface SelectTableInfoProps {
   props: {
@@ -22,11 +22,11 @@ interface SelectedTableInfoActions {
 }
 
 const initialProps = {
-  tableName: "",
+  tableName: '',
   columnNames: [],
-  userNumber: "",
-  screenshotNumber: "",
-  screenshotAverageSize: "",
+  userNumber: '',
+  screenshotNumber: '',
+  screenshotAverageSize: '',
 };
 
 const useSelectedTableInfoStore = create<
@@ -73,4 +73,4 @@ const useSelectedTableInfoStore = create<
   },
 }));
 
-export default useSelectedTableInfoStore;
+export { useSelectedTableInfoStore };

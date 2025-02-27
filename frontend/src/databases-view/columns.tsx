@@ -1,13 +1,12 @@
-import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
+import { ColumnDef } from '@tanstack/react-table';
+import { ArrowUpDown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export type Data = {
   [key: string]: string;
 };
 
-export function columns(cols: Data[]) {
+function columns(cols: Data[]) {
   if (cols.length === 0) return {};
 
   const keys = Object.keys(cols[0]);
@@ -20,7 +19,7 @@ export function columns(cols: Data[]) {
           <Button
             variant="ghost"
             className="font-semibold"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
             {val}
             <ArrowUpDown className="ml-2 size-4" />
@@ -32,3 +31,5 @@ export function columns(cols: Data[]) {
 
   return tableCols;
 }
+
+export { columns };

@@ -1,7 +1,7 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
-type Status = "nop" | "pending" | "success" | "error";
-type Operation = "nop" | "fetch" | "create" | "update" | "delete";
+type Status = 'nop' | 'pending' | 'success' | 'error';
+type Operation = 'nop' | 'fetch' | 'create' | 'update' | 'delete';
 
 export type OperationObject = {
   hash: string;
@@ -37,7 +37,7 @@ interface OperationStoreActions {
   };
 }
 
-const initProps: {
+const initialProps: {
   operations: OperationObject[];
   showQueue: OperationObject[];
 } = {
@@ -47,7 +47,7 @@ const initProps: {
 
 const useOperationStore = create<OperationStoreProps & OperationStoreActions>(
   (set) => ({
-    props: initProps,
+    props: initialProps,
     actions: {
       addOperation(hash, status, operation, message, show) {
         set((state) => ({
@@ -82,18 +82,18 @@ const useOperationStore = create<OperationStoreProps & OperationStoreActions>(
                   item.hash === hash ? { ...item, status, message } : item
                 )
               : show
-              ? [
-                  ...state.props.showQueue,
-                  {
-                    hash,
-                    status,
-                    operation: state.props.operations.find(
-                      (item) => item.hash === hash
-                    )!.operation,
-                    message,
-                  },
-                ]
-              : state.props.showQueue,
+                ? [
+                    ...state.props.showQueue,
+                    {
+                      hash,
+                      status,
+                      operation: state.props.operations.find(
+                        (item) => item.hash === hash
+                      )!.operation,
+                      message,
+                    },
+                  ]
+                : state.props.showQueue,
           },
         }));
       },
@@ -109,9 +109,9 @@ const useOperationStore = create<OperationStoreProps & OperationStoreActions>(
           },
         }));
       },
-      resetOperationStore: () => set({ props: initProps }),
+      resetOperationStore: () => set({ props: initialProps }),
     },
   })
 );
 
-export default useOperationStore;
+export { useOperationStore };

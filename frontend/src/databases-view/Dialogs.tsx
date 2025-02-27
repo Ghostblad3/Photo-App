@@ -1,22 +1,21 @@
-import UpdateUserDialog from "./UpdateUserDialog";
-import AddNewScreenshotDialog from "./AddNewScreenshotDialog";
-import AddNewUserDialog from "./AddNewUserDialog";
-import DeleteUserDialog from "./DeleteUserDialog";
-import DeleteUserScreenshotDialog from "./DeleteUserScreenshotDialog";
-import ScreenshotDialog from "./ScreenshotDialog";
-import addNewScreenshotStore from "./stores/addNewScreenshotStore";
-import useAddNewUserStore from "./stores/addNewUserStore";
-import useDeleteUserScreenshotStore from "./stores/deleteUserScreenshotStore";
-import useDeleteUserStore from "./stores/deleteUserStore";
-import useScreenshotStore from "./stores/screenshotStore";
-import useUpdateUserInfoStore from "./stores/updateUserInfoStore";
+import { UpdateUserDialog } from './UpdateUserDialog';
+import { AddNewScreenshotDialog } from './AddNewScreenshotDialog';
+import { AddNewUserDialog } from './AddNewUserDialog';
+import { DeleteUserDialog } from './DeleteUserDialog';
+import { DeleteUserScreenshotDialog } from './DeleteUserScreenshotDialog';
+import { ScreenshotDialog } from './ScreenshotDialog';
+import { useAddNewScreenshotStore } from './stores/addNewScreenshotStore';
+import { useAddNewUserStore } from './stores/addNewUserStore';
+import { useDeleteUserScreenshotStore } from './stores/deleteUserScreenshotStore';
+import { useDeleteUserStore } from './stores/deleteUserStore.ts';
+import { useScreenshotStore } from './stores/screenshotStore';
+import { useUpdateUserInfoStore } from './stores/updateUserInfoStore';
 
 function Dialogs() {
-  const screenshowShowDialog = useScreenshotStore(
+  const screenshotShowDialog = useScreenshotStore(
     (state) => state.props.showDialog
   );
-
-  const addNewScreenshotShowDialog = addNewScreenshotStore(
+  const addNewScreenshotShowDialog = useAddNewScreenshotStore(
     (state) => state.props.showDialog
   );
   const addNewUserShowDialog = useAddNewUserStore(
@@ -25,7 +24,6 @@ function Dialogs() {
   const deleteUserScreenshotShowDialog = useDeleteUserScreenshotStore(
     (state) => state.props.showDialog
   );
-
   const updateUserInfoShowDialog = useUpdateUserInfoStore(
     (state) => state.props.showDialog
   );
@@ -40,9 +38,9 @@ function Dialogs() {
       {deleteUserScreenshotShowDialog && <DeleteUserScreenshotDialog />}
       {deleteUserShowDialog && <DeleteUserDialog />}
       {addNewUserShowDialog && <AddNewUserDialog />}
-      {screenshowShowDialog && <ScreenshotDialog />}
+      {screenshotShowDialog && <ScreenshotDialog />}
     </>
   );
 }
 
-export default Dialogs;
+export { Dialogs };

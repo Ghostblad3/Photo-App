@@ -1,15 +1,13 @@
-import { useEffect, memo } from "react";
-
-import DragAndDropPng from "./DragAndDropPng";
-import ImageCrop from "./ImageCrop";
-import useAddNewScreenshotStore from "./stores/addNewScreenshotStore";
-
+import { useEffect, memo } from 'react';
+import { DragAndDropPng } from './DragAndDropPng';
+import { ImageCrop } from './ImageCrop';
+import { useAddNewScreenshotStore } from './stores/addNewScreenshotStore';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 
 const AddNewScreenshotDialog = memo(() => {
   const screenshotAsBase64 = useAddNewScreenshotStore(
@@ -46,4 +44,4 @@ const AddNewScreenshotDialog = memo(() => {
   );
 });
 
-export default AddNewScreenshotDialog;
+export { AddNewScreenshotDialog };

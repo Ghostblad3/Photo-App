@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface ScreenshotProps {
   props: {
@@ -22,8 +22,8 @@ interface ScreenshotActions {
 const initialProps = {
   showDialog: false,
   userInfo: {},
-  tableName: "",
-  keyName: "",
+  tableName: '',
+  keyName: '',
 };
 
 const useScreenshotStore = create<ScreenshotProps & ScreenshotActions>(
@@ -49,4 +49,4 @@ const useScreenshotStore = create<ScreenshotProps & ScreenshotActions>(
   })
 );
 
-export default useScreenshotStore;
+export { useScreenshotStore };

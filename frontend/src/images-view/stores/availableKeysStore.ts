@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface AvailableKeysProps {
   props: {
@@ -33,4 +33,4 @@ const useAvailableKeysStore = create<AvailableKeysProps & AvailableKeysActions>(
   })
 );
 
-export default useAvailableKeysStore;
+export { useAvailableKeysStore };

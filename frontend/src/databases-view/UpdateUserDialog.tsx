@@ -1,22 +1,20 @@
-import { memo, useEffect, useRef, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { CircleX } from "lucide-react";
-import { ReloadIcon } from "@radix-ui/react-icons";
-
-import useOperationStore from "../global-stores/operationStore";
-
-import useUpdateUserInfoStore from "./stores/updateUserInfoStore";
-import useUserDataStore from "./stores/userDataStore";
-
+import { memo, useEffect, useRef, useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { CircleX } from 'lucide-react';
+import { ReloadIcon } from '@radix-ui/react-icons';
+import { useOperationStore } from '../global-stores/operationStore';
+import { useUpdateUserInfoStore } from './stores/updateUserInfoStore';
+import { useUserDataStore } from './stores/userDataStore';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { delay } from '@/utils/delay';
 
 const UpdateUserDialog = memo(() => {
   const showDialog = useUpdateUserInfoStore((state) => state.props.showDialog);
@@ -38,14 +36,14 @@ const UpdateUserDialog = memo(() => {
   const keysRef = useRef<string[]>(
     userKeys.filter(
       (key) =>
-        key !== "has_screenshot" &&
-        key !== "screenshot_day" &&
-        key !== "photo_timestamp"
+        key !== 'has_screenshot' &&
+        key !== 'screenshot_day' &&
+        key !== 'photo_timestamp'
     )
   );
   const userRef = useRef<{ [key: string]: string }>(
     keysRef.current.reduce((acc: { [key: string]: string }, key) => {
-      acc[key] = "";
+      acc[key] = '';
       return acc;
     }, {})
   );
@@ -71,18 +69,18 @@ const UpdateUserDialog = memo(() => {
     mutationFn: async (updatedUserProps: { [key: string]: string }) => {
       addOperation(
         hash.current,
-        "pending",
-        "update",
-        "Updating user information",
+        'pending',
+        'update',
+        'Updating user information',
         true
       );
 
       const time = Date.now();
 
-      const result = await fetch("http://localhost:3000/record/update-user", {
-        method: "PATCH",
+      const result = await fetch('http://localhost:3000/record/update-user', {
+        method: 'PATCH',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           tableName: tableName,
@@ -94,28 +92,28 @@ const UpdateUserDialog = memo(() => {
       const timeDiff = Date.now() - time;
 
       if (timeDiff < 500) {
-        await new Promise((resolve) => setTimeout(resolve, 500 - timeDiff));
+        await delay(500, timeDiff);
       }
 
       if (!result.ok) {
-        throw new Error("Failed to update user information");
+        throw new Error('Failed to update user information');
       }
     },
-    onError: () => {
-      modifyStatus(
+    onError: async () => {
+      await modifyStatus(
         hash.current,
-        "error",
-        "Failed to update user information",
+        'error',
+        'Failed to update user information',
         true
       );
     },
-    onSuccess: (_, variables, __) => {
+    onSuccess: async (_, variables, __) => {
       updateUser(userId, variables);
 
-      modifyStatus(
+      await modifyStatus(
         hash.current,
-        "success",
-        "Successfully updated user information",
+        'success',
+        'Successfully updated user information',
         true
       );
     },
@@ -127,12 +125,12 @@ const UpdateUserDialog = memo(() => {
 
   async function modifyStatus(
     hash: string,
-    status: "pending" | "success" | "error",
+    status: 'pending' | 'success' | 'error',
     message: string,
     show: boolean
   ) {
     changeOperationStatus(hash, status, message, show);
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    await delay(5000);
     removeOperation(hash);
   }
 
@@ -150,7 +148,7 @@ const UpdateUserDialog = memo(() => {
           propsToUpdate[key] = userRef.current[key];
         } else {
           propsToUpdate[key] = userObjRef.current[key];
-          userRef.current[key] = "";
+          userRef.current[key] = '';
         }
       } else {
         propsToUpdate[key] = userObjRef.current[key];
@@ -210,4 +208,4 @@ const UpdateUserDialog = memo(() => {
   );
 });
 
-export default UpdateUserDialog;
+export { UpdateUserDialog };

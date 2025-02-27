@@ -1,9 +1,7 @@
-import { useState } from "react";
-
-import { Switch } from "../components/ui/switch";
-
-import Card from "./Card";
-import useSelectedTableInfoStore from "./stores/selectedTableInfoStore";
+import { useState } from 'react';
+import { Switch } from '../components/ui/switch';
+import { Card } from './Card';
+import { useSelectedTableInfoStore } from './stores/selectedTableInfoStore';
 
 function Cards() {
   const [showCards, setShowCards] = useState(true);
@@ -57,7 +55,7 @@ function Cards() {
                 </span>
                 <p>
                   {`${(parseFloat(screenshotAverageSize) * 0.001).toFixed(2)}`}
-                  {" KB"}
+                  {' KB'}
                 </p>
               </Card>
             </>
@@ -68,4 +66,4 @@ function Cards() {
   );
 }
 
-export default Cards;
+export { Cards };

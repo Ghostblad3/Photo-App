@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface UserDataProps {
   props: {
@@ -23,7 +23,7 @@ interface UserDataActions {
   };
 }
 
-const initProps: {
+const initialProps: {
   userData: { [key: string]: string }[];
   filteredUserData: { [key: string]: string }[];
   userKeys: string[];
@@ -34,7 +34,7 @@ const initProps: {
 };
 
 const useUserDataStore = create<UserDataProps & UserDataActions>((set) => ({
-  props: initProps,
+  props: initialProps,
   actions: {
     setUserData: (userData: { [key: string]: string }[]) =>
       set((state) => ({
@@ -72,9 +72,9 @@ const useUserDataStore = create<UserDataProps & UserDataActions>((set) => ({
             if (user[key] === id) {
               return {
                 ...user,
-                has_screenshot: "no",
-                screenshot_day: "-",
-                photo_timestamp: "-",
+                has_screenshot: 'no',
+                screenshot_day: '-',
+                photo_timestamp: '-',
               };
             }
 
@@ -82,8 +82,8 @@ const useUserDataStore = create<UserDataProps & UserDataActions>((set) => ({
           }),
         },
       })),
-    resetUserData: () => set(() => ({ props: initProps })),
+    resetUserData: () => set(() => ({ props: initialProps })),
   },
 }));
 
-export default useUserDataStore;
+export { useUserDataStore };

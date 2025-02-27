@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface UserDataProps {
   props: {
@@ -18,7 +18,7 @@ interface UserDataActions {
   };
 }
 
-const initProps: {
+const initialProps: {
   userData: { [key: string]: string }[];
   userDataFiltered: { [key: string]: string }[];
   userKeys: string[];
@@ -29,7 +29,7 @@ const initProps: {
 };
 
 const useUserDataStore = create<UserDataProps & UserDataActions>((set) => ({
-  props: initProps,
+  props: initialProps,
   actions: {
     setUserData: (userData: { [key: string]: string }[]) =>
       set(() => ({
@@ -41,8 +41,8 @@ const useUserDataStore = create<UserDataProps & UserDataActions>((set) => ({
       })),
     setUserDataFiltered: (userDataFiltered: { [key: string]: string }[]) =>
       set((state) => ({ props: { ...state.props, userDataFiltered } })),
-    resetUserDataStore: () => set({ props: initProps }),
+    resetUserDataStore: () => set({ props: initialProps }),
   },
 }));
 
-export default useUserDataStore;
+export { useUserDataStore };

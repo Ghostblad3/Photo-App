@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from 'react';
 import {
   ColumnDef,
   flexRender,
@@ -8,43 +8,41 @@ import {
   getSortedRowModel,
   Row,
   getFilteredRowModel,
-} from "@tanstack/react-table";
-import { useVirtualizer, notUndefined } from "@tanstack/react-virtual";
-import { ImageOff, ImagePlus, PenLine, UserPlus, UserX } from "lucide-react";
-
-import { columns } from "./columns";
-import SearchValueCombobox from "./SearchValueCombobox";
-import SearchFieldCombobox from "./SearchFieldCombobox";
-import Dialogs from "./Dialogs";
-import useUserDataStore from "./stores/userDataStore";
-import useScreenshotStore from "./stores/screenshotStore";
-import useSelectedTableInfoStore from "./stores/selectedTableInfoStore";
-import useAddNewUserStore from "./stores/addNewUserStore";
-import useDeleteUserScreenshotStore from "./stores/deleteUserScreenshotStore";
-import useUpdateUserInfoStore from "./stores/updateUserInfoStore";
-import addNewScreenshotStore from "./stores/addNewScreenshotStore";
-import useDeleteUserStore from "./stores/deleteUserStore";
-
+} from '@tanstack/react-table';
+import { useVirtualizer, notUndefined } from '@tanstack/react-virtual';
+import { ImageOff, ImagePlus, PenLine, UserPlus, UserX } from 'lucide-react';
+import { columns } from './columns';
+import { useUserDataStore } from './stores/userDataStore';
+import { useScreenshotStore } from './stores/screenshotStore';
+import { useSelectedTableInfoStore } from './stores/selectedTableInfoStore';
+import { useAddNewUserStore } from './stores/addNewUserStore';
+import { useDeleteUserScreenshotStore } from './stores/deleteUserScreenshotStore';
+import { useUpdateUserInfoStore } from './stores/updateUserInfoStore';
+import { useAddNewScreenshotStore } from './stores/addNewScreenshotStore';
+import { useDeleteUserStore } from './stores/deleteUserStore.ts';
+import { SearchFieldCombobox } from './SearchFieldCombobox';
+import { SearchValueCombobox } from './SearchValueCombobox';
+import { Dialogs } from './Dialogs';
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
-} from "@/components/ui/context-menu";
+} from '@/components/ui/context-menu';
 
-export function DataTable<TData, TValue>() {
+function VirtualizedTable<TData, TValue>() {
   const filteredUserData = useUserDataStore(
     (state) => state.props.filteredUserData
   );
   const { resetUserData } = useUserDataStore((state) => state.actions);
   const {
-    setShowDialog: setScreenshowShowDialog,
-    setUserInfo: setScreenshowUserInfo,
-    setTableName: setScreenshowTableName,
+    setShowDialog: setScreenshotShowDialog,
+    setUserInfo: setScreenshotUserInfo,
+    setTableName: setScreenshotTableName,
     setKeyName: setScreenshotKeyName,
   } = useScreenshotStore((state) => state.actions);
   const { setTableName, setUserIdName, setUserId, setShowDialog } =
-    addNewScreenshotStore((state) => state.actions);
+    useAddNewScreenshotStore((state) => state.actions);
   const tableName = useSelectedTableInfoStore((state) => state.props.tableName);
   const {
     setShowDialog: setAddNewUserShowDialog,
@@ -126,12 +124,12 @@ export function DataTable<TData, TValue>() {
                       key={header.id}
                       colSpan={header.colSpan}
                       style={{
-                        paddingRight: "2.5rem",
-                        textWrap: "nowrap",
-                        position: "sticky",
+                        paddingRight: '2.5rem',
+                        textWrap: 'nowrap',
+                        position: 'sticky',
                         zIndex: 999,
-                        top: "0",
-                        backgroundColor: "white",
+                        top: '0',
+                        backgroundColor: 'white',
                         // height: "1.875rem",
                       }}
                       className="border-gray-300 bg-gray-50 py-3 text-left text-sm font-semibold text-gray-900"
@@ -164,7 +162,7 @@ export function DataTable<TData, TValue>() {
                   style={{
                     // height: `${virtualRow.size}px`,
                     backgroundColor:
-                      virtualRow.index % 2 === 0 ? "#edf2f4" : "",
+                      virtualRow.index % 2 === 0 ? '#edf2f4' : '',
                   }}
                 >
                   {row.getVisibleCells().map((cell) => {
@@ -183,14 +181,14 @@ export function DataTable<TData, TValue>() {
                             [key: string]: string;
                           };
 
-                          if (user["has_screenshot"] === "no") {
+                          if (user['has_screenshot'] === 'no') {
                             return;
                           }
 
-                          setScreenshowUserInfo(user);
-                          setScreenshowTableName(tableName);
+                          setScreenshotUserInfo(user);
+                          setScreenshotTableName(tableName);
                           setScreenshotKeyName(keys[0]);
-                          setScreenshowShowDialog(true);
+                          setScreenshotShowDialog(true);
                         }}
                       >
                         <ContextMenu>
@@ -280,7 +278,7 @@ export function DataTable<TData, TValue>() {
                                   ] as {
                                     [key: string]: string;
                                   }
-                                )["has_screenshot"] === "no"
+                                )['has_screenshot'] === 'no'
                               }
                               onClick={() => {
                                 const keys: string[] = table
@@ -353,4 +351,4 @@ export function DataTable<TData, TValue>() {
   );
 }
 
-export default DataTable;
+export { VirtualizedTable };

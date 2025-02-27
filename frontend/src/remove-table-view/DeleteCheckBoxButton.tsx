@@ -1,12 +1,11 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-
-import useTableNamesStore from "./stores/tableNamesStore";
-
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import useOperationStore from "@/global-stores/operationStore";
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useTableNamesStore } from './stores/tableNamesStore';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { useOperationStore } from '@/global-stores/operationStore';
+import { delay } from '@/utils/delay';
 
 function DeleteCheckBoxButton() {
   const selectedTableName = useTableNamesStore(
@@ -19,37 +18,37 @@ function DeleteCheckBoxButton() {
     useOperationStore((state) => state.actions);
 
   const [deleteTable, setDeleteTable] = useState(false);
-  const [deleteStatus, setDeleteStatus] = useState<"nopending" | "pending">(
-    "nopending"
+  const [deleteStatus, setDeleteStatus] = useState<'nopending' | 'pending'>(
+    'nopending'
   );
   const [isChecked, setIsChecked] = useState(false);
 
   useQuery({
-    queryKey: ["deleteTable"],
+    queryKey: ['deleteTable'],
     queryFn: async () => {
       const hash = crypto.randomUUID();
 
-      addOperation(hash, "pending", "delete", "Deleting table", true);
+      addOperation(hash, 'pending', 'delete', 'Deleting table', true);
 
       const time = Date.now();
 
       const response = await fetch(
         `http://localhost:3000/table/delete/${selectedTableName}`,
         {
-          method: "DELETE",
+          method: 'DELETE',
         }
       );
 
       const timeDiff = Date.now() - time;
 
       if (timeDiff < 500) {
-        await new Promise((resolve) => setTimeout(resolve, 500 - timeDiff));
+        await delay(500, timeDiff);
       }
 
       if (!response.ok) {
-        changeOperationStatus(hash, "error", "Failed to delete table", true);
-        remove(hash);
-        setDeleteStatus("nopending");
+        changeOperationStatus(hash, 'error', 'Failed to delete table', true);
+        await remove(hash);
+        setDeleteStatus('nopending');
         setDeleteTable(false);
 
         return {};
@@ -58,30 +57,30 @@ function DeleteCheckBoxButton() {
       removeSelectedTable();
       changeOperationStatus(
         hash,
-        "success",
-        "Successfully deleted table",
+        'success',
+        'Successfully deleted table',
         true
       );
-      remove(hash);
-      setDeleteStatus("nopending");
+      await remove(hash);
+      setDeleteStatus('nopending');
       setDeleteTable(false);
 
       return {};
     },
-    enabled: deleteTable && selectedTableName !== "",
+    enabled: deleteTable && selectedTableName !== '',
   });
 
   async function remove(hash: string) {
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    await delay(5000);
     removeOperation(hash);
   }
 
   function buttonHandler() {
-    if (!isChecked || selectedTableName === "" || deleteStatus === "pending") {
+    if (!isChecked || selectedTableName === '' || deleteStatus === 'pending') {
       return;
     }
 
-    setDeleteStatus("pending");
+    setDeleteStatus('pending');
     setDeleteTable(true);
   }
 
@@ -101,4 +100,4 @@ function DeleteCheckBoxButton() {
   );
 }
 
-export default DeleteCheckBoxButton;
+export { DeleteCheckBoxButton };

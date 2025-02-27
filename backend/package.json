@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "test": "cross-env ENVIRONMENT=TEST jest --detectOpenHandles --runInBand",
+    "start": "tsx ./src/server.ts",
+    "test": "cross-env ENVIRONMENT=TEST jest --detectOpenHandles",
     "test-schemas": "jest ./src/__test__/schema-validators.test.ts",
     "cc": "jest --clearCache"
   },

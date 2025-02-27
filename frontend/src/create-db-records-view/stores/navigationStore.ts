@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface NavigationStore {
   props: {
@@ -14,7 +14,7 @@ interface NavigationActions {
     setAllowRight: (allowRight: boolean) => void;
     incrementIndex: () => void;
     decrementIndex: () => void;
-    resetNagivationStore: () => void;
+    resetNavigationStore: () => void;
   };
 }
 
@@ -24,7 +24,7 @@ const initialProps = {
   index: 0,
 };
 
-const useNavitationStore = create<NavigationStore & NavigationActions>(
+const useNavigationStore = create<NavigationStore & NavigationActions>(
   (set) => ({
     props: initialProps,
     actions: {
@@ -40,7 +40,7 @@ const useNavitationStore = create<NavigationStore & NavigationActions>(
         set((state) => ({
           props: { ...state.props, index: state.props.index - 1 },
         })),
-      resetNagivationStore: () =>
+      resetNavigationStore: () =>
         set(() => ({
           props: initialProps,
         })),
@@ -48,4 +48,4 @@ const useNavitationStore = create<NavigationStore & NavigationActions>(
   })
 );
 
-export default useNavitationStore;
+export { useNavigationStore };

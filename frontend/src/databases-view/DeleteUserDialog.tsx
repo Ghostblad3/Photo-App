@@ -1,22 +1,21 @@
-import { useEffect, useRef } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { ReloadIcon } from "@radix-ui/react-icons";
-
-import useDeleteUserStore from "./stores/deleteUserStore";
-import useUserDataStore from "./stores/userDataStore";
-
+import { useEffect, useRef } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { ReloadIcon } from '@radix-ui/react-icons';
+import { useDeleteUserStore } from './stores/deleteUserStore.ts';
+import { useUserDataStore } from './stores/userDataStore';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import useOperationStore from "@/global-stores/operationStore";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { useOperationStore } from '@/global-stores/operationStore';
+import { delay } from '@/utils/delay';
 
-const AddNewUserDialog = () => {
+const DeleteUserDialog = () => {
   const props = useDeleteUserStore((state) => state.props);
   const { showDialog, userId, userIdName, tableName } = props;
   const { setShowDialog, resetDeleteUserStore } = useDeleteUserStore(
@@ -38,33 +37,33 @@ const AddNewUserDialog = () => {
 
   const mutation = useMutation({
     mutationFn: async () => {
-      addOperation(hash.current, "pending", "delete", "Deleting user", true);
+      addOperation(hash.current, 'pending', 'delete', 'Deleting user', true);
 
       const time = Date.now();
 
       const response = await fetch(
         `http://localhost:3000/record/remove-user/${tableName}/${userId}/${userIdName}`,
         {
-          method: "DELETE",
+          method: 'DELETE',
         }
       );
 
       const timeDiff = Date.now() - time;
 
       if (timeDiff < 500) {
-        await new Promise((resolve) => setTimeout(resolve, 500 - timeDiff));
+        await delay(500, timeDiff);
       }
 
       if (!response.ok) {
-        throw new Error("Failed to delete user");
+        throw new Error('Failed to delete user');
       }
     },
     onError: () => {
-      modifyStatus(hash.current, "error", "Failed to delete user", true);
+      modifyStatus(hash.current, 'error', 'Failed to delete user', true);
     },
     onSuccess: () => {
       deleteUser(userIdName, userId);
-      modifyStatus(hash.current, "success", "Successfully deleted user", true);
+      modifyStatus(hash.current, 'success', 'Successfully deleted user', true);
     },
     onSettled: () => {
       setShowDialog(false);
@@ -74,12 +73,12 @@ const AddNewUserDialog = () => {
 
   async function modifyStatus(
     hash: string,
-    status: "pending" | "success" | "error",
+    status: 'pending' | 'success' | 'error',
     message: string,
     show: boolean
   ) {
     changeOperationStatus(hash, status, message, show);
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    await delay(5000);
     removeOperation(hash);
   }
 
@@ -130,4 +129,4 @@ const AddNewUserDialog = () => {
   );
 };
 
-export default AddNewUserDialog;
+export { DeleteUserDialog };

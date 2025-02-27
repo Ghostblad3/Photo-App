@@ -1,51 +1,52 @@
-const { set } = require("zod");
-
 module.exports = {
   root: true,
   env: { browser: true, es2020: true },
   extends: [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:react-hooks/recommended",
-    "plugin:tailwindcss/recommended",
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:react-hooks/recommended',
+    'plugin:tailwindcss/recommended',
+    'plugin:prettier/recommended',
   ],
   overrides: [
     {
-      files: ["*.ts", "*.tsx", "*.js"],
-      parser: "@typescript-eslint/parser",
+      files: ['*.ts', '*.tsx', '*.js'],
+      parser: '@typescript-eslint/parser',
     },
   ],
-  ignorePatterns: ["dist", ".eslintrc.cjs"],
-  parser: "@typescript-eslint/parser",
+  ignorePatterns: ['dist', '.eslintrc.cjs'],
+  parser: '@typescript-eslint/parser',
   plugins: [
-    "react-refresh",
-    "tailwindcss",
-    "import", // Ensure the import plugin is listed here
-    "@typescript-eslint", // Include TypeScript plugin for TS specific rules
+    'react-refresh',
+    'tailwindcss',
+    'import', // Ensure the import plugin is listed here
+    '@typescript-eslint', // Include TypeScript plugin for TS specific rules
   ],
   rules: {
-    "react-refresh/only-export-components": [
-      "warn",
+    'import/no-default-export': 'error',
+    quotes: ['error', 'single'],
+    'react-refresh/only-export-components': [
+      'warn',
       { allowConstantExport: true },
     ],
-    "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
-    "import/order": [
-      "error",
+    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    'import/order': [
+      'error',
       {
         groups: [
-          ["builtin", "external"],
-          "internal",
-          "parent",
-          "sibling",
-          "index",
+          ['builtin', 'external'],
+          'internal',
+          'parent',
+          'sibling',
+          'index',
         ],
-        "newlines-between": "always",
+        'newlines-between': 'never',
       },
     ],
-    "tailwindcss/no-custom-classname": [
-      "error",
+    'tailwindcss/no-custom-classname': [
+      'error',
       {
-        whitelist: ["my-custom-class", "animate-killAnimation"], // Replace with your custom classes
+        whitelist: ['animate-fade', 'animate-killAnimation', 'shadow-custom'],
       },
     ],
   },

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from 'react';
 import {
   ColumnDef,
   flexRender,
@@ -9,21 +9,18 @@ import {
   Row,
   ColumnFiltersState,
   getFilteredRowModel,
-} from "@tanstack/react-table";
-import { useVirtualizer, notUndefined } from "@tanstack/react-virtual";
-
-import { columns } from "../databases-view/columns";
-
-import useDataStore from "./stores/dataStore";
-import navigationStore from "./stores/navigationStore";
-
-import { Button } from "@/components/ui/button";
+} from '@tanstack/react-table';
+import { useVirtualizer, notUndefined } from '@tanstack/react-virtual';
+import { columns } from '../databases-view/columns';
+import { useDataStore } from './stores/dataStore';
+import { useNavigationStore } from './stores/navigationStore';
+import { Button } from '@/components/ui/button';
 
 function Records<TData, TValue>() {
   const displayableData = useDataStore((state) => state.props.displayableData);
-  const allowLeft = navigationStore((state) => state.props.allowLeft);
-  const allowRight = navigationStore((state) => state.props.allowRight);
-  const { setAllowRight, setAllowLeft, incrementIndex } = navigationStore(
+  const allowLeft = useNavigationStore((state) => state.props.allowLeft);
+  const allowRight = useNavigationStore((state) => state.props.allowRight);
+  const { setAllowRight, setAllowLeft, incrementIndex } = useNavigationStore(
     (state) => state.actions
   );
 
@@ -87,12 +84,12 @@ function Records<TData, TValue>() {
                       key={header.id}
                       colSpan={header.colSpan}
                       style={{
-                        paddingRight: "2.5rem",
-                        textWrap: "nowrap",
-                        position: "sticky",
+                        paddingRight: '2.5rem',
+                        textWrap: 'nowrap',
+                        position: 'sticky',
                         zIndex: 999,
-                        top: "0",
-                        backgroundColor: "white",
+                        top: '0',
+                        backgroundColor: 'white',
                         // height: "30px",
                       }}
                       className="border-gray-300 bg-gray-50 py-3 text-left text-sm font-semibold text-gray-900"
@@ -125,7 +122,7 @@ function Records<TData, TValue>() {
                   style={{
                     // height: `${virtualRow.size}px`,
                     backgroundColor:
-                      virtualRow.index % 2 === 0 ? "#edf2f4" : "",
+                      virtualRow.index % 2 === 0 ? '#edf2f4' : '',
                   }}
                 >
                   {row.getVisibleCells().map((cell) => {
@@ -158,4 +155,4 @@ function Records<TData, TValue>() {
   );
 }
 
-export default Records;
+export { Records };

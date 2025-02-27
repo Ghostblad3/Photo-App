@@ -1,34 +1,33 @@
-import { useState, useRef, ChangeEvent, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { CircleAlert } from "lucide-react";
-
-import useDataStore from "./stores/dataStore";
-import useNavitationStore from "./stores/navigationStore";
-
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import useOperationStore from "@/global-stores/operationStore";
+import { useState, useRef, ChangeEvent, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { CircleAlert } from 'lucide-react';
+import { useDataStore } from './stores/dataStore';
+import { useNavigationStore } from './stores/navigationStore';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { useOperationStore } from '@/global-stores/operationStore';
+import { delay } from '@/utils/delay';
 
 function CreateTable() {
   const { addOperation, changeOperationStatus, removeOperation } =
     useOperationStore((state) => state.actions);
   const displayableData = useDataStore((state) => state.props.displayableData);
   const resetDataStore = useDataStore((state) => state.actions.resetDataStore);
-  const { resetNagivationStore } = useNavitationStore((state) => state.actions);
-  const setAllowRight = useNavitationStore(
+  const { resetNavigationStore } = useNavigationStore((state) => state.actions);
+  const setAllowRight = useNavigationStore(
     (state) => state.actions.setAllowRight
   );
 
-  const inputRef = useRef("");
+  const inputRef = useRef('');
   const [inputErrors, setInputErrors] = useState<{
     typeOne: boolean;
     typeTwo: boolean;
     typeThree: boolean;
   }>({ typeOne: false, typeTwo: false, typeThree: false });
   const [createTable, setCreateTable] = useState(false);
-  const [createStatus, setCreateStatus] = useState<"nonpending" | "pending">(
-    "nonpending"
+  const [createStatus, setCreateStatus] = useState<'nonpending' | 'pending'>(
+    'nonpending'
   );
 
   useEffect(() => {
@@ -36,17 +35,17 @@ function CreateTable() {
   }, [setAllowRight]);
 
   useQuery({
-    queryKey: ["create-table", inputRef.current],
+    queryKey: ['create-table', inputRef.current],
     queryFn: async () => {
-      setCreateStatus("pending");
+      setCreateStatus('pending');
 
       const tableHash = crypto.randomUUID();
 
       addOperation(
         tableHash,
-        "pending",
-        "create",
-        "Creating a new user table",
+        'pending',
+        'create',
+        'Creating a new user table',
         true
       );
 
@@ -54,10 +53,10 @@ function CreateTable() {
 
       const keys = Object.keys(displayableData[0]);
 
-      let response = await fetch("http://localhost:3000/table/create", {
-        method: "POST",
+      let response = await fetch('http://localhost:3000/table/create', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           tableName: inputRef.current,
@@ -69,60 +68,60 @@ function CreateTable() {
 
       if (!response.ok) {
         if (endTime < 1000) {
-          await new Promise((resolve) => setTimeout(resolve, 1000 - endTime));
+          await delay(1000, endTime);
         }
 
         if (response.status === 409) {
           changeOperationStatus(
             tableHash,
-            "error",
-            "Failed to create table, because table already exists",
+            'error',
+            'Failed to create table, because table already exists',
             true
           );
         } else {
           changeOperationStatus(
             tableHash,
-            "error",
-            "Failed to create table",
+            'error',
+            'Failed to create table',
             true
           );
         }
 
         setCreateTable(false);
-        setCreateStatus("nonpending");
-        remove(tableHash);
+        setCreateStatus('nonpending');
+        await remove(tableHash);
 
         return {};
       }
 
       if (endTime < 2000) {
-        await new Promise((resolve) => setTimeout(resolve, 2000 - endTime));
+        await delay(2000, endTime);
       }
 
       changeOperationStatus(
         tableHash,
-        "success",
-        "Successfully created table",
+        'success',
+        'Successfully created table',
         true
       );
-      remove(tableHash);
+      await remove(tableHash);
 
       const usersHash = crypto.randomUUID();
 
       addOperation(
         usersHash,
-        "pending",
-        "create",
-        "Creating new users in the table",
+        'pending',
+        'create',
+        'Creating new users in the table',
         true
       );
 
       time = Date.now();
 
-      response = await fetch("http://localhost:3000/record/add-users", {
-        method: "POST",
+      response = await fetch('http://localhost:3000/record/add-users', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           users: displayableData,
@@ -133,33 +132,33 @@ function CreateTable() {
       endTime = Date.now() - time;
 
       if (endTime < 2000) {
-        await new Promise((resolve) => setTimeout(resolve, 2000 - endTime));
+        await delay(2000, endTime);
       }
 
       if (!response.ok) {
         changeOperationStatus(
           usersHash,
-          "error",
-          "Failed to add users to the table",
+          'error',
+          'Failed to add users to the table',
           true
         );
         setCreateTable(false);
-        setCreateStatus("nonpending");
-        remove(usersHash);
+        setCreateStatus('nonpending');
+        await remove(usersHash);
 
         return {};
       }
 
       changeOperationStatus(
         usersHash,
-        "success",
-        "Successfully added users to the table",
+        'success',
+        'Successfully added users to the table',
         true
       );
-      remove(usersHash);
+      await remove(usersHash);
 
       resetDataStore();
-      resetNagivationStore();
+      resetNavigationStore();
 
       return {};
     },
@@ -167,7 +166,7 @@ function CreateTable() {
   });
 
   async function remove(hash: string) {
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    await delay(1000);
     removeOperation(hash);
   }
 
@@ -181,7 +180,7 @@ function CreateTable() {
       inputErrors = { ...inputErrors, typeOne: true };
     }
 
-    if (_input.endsWith("_photos")) {
+    if (_input.endsWith('_photos')) {
       inputErrors = { ...inputErrors, typeTwo: true };
     }
 
@@ -197,7 +196,7 @@ function CreateTable() {
       inputErrors.typeOne ||
       inputErrors.typeTwo ||
       inputErrors.typeThree ||
-      createStatus === "pending"
+      createStatus === 'pending'
     ) {
       return;
     }
@@ -250,4 +249,4 @@ function CreateTable() {
   );
 }
 
-export default CreateTable;
+export { CreateTable };

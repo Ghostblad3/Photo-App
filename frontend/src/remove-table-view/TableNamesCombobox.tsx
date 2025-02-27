@@ -1,21 +1,21 @@
-import { Check, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Check, ChevronsUpDown } from 'lucide-react';
+import { useState } from 'react';
+import { useTableNamesStore } from './stores/tableNamesStore';
+import { cn } from '@/lib/utils';
 import {
   Command,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
-} from "@/components/ui/command";
+} from '@/components/ui/command';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import useTableNamesStore from "./stores/tableNamesStore";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
 
 function TableNamesCombobox() {
   const tableNames = useTableNamesStore((state) => state.props.tableNames);
@@ -28,14 +28,14 @@ function TableNamesCombobox() {
   return (
     <>
       <div className="space-y-1">
-        <h1 className="font-bold text-2xl decoration-slate-100">
+        <h1 className="text-2xl font-bold decoration-slate-100">
           Delete Table
         </h1>
         <p className="text-slate-500">
           Select the name of the table you want to delete.
         </p>
       </div>
-      <div className="space-y-2.5 flex flex-col">
+      <div className="flex flex-col space-y-2.5">
         <p className="font-bold">Table Name</p>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
@@ -43,13 +43,13 @@ function TableNamesCombobox() {
               variant="outline"
               role="combobox"
               aria-expanded={open}
-              className="w-[100%] justify-between"
+              className="w-full justify-between"
               disabled={tableNames.length == 0}
             >
-              {selectedTableName !== ""
+              {selectedTableName !== ''
                 ? tableNames.find((item) => item === selectedTableName)
-                : "Select table..."}
-              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                : 'Select table...'}
+              <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="p-0">
@@ -66,7 +66,7 @@ function TableNamesCombobox() {
                         onSelect={(currentValue) => {
                           setSelectedTableName(
                             currentValue === selectedTableName
-                              ? ""
+                              ? ''
                               : currentValue
                           );
 
@@ -75,10 +75,10 @@ function TableNamesCombobox() {
                       >
                         <Check
                           className={cn(
-                            "mr-2 h-4 w-4",
+                            'mr-2 h-4 w-4',
                             selectedTableName === item
-                              ? "opacity-100"
-                              : "opacity-0"
+                              ? 'opacity-100'
+                              : 'opacity-0'
                           )}
                         />
                         {item}
@@ -95,4 +95,4 @@ function TableNamesCombobox() {
   );
 }
 
-export default TableNamesCombobox;
+export { TableNamesCombobox };

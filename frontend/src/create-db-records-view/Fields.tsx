@@ -1,11 +1,9 @@
-import { useEffect } from "react";
-
-import useFieldsStore from "./stores/fieldsStore";
-import useNavitationStore from "./stores/navigationStore";
-import useDataStore from "./stores/dataStore";
-
-import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
+import { useEffect } from 'react';
+import { useFieldsStore } from './stores/fieldsStore';
+import { useNavigationStore } from './stores/navigationStore';
+import { useDataStore } from './stores/dataStore';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
 
 function Fields() {
   const setVisibleFields = useFieldsStore(
@@ -13,7 +11,7 @@ function Fields() {
   );
   const fields = useFieldsStore((state) => state.props.fields);
   const visibleFields = useFieldsStore((state) => state.props.visibleFields);
-  const { setAllowLeft, setAllowRight, incrementIndex } = useNavitationStore(
+  const { setAllowLeft, setAllowRight, incrementIndex } = useNavigationStore(
     (state) => state.actions
   );
   const data = useDataStore((state) => state.props.data);
@@ -28,11 +26,8 @@ function Fields() {
   }, []);
 
   useEffect(() => {
-    if (visibleFields.length > 0) {
-      setAllowRight(true);
-    } else {
-      setAllowRight(false);
-    }
+    setAllowRight(visibleFields.length > 0);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibleFields]);
 
@@ -109,4 +104,4 @@ function Fields() {
   );
 }
 
-export default Fields;
+export { Fields };

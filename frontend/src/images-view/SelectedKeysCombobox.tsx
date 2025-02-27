@@ -1,21 +1,21 @@
-import { useEffect, useState } from "react";
-import { Check, ChevronsUpDown, ArrowUp, ArrowDown, X } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from 'react';
+import { Check, ChevronsUpDown, ArrowUp, ArrowDown, X } from 'lucide-react';
+import { useAvailableKeysStore } from './stores/availableKeysStore';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
   CommandGroup,
   CommandItem,
-} from "@/components/ui/command";
+} from '@/components/ui/command';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Label } from "@/components/ui/label";
-import useAvailableKeysStore from "./stores/availableKeysStore";
+} from '@/components/ui/popover';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Label } from '@/components/ui/label';
 
 function SelectedKeysCombobox() {
   const selectedKeys = useAvailableKeysStore(
@@ -57,17 +57,17 @@ function SelectedKeysCombobox() {
   }, [availableKeys]);
 
   return (
-    <div className="p-2.5 flex flex-col">
+    <div className="flex flex-col p-2.5">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="max-w-[100%] justify-between"
+            className="max-w-full justify-between"
           >
-            {"Select fields..."}
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            {'Select fields...'}
+            <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="p-0">
@@ -109,17 +109,17 @@ function SelectedKeysCombobox() {
                     >
                       <Check
                         className={cn(
-                          "mr-2 h-4 w-4",
+                          'mr-2 h-4 w-4',
                           selectedKeys.some((selKey) => selKey === item.label)
-                            ? "opacity-100"
-                            : "opacity-0"
+                            ? 'opacity-100'
+                            : 'opacity-0'
                         )}
                       />
                       {item.label}
                     </CommandItem>
                     <div className="flex">
                       <ArrowUp
-                        className="h-4 w-4 text-slate-400"
+                        className="size-4 text-slate-400"
                         onClick={() => {
                           const index = availableKeys.indexOf(item.label);
 
@@ -135,7 +135,7 @@ function SelectedKeysCombobox() {
                         }}
                       />
                       <ArrowDown
-                        className="h-4 w-4 text-slate-400"
+                        className="size-4 text-slate-400"
                         onClick={() => {
                           const index = availableKeys.indexOf(item.label);
 
@@ -159,15 +159,15 @@ function SelectedKeysCombobox() {
         </PopoverContent>
       </Popover>
       {selectedKeys.length !== 0 && (
-        <div className="flex flex-wrap gap-2 mt-5">
+        <div className="mt-5 flex flex-wrap gap-2">
           {selectedKeys.map((key) => (
             <div
               key={key}
               className="flex items-center gap-2 rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700"
             >
-              <Label className="pl-2 pb-1">{key}</Label>
+              <Label className="pb-1 pl-2">{key}</Label>
               <X
-                className="h-4 w-4 hover:cursor-pointer"
+                className="size-4 hover:cursor-pointer"
                 onClick={() => {
                   setSelectedKeys(
                     selectedKeys.filter((selKey) => selKey !== key)
@@ -182,4 +182,4 @@ function SelectedKeysCombobox() {
   );
 }
 
-export default SelectedKeysCombobox;
+export { SelectedKeysCombobox };

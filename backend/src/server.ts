@@ -29,7 +29,7 @@ app.use(
     },
     req: Request,
     res: Response,
-    _next: NextFunction
+    _next: NextFunction,
   ) => {
     if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
       return res.status(400).send({ error: "invalid JSON format" });
@@ -51,11 +51,11 @@ app.use(
 
     await fs.appendFile(
       "./logs/reasons.txt",
-      `${JSON.stringify(errorObject, null, 2)}\n`
+      `${JSON.stringify(errorObject, null, 2)}\n`,
     );
 
     if (process.env.LOG_ERRORS === "TRUE") {
-      errorLogger(errorObject, url, req.method);
+      await errorLogger(errorObject, url, req.method);
     }
 
     const { statusCode, messageReturned } = getErrorCodeAndMessage(err.message);
@@ -63,7 +63,7 @@ app.use(
     if (messageReturned === "an unexpected error occurred") {
       await fs.appendFile(
         "./logs/unexpected-errors.txt",
-        `${JSON.stringify(errorObject, null, 2)}\n`
+        `${JSON.stringify(errorObject, null, 2)}\n`,
       );
     }
 
@@ -74,7 +74,7 @@ app.use(
         message: messageReturned,
       },
     });
-  }
+  },
 );
 
 app.all("/*", (_: Request, res: Response) => {
@@ -98,7 +98,7 @@ async function startServer() {
       server ||
       app.listen(process.env.PORT || 3000, async () => {
         console.log(
-          `Server is running at http://localhost:${process.env.PORT || 3000}!`
+          `Server is running at http://localhost:${process.env.PORT || 3000}!`,
         );
 
         try {
