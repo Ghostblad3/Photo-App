@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-import { useMutation } from '@tanstack/react-query';
 import { ReloadIcon } from '@radix-ui/react-icons';
 import { useDeleteUserStore } from './stores/deleteUserStore.ts';
 import { useUserDataStore } from './stores/userDataStore';
@@ -12,8 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { useOperationStore } from '@/global-stores/operationStore';
-import { delay } from '@/utils/delay';
+import { useRemoveUser } from '@/queries/useRemoveUser.ts';
 
 const DeleteUserDialog = () => {
   const props = useDeleteUserStore((state) => state.props);
@@ -21,71 +19,36 @@ const DeleteUserDialog = () => {
   const { setShowDialog, resetDeleteUserStore } = useDeleteUserStore(
     (state) => state.actions
   );
-  const { addOperation, changeOperationStatus, removeOperation } =
-    useOperationStore((state) => state.actions);
   const deleteUser = useUserDataStore((state) => state.actions.deleteUser);
-
-  const hash = useRef(crypto.randomUUID());
   const checkedBoxIsCheckedRef = useRef(false);
+  const { mutate, isIdle, isPending, isSuccess, isError } = useRemoveUser(
+    tableName,
+    userId,
+    userIdName
+  );
 
   useEffect(() => {
     return () => {
       resetDeleteUserStore();
     };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const mutation = useMutation({
-    mutationFn: async () => {
-      addOperation(hash.current, 'pending', 'delete', 'Deleting user', true);
+  useEffect(() => {
+    if (isSuccess) deleteUser(userIdName, userId);
 
-      const time = Date.now();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSuccess]);
 
-      const response = await fetch(
-        `http://localhost:3000/record/remove-user/${tableName}/${userId}/${userIdName}`,
-        {
-          method: 'DELETE',
-        }
-      );
+  useEffect(() => {
+    if (isSuccess || isError) setShowDialog(false);
 
-      const timeDiff = Date.now() - time;
-
-      if (timeDiff < 500) {
-        await delay(500, timeDiff);
-      }
-
-      if (!response.ok) {
-        throw new Error('Failed to delete user');
-      }
-    },
-    onError: () => {
-      modifyStatus(hash.current, 'error', 'Failed to delete user', true);
-    },
-    onSuccess: () => {
-      deleteUser(userIdName, userId);
-      modifyStatus(hash.current, 'success', 'Successfully deleted user', true);
-    },
-    onSettled: () => {
-      setShowDialog(false);
-    },
-    retry: false,
-  });
-
-  async function modifyStatus(
-    hash: string,
-    status: 'pending' | 'success' | 'error',
-    message: string,
-    show: boolean
-  ) {
-    changeOperationStatus(hash, status, message, show);
-    await delay(5000);
-    removeOperation(hash);
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSuccess, isError]);
 
   function deleteButtonHandler() {
-    if (!checkedBoxIsCheckedRef.current) return;
-
-    mutation.mutate();
+    if (checkedBoxIsCheckedRef.current) mutate();
   }
 
   return (
@@ -117,11 +80,9 @@ const DeleteUserDialog = () => {
         <Button
           className="mx-4 w-[calc(100%_-_2rem)]"
           onClick={deleteButtonHandler}
-          disabled={!mutation.isIdle}
+          disabled={!isIdle}
         >
-          {mutation.isPending && (
-            <ReloadIcon className="mr-2 size-4 animate-spin" />
-          )}
+          {isPending && <ReloadIcon className="mr-2 size-4 animate-spin" />}
           Submit
         </Button>
       </DialogContent>

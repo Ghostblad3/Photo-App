@@ -1,174 +1,74 @@
 import { useState, useRef, ChangeEvent, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { CircleAlert } from 'lucide-react';
 import { useDataStore } from './stores/dataStore';
 import { useNavigationStore } from './stores/navigationStore';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { useOperationStore } from '@/global-stores/operationStore';
-import { delay } from '@/utils/delay';
+import { useCreateTable } from '@/queries/useCreateTable.ts';
+import { useAddUsers } from '@/queries/useAddUsers.ts';
 
 function CreateTable() {
-  const { addOperation, changeOperationStatus, removeOperation } =
-    useOperationStore((state) => state.actions);
   const displayableData = useDataStore((state) => state.props.displayableData);
   const resetDataStore = useDataStore((state) => state.actions.resetDataStore);
   const { resetNavigationStore } = useNavigationStore((state) => state.actions);
   const setAllowRight = useNavigationStore(
-    (state) => state.actions.setAllowRight
+    (state) => state.actions.setAllowRight,
   );
 
   const inputRef = useRef('');
+  const [tableName, setTableName] = useState('');
   const [inputErrors, setInputErrors] = useState<{
     typeOne: boolean;
     typeTwo: boolean;
     typeThree: boolean;
   }>({ typeOne: false, typeTwo: false, typeThree: false });
-  const [createTable, setCreateTable] = useState(false);
-  const [createStatus, setCreateStatus] = useState<'nonpending' | 'pending'>(
-    'nonpending'
-  );
+  const [allowCreateTable, setAllowCreateTable] = useState(false);
+
+  const {
+    mutate: createTableMutate,
+    isPending: createTablePending,
+    isSuccess: createTableSuccess,
+    isError: createTableError,
+  } = useCreateTable(tableName, displayableData);
+
+  const {
+    mutate: createUsersMutate,
+    isPending: createUsersPending,
+    isSuccess: createUsersSuccess,
+    isError: createUsersError,
+  } = useAddUsers(tableName, displayableData);
+
+  useEffect(() => {
+    if (allowCreateTable) createTableMutate();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allowCreateTable]);
+
+  useEffect(() => {
+    if (createTablePending) return;
+
+    if (createTableError) setAllowCreateTable(false);
+
+    if (createTableSuccess) createUsersMutate();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [createTablePending, createTableSuccess, createTableError]);
+
+  useEffect(() => {
+    if (createUsersPending) return;
+
+    if (createUsersSuccess || createUsersError) {
+      resetDataStore();
+      resetNavigationStore();
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [createUsersPending, createUsersSuccess, createUsersError]);
 
   useEffect(() => {
     setAllowRight(false);
   }, [setAllowRight]);
-
-  useQuery({
-    queryKey: ['create-table', inputRef.current],
-    queryFn: async () => {
-      setCreateStatus('pending');
-
-      const tableHash = crypto.randomUUID();
-
-      addOperation(
-        tableHash,
-        'pending',
-        'create',
-        'Creating a new user table',
-        true
-      );
-
-      let time = Date.now();
-
-      const keys = Object.keys(displayableData[0]);
-
-      let response = await fetch('http://localhost:3000/table/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          tableName: inputRef.current,
-          columnNames: keys,
-        }),
-      });
-
-      let endTime = Date.now() - time;
-
-      if (!response.ok) {
-        if (endTime < 1000) {
-          await delay(1000, endTime);
-        }
-
-        if (response.status === 409) {
-          changeOperationStatus(
-            tableHash,
-            'error',
-            'Failed to create table, because table already exists',
-            true
-          );
-        } else {
-          changeOperationStatus(
-            tableHash,
-            'error',
-            'Failed to create table',
-            true
-          );
-        }
-
-        setCreateTable(false);
-        setCreateStatus('nonpending');
-        await remove(tableHash);
-
-        return {};
-      }
-
-      if (endTime < 2000) {
-        await delay(2000, endTime);
-      }
-
-      changeOperationStatus(
-        tableHash,
-        'success',
-        'Successfully created table',
-        true
-      );
-      await remove(tableHash);
-
-      const usersHash = crypto.randomUUID();
-
-      addOperation(
-        usersHash,
-        'pending',
-        'create',
-        'Creating new users in the table',
-        true
-      );
-
-      time = Date.now();
-
-      response = await fetch('http://localhost:3000/record/add-users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          users: displayableData,
-          tableName: inputRef.current,
-        }),
-      });
-
-      endTime = Date.now() - time;
-
-      if (endTime < 2000) {
-        await delay(2000, endTime);
-      }
-
-      if (!response.ok) {
-        changeOperationStatus(
-          usersHash,
-          'error',
-          'Failed to add users to the table',
-          true
-        );
-        setCreateTable(false);
-        setCreateStatus('nonpending');
-        await remove(usersHash);
-
-        return {};
-      }
-
-      changeOperationStatus(
-        usersHash,
-        'success',
-        'Successfully added users to the table',
-        true
-      );
-      await remove(usersHash);
-
-      resetDataStore();
-      resetNavigationStore();
-
-      return {};
-    },
-    enabled: createTable,
-  });
-
-  async function remove(hash: string) {
-    await delay(1000);
-    removeOperation(hash);
-  }
 
   function inputHandler(e: ChangeEvent<HTMLInputElement>) {
     inputRef.current = e.target.value;
@@ -189,6 +89,10 @@ function CreateTable() {
     }
 
     setInputErrors(inputErrors);
+
+    if (!inputErrors.typeOne && inputErrors.typeTwo && inputErrors.typeThree) {
+      setTableName(inputRef.current);
+    }
   }
 
   function buttonHandler() {
@@ -196,12 +100,12 @@ function CreateTable() {
       inputErrors.typeOne ||
       inputErrors.typeTwo ||
       inputErrors.typeThree ||
-      createStatus === 'pending'
-    ) {
-      return;
-    }
+      createTablePending ||
+      createUsersPending
+    ) return;
 
-    setCreateTable(true);
+
+    setAllowCreateTable(true);
   }
 
   return (
@@ -243,7 +147,7 @@ function CreateTable() {
             </p>
           </div>
         )}
-        <Button onClick={buttonHandler}>Create table</Button>
+        <Button onClick={buttonHandler} disabled={tableName === ''}>Create table</Button>
       </div>
     </div>
   );

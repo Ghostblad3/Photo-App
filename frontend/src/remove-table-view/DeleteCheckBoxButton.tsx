@@ -1,87 +1,30 @@
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { useTableNamesStore } from './stores/tableNamesStore';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { useOperationStore } from '@/global-stores/operationStore';
-import { delay } from '@/utils/delay';
+import { useDeleteTable } from '@/queries/useDeleteTable.ts';
 
 function DeleteCheckBoxButton() {
   const selectedTableName = useTableNamesStore(
-    (state) => state.props.selectedTableName
+    (state) => state.props.selectedTableName,
   );
   const removeSelectedTable = useTableNamesStore(
-    (state) => state.actions.removeSelectedTable
-  );
-  const { addOperation, changeOperationStatus, removeOperation } =
-    useOperationStore((state) => state.actions);
-
-  const [deleteTable, setDeleteTable] = useState(false);
-  const [deleteStatus, setDeleteStatus] = useState<'nopending' | 'pending'>(
-    'nopending'
+    (state) => state.actions.removeSelectedTable,
   );
   const [isChecked, setIsChecked] = useState(false);
+  const { mutate, isPending, isSuccess } = useDeleteTable(selectedTableName);
 
-  useQuery({
-    queryKey: ['deleteTable'],
-    queryFn: async () => {
-      const hash = crypto.randomUUID();
+  useEffect(() => {
+    if (isPending) removeSelectedTable();
 
-      addOperation(hash, 'pending', 'delete', 'Deleting table', true);
-
-      const time = Date.now();
-
-      const response = await fetch(
-        `http://localhost:3000/table/delete/${selectedTableName}`,
-        {
-          method: 'DELETE',
-        }
-      );
-
-      const timeDiff = Date.now() - time;
-
-      if (timeDiff < 500) {
-        await delay(500, timeDiff);
-      }
-
-      if (!response.ok) {
-        changeOperationStatus(hash, 'error', 'Failed to delete table', true);
-        await remove(hash);
-        setDeleteStatus('nopending');
-        setDeleteTable(false);
-
-        return {};
-      }
-
-      removeSelectedTable();
-      changeOperationStatus(
-        hash,
-        'success',
-        'Successfully deleted table',
-        true
-      );
-      await remove(hash);
-      setDeleteStatus('nopending');
-      setDeleteTable(false);
-
-      return {};
-    },
-    enabled: deleteTable && selectedTableName !== '',
-  });
-
-  async function remove(hash: string) {
-    await delay(5000);
-    removeOperation(hash);
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSuccess]);
 
   function buttonHandler() {
-    if (!isChecked || selectedTableName === '' || deleteStatus === 'pending') {
-      return;
-    }
+    if (!isChecked || selectedTableName === '' || isPending) return;
 
-    setDeleteStatus('pending');
-    setDeleteTable(true);
+    mutate();
   }
 
   return (

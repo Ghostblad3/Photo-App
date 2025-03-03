@@ -6,7 +6,7 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     'plugin:react-hooks/recommended',
     'plugin:tailwindcss/recommended',
-    'plugin:prettier/recommended',
+    // 'plugin:prettier/recommended',
   ],
   overrides: [
     {
@@ -23,6 +23,7 @@ module.exports = {
     '@typescript-eslint', // Include TypeScript plugin for TS specific rules
   ],
   rules: {
+    '@typescript-eslint/no-floating-promises': 'off',
     'import/no-default-export': 'error',
     quotes: ['error', 'single'],
     'react-refresh/only-export-components': [

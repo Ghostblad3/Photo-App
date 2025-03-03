@@ -20,10 +20,12 @@ import { Button } from '@/components/ui/button';
 function TableNamesCombobox() {
   const tableNames = useTableNamesStore((state) => state.props.tableNames);
   const selectedTableName = useTableNamesStore(
-    (state) => state.props.selectedTableName
+    (state) => state.props.selectedTableName,
   );
   const { setSelectedTableName } = useTableNamesStore((state) => state.actions);
   const [open, setOpen] = useState(false);
+
+  const values = tableNames.map((tableName) => ({ value: tableName.toLowerCase(), label: tableName }));
 
   return (
     <>
@@ -44,10 +46,10 @@ function TableNamesCombobox() {
               role="combobox"
               aria-expanded={open}
               className="w-full justify-between"
-              disabled={tableNames.length == 0}
+              disabled={tableNames.length === 0}
             >
               {selectedTableName !== ''
-                ? tableNames.find((item) => item === selectedTableName)
+                ? values.find((item) => item.value === selectedTableName)?.label
                 : 'Select table...'}
               <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
             </Button>
@@ -59,15 +61,15 @@ function TableNamesCombobox() {
               <ScrollArea className="max-h-[18.75rem]">
                 <div>
                   <CommandGroup>
-                    {tableNames.map((item) => (
+                    {values.map((item) => (
                       <CommandItem
-                        key={item}
-                        value={item}
+                        key={item.label}
+                        value={item.label}
                         onSelect={(currentValue) => {
                           setSelectedTableName(
-                            currentValue === selectedTableName
+                            currentValue === selectedTableName.toLowerCase()
                               ? ''
-                              : currentValue
+                              : currentValue,
                           );
 
                           setOpen(false);
@@ -76,12 +78,12 @@ function TableNamesCombobox() {
                         <Check
                           className={cn(
                             'mr-2 h-4 w-4',
-                            selectedTableName === item
+                            selectedTableName === item.label
                               ? 'opacity-100'
-                              : 'opacity-0'
+                              : 'opacity-0',
                           )}
                         />
-                        {item}
+                        {item.label}
                       </CommandItem>
                     ))}
                   </CommandGroup>

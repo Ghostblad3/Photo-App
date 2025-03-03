@@ -1,112 +1,36 @@
-import { useEffect, useRef, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useRef } from 'react';
 import { DeleteCheckBoxButton } from './DeleteCheckBoxButton';
 import { TableNamesCombobox } from './TableNamesCombobox';
 import { useTableNamesStore } from './stores/tableNamesStore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useOperationStore } from '@/global-stores/operationStore';
-import { delay } from '@/utils/delay';
+import { useTableNames } from '@/queries/useTableNames.ts';
 
 function DeleteTable() {
   const { setTableNames, resetTableNamesStore } = useTableNamesStore(
     (state) => state.actions
   );
-  const { addOperation, changeOperationStatus, removeOperation } =
-    useOperationStore((state) => state.actions);
-
-  const hash = useRef('');
-  const [fetchStatus, setFetchStatus] = useState<'pending' | 'success'>(
-    'pending'
-  );
+  const hashRef = useRef(crypto.randomUUID());
+  const { data, isFetching, isError } = useTableNames(hashRef.current);
 
   useEffect(() => {
     return () => {
       resetTableNamesStore();
     };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const { isFetching, isError, isSuccess, data } = useQuery({
-    queryKey: ['tableNames-delete'],
-    queryFn: async () => {
-      hash.current = crypto.randomUUID();
-      setFetchStatus('pending');
-
-      addOperation(
-        hash.current,
-        'pending',
-        'fetch',
-        'Fetching table names',
-        false
-      );
-
-      const startTime = Date.now();
-
-      const response = await fetch('http://localhost:3000/table/names', {
-        cache: 'no-store',
-      });
-
-      const timeTaken = Date.now() - startTime;
-
-      if (timeTaken < 500) {
-        await new Promise((resolve) => setTimeout(resolve, 500 - timeTaken));
-      }
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch table names');
-      }
-
-      const receivedObject: {
-        status: string;
-        data: { name: string }[];
-        error: { message: string };
-      } = await response.json();
-
-      const { data } = receivedObject;
-
-      return data.map((item: { name: string }) => item.name);
-    },
-  });
-
-  async function remove(hash: string) {
-    await delay(5000);
-    removeOperation(hash);
-  }
-
   useEffect(() => {
-    if (isFetching) return;
+    if (isFetching || isError) return;
 
-    (async () => {
-      if (isError) {
-        changeOperationStatus(
-          hash.current,
-          'error',
-          'Failed to fetch table names',
-          true
-        );
-        await remove(hash.current);
+    setTableNames(data!.data);
 
-        return;
-      }
-
-      if (isSuccess && data) {
-        setTableNames(data);
-        setFetchStatus('success');
-
-        changeOperationStatus(
-          hash.current,
-          'success',
-          'Successfully fetched table names',
-          false
-        );
-        await remove(hash.current);
-      }
-    })();
-  }, [isFetching]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, isFetching, isError]);
 
   return (
     <>
-      {fetchStatus === 'pending' && (
+      {isFetching && (
         <div className="w-full space-y-12 rounded-md border p-5">
           <div className="space-y-1">
             <Skeleton className="h-8 max-w-[8.75rem]" />
@@ -122,7 +46,7 @@ function DeleteTable() {
           </div>
         </div>
       )}
-      {fetchStatus === 'success' && (
+      {!isFetching && !isError && data && (
         <div className="w-full space-y-12 rounded-md border p-5">
           <TableNamesCombobox />
           <DeleteCheckBoxButton />

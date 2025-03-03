@@ -6,7 +6,7 @@ function DragAndDropPng() {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const setScreenshotAsBase64 = useAddNewScreenshotStore(
-    (state) => state.actions.setScreenshotAsBase64
+    (state) => state.actions.setScreenshotAsBase64,
   );
 
   function handleDragOver(event: DragEvent<HTMLDivElement>) {
@@ -15,7 +15,6 @@ function DragAndDropPng() {
 
   function handleDrop(event: DragEvent<HTMLDivElement>) {
     event.preventDefault();
-
     fileReader(event.dataTransfer.files[0]);
   }
 
@@ -23,17 +22,13 @@ function DragAndDropPng() {
     const e = event.target as HTMLInputElement;
     const files = e.files;
 
-    if (files) {
-      fileReader(files[0]);
-    }
+    if (files) fileReader(files[0]);
   }
 
   function fileReader(file: File) {
     const reader = new FileReader();
     reader.onload = (e) => {
-      if (e.target && typeof e.target.result === 'string') {
-        setScreenshotAsBase64(e.target?.result);
-      }
+      if (e.target && typeof e.target.result === 'string') setScreenshotAsBase64(e.target?.result);
     };
 
     reader.readAsDataURL(file);

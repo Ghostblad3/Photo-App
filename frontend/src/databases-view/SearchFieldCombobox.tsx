@@ -21,7 +21,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 function SearchFieldCombobox() {
   const searchField = useSearchStore((state) => state.props.searchField);
   const { setSearchField, setSearchValue } = useSearchStore(
-    (state) => state.actions
+    (state) => state.actions,
   );
   const userData = useUserDataStore((state) => state.props.userData);
 
@@ -29,7 +29,7 @@ function SearchFieldCombobox() {
   const [values] = useState(
     Object.keys((userData as { [key: string]: string }[])[0]).map((key) => {
       return { value: key.toLowerCase(), label: key };
-    })
+    }),
   );
 
   return (
@@ -44,13 +44,13 @@ function SearchFieldCombobox() {
           >
             {searchField !== ''
               ? values.find((item) => item.label === searchField)?.label
-              : `Select by column name...`}
+              : 'Select by column name...'}
             <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="popover-content-width-full p-0">
           <Command shouldFilter={true}>
-            <CommandInput placeholder={`Search by column name...`} />
+            <CommandInput placeholder={'Search by column name...'} />
             <CommandEmpty>No column name found.</CommandEmpty>
             <ScrollArea className="max-h-56">
               <div className="max-h-56">
@@ -77,7 +77,7 @@ function SearchFieldCombobox() {
                           'mr-2 h-4 w-4',
                           searchField === item.label
                             ? 'opacity-100'
-                            : 'opacity-0'
+                            : 'opacity-0',
                         )}
                       />
                       {item.label}

@@ -1,7 +1,5 @@
 import { memo, useEffect, useRef } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Image } from 'lucide-react';
-import { useOperationStore } from '../global-stores/operationStore';
 import { useScreenshotStore } from './stores/screenshotStore';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -10,19 +8,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { delay } from '@/utils/delay';
+import { useRetrieveUserScreenshot } from '@/queries/useRetrieveUserScreenshot.ts';
 
 const ScreenshotDialog = memo(() => {
   const { showDialog, userInfo, keyName, tableName } = useScreenshotStore(
-    (state) => state.props
+    (state) => state.props,
   );
   const { setShowDialog, resetScreenshotStore } = useScreenshotStore(
-    (state) => state.actions
+    (state) => state.actions,
   );
-  const { addOperation, changeOperationStatus, removeOperation } =
-    useOperationStore((state) => state.actions);
-
   const hash = useRef<string>(crypto.randomUUID());
+  const { data, isFetching, isError } = useRetrieveUserScreenshot(tableName, hash.current, keyName, userInfo);
 
   useEffect(() => {
     return () => {
@@ -31,89 +27,12 @@ const ScreenshotDialog = memo(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const { data, isLoading, isSuccess, isError } = useQuery({
-    queryKey: ['screenshot', hash.current],
-    queryFn: async () => {
-      addOperation(
-        hash.current,
-        'pending',
-        'fetch',
-        'Fetching user screenshot',
-        false
-      );
-
-      const timeNow = new Date();
-
-      const response = await fetch(
-        `http://localhost:3000/screenshot/retrieve-user-screenshot/${keyName}/${userInfo[keyName]}/${tableName}`,
-        {
-          cache: 'no-store',
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch user screenshot');
-      }
-
-      const timeDiff = Date.now() - timeNow.getTime();
-
-      if (timeDiff < 500) {
-        await delay(500, timeDiff);
-      }
-
-      const receivedObject: {
-        status: string;
-        data: string;
-        error: { message: string };
-      } = await response.json();
-
-      const { data } = receivedObject;
-
-      return data;
-    },
-    retry: false,
-  });
-
   useEffect(() => {
-    (async () => {
-      if (isSuccess) {
-        await modifyStatus(
-          hash.current,
-          'success',
-          'Successfully fetched user screenshot',
-          false
-        );
-      }
-    })();
+    if (isFetching) return;
+
+    if (isError) setShowDialog(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccess]);
-
-  useEffect(() => {
-    (async () => {
-      if (isError) {
-        await modifyStatus(
-          hash.current,
-          'error',
-          'Failed to fetch user screenshot',
-          true
-        );
-
-        setShowDialog(false);
-      }
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isError]);
-
-  async function modifyStatus(
-    hash: string,
-    status: 'pending' | 'success' | 'error',
-    message: string,
-    show: boolean
-  ) {
-    changeOperationStatus(hash, status, message, show);
-    await delay(5000);
-    removeOperation(hash);
-  }
+  }, [data, isFetching, isError]);
 
   return (
     <Dialog open={showDialog}>
@@ -127,7 +46,7 @@ const ScreenshotDialog = memo(() => {
           <DialogTitle>User screenshot</DialogTitle>
         </DialogHeader>
         <>
-          {isLoading && (
+          {isFetching && (
             <div className="bg-slate-100 p-4">
               <Skeleton className="mx-auto h-[6.25rem] max-w-[6.563rem] rounded-lg bg-slate-200 shadow-custom">
                 <div className="flex size-full items-center justify-center bg-slate-200">
@@ -136,11 +55,11 @@ const ScreenshotDialog = memo(() => {
               </Skeleton>
             </div>
           )}
-          {isSuccess && (
+          {!isFetching && !isError && data && (
             <div className="bg-slate-100 p-4">
               <img
                 className="mx-auto h-[6.25rem] w-[6.563rem] rounded-lg "
-                src={`data:image/png;base64,${data}`}
+                src={`data:image/png;base64,${data.data}`}
                 alt="user screenshot"
               />
             </div>

@@ -1,34 +1,29 @@
 import { useEffect, useRef, useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
 import ReactCrop, { Crop, PixelCrop } from 'react-image-crop';
 import { ReloadIcon } from '@radix-ui/react-icons';
-import { useOperationStore } from '../global-stores/operationStore';
 import { useUserDataStore } from './stores/userDataStore';
 import { useAddNewScreenshotStore } from './stores/addNewScreenshotStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import 'react-image-crop/dist/ReactCrop.css';
-import { delay } from '@/utils/delay';
+import { useAddUserScreenshot } from '@/queries/useAddUserScreenshot.ts';
 
 const aspect = 16 / 9;
 
 function ImageCrop() {
   const tableName = useAddNewScreenshotStore((state) => state.props.tableName);
   const userIdName = useAddNewScreenshotStore(
-    (state) => state.props.userIdName
+    (state) => state.props.userIdName,
   );
   const userId = useAddNewScreenshotStore((state) => state.props.userId);
   const screenshotAsBase64 = useAddNewScreenshotStore(
-    (state) => state.props.screenshotAsBase64
+    (state) => state.props.screenshotAsBase64,
   );
   const setShowDialog = useAddNewScreenshotStore(
-    (state) => state.actions.setShowDialog
+    (state) => state.actions.setShowDialog,
   );
   const { updateUser } = useUserDataStore((state) => state.actions);
-  const { addOperation, changeOperationStatus, removeOperation } =
-    useOperationStore((state) => state.actions);
-
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const [crop, setCrop] = useState<Crop>();
@@ -37,10 +32,15 @@ function ImageCrop() {
   const [rotate, setRotate] = useState(0);
   const [screenshotBlob, setScreenshotBlob] = useState<Blob>();
   const inputRef = useRef('');
-  const [progress, setProgress] = useState(0);
   const [buttonEnabled, setButtonEnabled] = useState(true);
 
-  const hash = useRef(crypto.randomUUID());
+  const {
+    mutate,
+    data,
+    isIdle,
+    isPending,
+    progress,
+  } = useAddUserScreenshot(screenshotBlob!, userIdName, userId, inputRef.current, tableName);
 
   function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
     if (aspect) {
@@ -59,18 +59,14 @@ function ImageCrop() {
   }
 
   async function processImage() {
-    if (inputRef.current === '') {
-      return;
-    }
+    if (inputRef.current === '') return;
 
     setButtonEnabled(false);
 
     const image = imgRef.current;
     const previewCanvas = previewCanvasRef.current;
 
-    if (!image || !previewCanvas || !completedCrop) {
-      throw new Error('Crop canvas does not exist');
-    }
+    if (!image || !previewCanvas || !completedCrop) throw new Error('Crop canvas does not exist');
 
     // This will size relative to the uploaded image
     // size. If you want to size according to what they
@@ -83,12 +79,12 @@ function ImageCrop() {
 
     const offscreen = new OffscreenCanvas(
       completedCrop.width * scaleX,
-      completedCrop.height * scaleY
+      completedCrop.height * scaleY,
     );
+
     const ctx = offscreen.getContext('2d');
-    if (!ctx) {
-      throw new Error('No 2d context');
-    }
+
+    if (!ctx) throw new Error('No 2d context');
 
     ctx.drawImage(
       previewCanvas,
@@ -99,7 +95,7 @@ function ImageCrop() {
       0,
       0,
       offscreen.width,
-      offscreen.height
+      offscreen.height,
     );
 
     const blob = await offscreen.convertToBlob({
@@ -123,7 +119,7 @@ function ImageCrop() {
           previewCanvasRef.current,
           completedCrop,
           scale,
-          rotate
+          rotate,
         );
       }
     };
@@ -132,140 +128,28 @@ function ImageCrop() {
   }, [completedCrop, scale, rotate]);
 
   useEffect(() => {
-    if (screenshotBlob) {
-      mutation.mutate();
-    }
+    if (screenshotBlob) mutate();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [screenshotBlob]);
 
-  const mutation = useMutation({
-    mutationFn: async () => {
-      addOperation(
-        hash.current,
-        'pending',
-        'create',
-        'Creating a new screenshot for user',
-        false
-      );
-
-      const time = Date.now();
-
-      const buffer = await screenshotBlob?.arrayBuffer();
-      const array = Array.from(new Uint8Array(buffer!));
-
-      await delay(1000);
-
-      const response = await new Promise<{
-        code: number;
-        responseString: string;
-      }>((resolve, reject) => {
-        const req = new XMLHttpRequest();
-
-        req.open(
-          'POST',
-          'http://localhost:3000/screenshot/add-user-screenshot',
-          true
-        );
-        req.setRequestHeader('Content-Type', 'application/json');
-
-        // Add event listener to upload listening for progress. Function fires
-        // regularly, with progress contained in "e" object
-        req.upload.addEventListener('progress', (e) => {
-          // Every time progress occurs
-          const percentComplete = (e.loaded / e.total) * 100;
-          setProgress(Math.round(percentComplete));
-        });
-
-        // Fires when upload is complete
-        req.addEventListener('load', () => {
-          resolve({ code: req.status, responseString: req.response });
-        });
-
-        req.addEventListener('error', () => {
-          reject('error');
-        });
-
-        req.send(
-          JSON.stringify({
-            userIdName,
-            userId,
-            dayNumber: inputRef.current,
-            tableName,
-            screenshot: {
-              type: 'Buffer',
-              data: array,
-            },
-          })
-        );
-      });
-
-      const endTime = Date.now();
-
-      if (endTime - time < 500) {
-        await delay(500, endTime - time);
-      }
-
-      const { code, responseString } = response;
-
-      if (code !== 201) {
-        throw new Error('Error creating screenshot');
-      }
-
-      const result: {
-        status: string;
-        data: { photo_timestamp: string };
-        error: { message: string };
-      } = JSON.parse(responseString);
-
-      await delay(1000);
-
-      const { data } = result;
-      const { photo_timestamp } = data;
-
-      return photo_timestamp;
-    },
-    onError: async () => {
-      await modifyStatus(
-        hash.current,
-        'error',
-        'Failed to create a new screenshot',
-        true
-      );
-    },
-    onSuccess: async (data, _, __) => {
+  useEffect(() => {
+    if (data) {
       updateUser(userId, {
         has_screenshot: 'yes',
         screenshot_day: inputRef.current,
-        photo_timestamp: new Date(data).toLocaleString('it-IT'),
+        photo_timestamp: new Date(data!.photo_timestamp).toLocaleString('it-IT'),
       });
 
-      await modifyStatus(
-        hash.current,
-        'success',
-        'Successfully created a new screenshot',
-        true
-      );
-    },
-    onSettled: () => {
       setShowDialog(false);
-    },
-    retry: false,
-  });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
 
-  async function modifyStatus(
-    hash: string,
-    status: 'pending' | 'success' | 'error',
-    message: string,
-    show: boolean
-  ) {
-    changeOperationStatus(hash, status, message, show);
-    await delay(5000);
-    removeOperation(hash);
-  }
 
   return (
     <>
-      {mutation.isIdle && (
+      {isIdle && (
         <div className="flex w-full flex-col justify-center">
           {!!screenshotAsBase64 && (
             <ReactCrop
@@ -321,7 +205,7 @@ function ImageCrop() {
                   disabled={!screenshotAsBase64}
                   onChange={(e) =>
                     setRotate(
-                      Math.min(180, Math.max(-180, Number(e.target.value)))
+                      Math.min(180, Math.max(-180, Number(e.target.value))),
                     )
                   }
                 />
@@ -343,7 +227,7 @@ function ImageCrop() {
                 }}
               />
               <Button onClick={processImage} disabled={!buttonEnabled}>
-                {mutation.isPending && (
+                {isPending && (
                   <ReloadIcon className="mr-2 size-4 animate-spin" />
                 )}
                 Save cropped image
@@ -352,7 +236,7 @@ function ImageCrop() {
           )}
         </div>
       )}
-      {!mutation.isIdle && (
+      {isPending && (
         <div className="flex h-[12.5rem] flex-col items-center justify-center">
           <h1 className="text-xl">Uploading</h1>
           <div className="mt-10 flex w-full items-center justify-center gap-2.5">
@@ -372,7 +256,7 @@ async function canvasPreview(
   canvas: HTMLCanvasElement,
   crop: PixelCrop,
   scale = 1,
-  rotate = 0
+  rotate = 0,
 ) {
   const ctx = canvas.getContext('2d');
 
@@ -426,7 +310,7 @@ async function canvasPreview(
     0,
     0,
     image.naturalWidth,
-    image.naturalHeight
+    image.naturalHeight,
   );
 
   ctx.restore();

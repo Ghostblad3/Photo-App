@@ -1,8 +1,6 @@
 import { memo, useEffect, useRef, useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
 import { CircleX } from 'lucide-react';
 import { ReloadIcon } from '@radix-ui/react-icons';
-import { useOperationStore } from '../global-stores/operationStore';
 import { useUserDataStore } from './stores/userDataStore';
 import { useAddNewUserStore } from './stores/addNewUserStore';
 import {
@@ -14,7 +12,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { delay } from '@/utils/delay';
+import { useAddUsers } from '@/queries/useAddUsers.ts';
 
 const AddNewUserDialog = memo(() => {
   const userKeys = useUserDataStore((state) => state.props.userKeys);
@@ -24,9 +22,6 @@ const AddNewUserDialog = memo(() => {
   const { setShowDialog, resetAddNewUserStore } = useAddNewUserStore(
     (state) => state.actions
   );
-  const { addOperation, changeOperationStatus, removeOperation } =
-    useOperationStore((state) => state.actions);
-
   const keysRef = useRef(
     userKeys.filter(
       (key) =>
@@ -49,8 +44,28 @@ const AddNewUserDialog = memo(() => {
       return acc;
     }, {})
   );
-  const hash = useRef(crypto.randomUUID());
   const [buttonIsDisabled, setButtonIsDisabled] = useState(true);
+  const { mutate, isSuccess, isPending, isError } = useAddUsers(tableName, [
+    userRef.current,
+  ]);
+
+  useEffect(() => {
+    if (!isPending && (isSuccess || isError)) setShowDialog(false);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPending, isSuccess, isError]);
+
+  useEffect(() => {
+    if (isSuccess)
+      addUser({
+        ...userRef.current,
+        has_screenshot: 'no',
+        screenshot_day: '-',
+        photo_timestamp: '-',
+      });
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSuccess]);
 
   useEffect(() => {
     return () => {
@@ -60,92 +75,18 @@ const AddNewUserDialog = memo(() => {
   }, []);
 
   useEffect(() => {
-    if (!Object.values(fieldsModified).some((value) => value === false)) {
+    if (!Object.values(fieldsModified).some((value) => !value)) {
       setButtonIsDisabled(false);
       return;
     }
 
     if (!buttonIsDisabled) setButtonIsDisabled(true);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fieldsModified]);
 
-  const mutation = useMutation({
-    mutationFn: async (user: { [key: string]: string }) => {
-      addOperation(
-        hash.current,
-        'pending',
-        'create',
-        'Creating a new user',
-        true
-      );
-
-      const time = new Date();
-
-      const response = await fetch('http://localhost:3000/record/add-users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          tableName,
-          users: [user],
-        }),
-      });
-
-      const timeDiff = Date.now() - time.getTime();
-
-      if (timeDiff < 500) {
-        await delay(500, timeDiff);
-      }
-
-      if (!response.ok) {
-        throw new Error('Failed to create a new user');
-      }
-    },
-    onError: async () => {
-      await modifyStatus(
-        hash.current,
-        'error',
-        'Failed to create a new user',
-        true
-      );
-    },
-    onSuccess: async (_, variables, __) => {
-      addUser({
-        ...variables,
-        has_screenshot: 'no',
-        screenshot_day: '-',
-        photo_timestamp: '-',
-      });
-
-      await modifyStatus(
-        hash.current,
-        'success',
-        'Successfully created a new user',
-        true
-      );
-    },
-    onSettled: () => {
-      setShowDialog(false);
-    },
-    retry: false,
-  });
-
-  async function modifyStatus(
-    hash: string,
-    status: 'pending' | 'success' | 'error',
-    message: string,
-    show: boolean
-  ) {
-    changeOperationStatus(hash, status, message, show);
-
-    await delay(5000);
-
-    removeOperation(hash);
-  }
-
   function addNewUserButtonHandler() {
-    mutation.mutate(userRef.current);
+    mutate();
   }
 
   return (
@@ -191,11 +132,9 @@ const AddNewUserDialog = memo(() => {
         <Button
           className="mx-4 w-[calc(100%_-_2rem)]"
           onClick={addNewUserButtonHandler}
-          disabled={!mutation.isIdle}
+          disabled={isPending}
         >
-          {mutation.isPending && (
-            <ReloadIcon className="mr-2 size-4 animate-spin" />
-          )}
+          {isPending && <ReloadIcon className="mr-2 size-4 animate-spin" />}
           Submit
         </Button>
       </DialogContent>

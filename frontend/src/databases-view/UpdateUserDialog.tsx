@@ -1,8 +1,6 @@
 import { memo, useEffect, useRef, useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
 import { CircleX } from 'lucide-react';
 import { ReloadIcon } from '@radix-ui/react-icons';
-import { useOperationStore } from '../global-stores/operationStore';
 import { useUpdateUserInfoStore } from './stores/updateUserInfoStore';
 import { useUserDataStore } from './stores/userDataStore';
 import {
@@ -14,7 +12,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { delay } from '@/utils/delay';
+import { useUpdateUser } from '@/queries/useUpdateUser.ts';
 
 const UpdateUserDialog = memo(() => {
   const showDialog = useUpdateUserInfoStore((state) => state.props.showDialog);
@@ -27,9 +25,6 @@ const UpdateUserDialog = memo(() => {
   const userData = useUserDataStore((state) => state.props.userData);
   const userKeys = useUserDataStore((state) => state.props.userKeys);
   const { updateUser } = useUserDataStore((state) => state.actions);
-  const { addOperation, changeOperationStatus, removeOperation } =
-    useOperationStore((state) => state.actions);
-
   const userObjRef = useRef<{ [key: string]: string }>(
     userData[parseInt(userIndex)]
   );
@@ -55,84 +50,32 @@ const UpdateUserDialog = memo(() => {
       return acc;
     }, {})
   );
+  const propsToUpdateRef = useRef<{ [key: string]: string }>();
   const [buttonDisabled, setButtonDisabled] = useState(false);
-  const hash = useRef<string>(crypto.randomUUID());
+  const { mutate, isPending, isSuccess, isError } = useUpdateUser(
+    tableName,
+    userId
+  );
+
+  useEffect(() => {
+    if (isSuccess) updateUser(userId, propsToUpdateRef.current!);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSuccess]);
+
+  useEffect(() => {
+    if (!isPending && (isSuccess || isError)) setShowDialog(false);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPending, isSuccess, isError]);
 
   useEffect(() => {
     return () => {
       resetUpdateUserInfoStore();
     };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const mutation = useMutation({
-    mutationFn: async (updatedUserProps: { [key: string]: string }) => {
-      addOperation(
-        hash.current,
-        'pending',
-        'update',
-        'Updating user information',
-        true
-      );
-
-      const time = Date.now();
-
-      const result = await fetch('http://localhost:3000/record/update-user', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          tableName: tableName,
-          userId: userId,
-          user: updatedUserProps,
-        }),
-      });
-
-      const timeDiff = Date.now() - time;
-
-      if (timeDiff < 500) {
-        await delay(500, timeDiff);
-      }
-
-      if (!result.ok) {
-        throw new Error('Failed to update user information');
-      }
-    },
-    onError: async () => {
-      await modifyStatus(
-        hash.current,
-        'error',
-        'Failed to update user information',
-        true
-      );
-    },
-    onSuccess: async (_, variables, __) => {
-      updateUser(userId, variables);
-
-      await modifyStatus(
-        hash.current,
-        'success',
-        'Successfully updated user information',
-        true
-      );
-    },
-    onSettled: () => {
-      setShowDialog(false);
-    },
-    retry: false,
-  });
-
-  async function modifyStatus(
-    hash: string,
-    status: 'pending' | 'success' | 'error',
-    message: string,
-    show: boolean
-  ) {
-    changeOperationStatus(hash, status, message, show);
-    await delay(5000);
-    removeOperation(hash);
-  }
 
   function updateUserButtonHandler() {
     setButtonDisabled(true);
@@ -155,7 +98,8 @@ const UpdateUserDialog = memo(() => {
       }
     });
 
-    mutation.mutate(propsToUpdate);
+    propsToUpdateRef.current = propsToUpdate;
+    mutate(propsToUpdate);
   }
 
   return (
@@ -198,9 +142,7 @@ const UpdateUserDialog = memo(() => {
           onClick={updateUserButtonHandler}
           disabled={buttonDisabled}
         >
-          {mutation.isPending && (
-            <ReloadIcon className="mr-2 size-4 animate-spin" />
-          )}
+          {isPending && <ReloadIcon className="mr-2 size-4 animate-spin" />}
           Update
         </Button>
       </DialogContent>
