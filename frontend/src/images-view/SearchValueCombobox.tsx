@@ -34,6 +34,7 @@ function SearchValueCombobox() {
     return () => {
       resetSearchStore();
     };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

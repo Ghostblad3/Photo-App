@@ -1,5 +1,5 @@
 function throttle(mainFunction: () => void, delay: number) {
-  let allow: boolean = false;
+  let allow = false;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return () => {

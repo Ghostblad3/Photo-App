@@ -26,13 +26,13 @@ function TableNamesCombobox() {
   const { setTableNames, resetTableNamesStore: resetTableNames } =
     useTableNamesStore((state) => state.actions);
   const resetSearchStore = useSearchStore(
-    (state) => state.actions.resetSearchStore,
+    (state) => state.actions.resetSearchStore
   );
   const setSelectedTableName = useSelectedTableInfoStore(
-    (state) => state.actions.setTableName,
+    (state) => state.actions.setTableName
   );
   const selectedTableName = useSelectedTableInfoStore(
-    (state) => state.props.tableName,
+    (state) => state.props.tableName
   );
   const hash = useRef(crypto.randomUUID());
   const [open, setOpen] = useState(false);
@@ -42,11 +42,13 @@ function TableNamesCombobox() {
     return () => {
       resetTableNames();
     };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (data) setTableNames(data!.data);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
@@ -54,9 +56,7 @@ function TableNamesCombobox() {
     if (currentValue !== selectedTableName) resetSearchStore();
 
     setSelectedTableName(
-      currentValue === selectedTableName
-        ? ''
-        : currentValue,
+      currentValue === selectedTableName ? '' : currentValue
     );
 
     setOpen(false);
@@ -110,7 +110,7 @@ function TableNamesCombobox() {
                                 'mr-2 h-4 w-4',
                                 selectedTableName === item
                                   ? 'opacity-100'
-                                  : 'opacity-0',
+                                  : 'opacity-0'
                               )}
                             />
                             {item}

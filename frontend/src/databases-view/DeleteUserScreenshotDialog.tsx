@@ -16,24 +16,29 @@ import { useDeleteUserScreenshot } from '@/queries/useDeleteUserScreenshot.ts';
 const DeleteUserScreenshotDialog = memo(() => {
   const { deleteUserScreenshot } = useUserDataStore((state) => state.actions);
   const showDialog = useDeleteUserScreenshotStore(
-    (state) => state.props.showDialog,
+    (state) => state.props.showDialog
   );
   const userId = useDeleteUserScreenshotStore((state) => state.props.userId);
   const tableName = useDeleteUserScreenshotStore(
-    (state) => state.props.tableName,
+    (state) => state.props.tableName
   );
   const userIdName = useDeleteUserScreenshotStore(
-    (state) => state.props.userIdName,
+    (state) => state.props.userIdName
   );
   const { setShowDialog, resetDeleteUserScreenshotStore } =
     useDeleteUserScreenshotStore((state) => state.actions);
   const checkedBoxIsCheckedRef = useRef(false);
-  const { mutate, isPending, isError, isSuccess } = useDeleteUserScreenshot(userIdName, userId, tableName);
+  const { mutate, isPending, isError, isSuccess } = useDeleteUserScreenshot(
+    userIdName,
+    userId,
+    tableName
+  );
 
   useEffect(() => {
     return () => {
       resetDeleteUserScreenshotStore();
     };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -88,9 +93,7 @@ const DeleteUserScreenshotDialog = memo(() => {
           onClick={deleteUserScreenshotButtonHandler}
           disabled={isPending}
         >
-          {isPending && (
-            <ReloadIcon className="mr-2 size-4 animate-spin" />
-          )}
+          {isPending && <ReloadIcon className="mr-2 size-4 animate-spin" />}
           Delete
         </Button>
       </DialogContent>

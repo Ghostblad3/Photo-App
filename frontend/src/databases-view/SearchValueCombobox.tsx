@@ -28,7 +28,6 @@ function SearchValueCombobox() {
   const setFilteredUserData = useUserDataStore(
     (state) => state.actions.setFilteredUserData
   );
-
   const [open, setOpen] = useState(false);
   const [values, setValues] = useState<{ value: string; label: string }[]>([]);
 
@@ -50,6 +49,7 @@ function SearchValueCombobox() {
         return { value: key.toLowerCase(), label: key };
       })
     );
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchField, userData]);
 
@@ -63,6 +63,7 @@ function SearchValueCombobox() {
     }
 
     setFilteredUserData(userData);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchValue, userData]);
 

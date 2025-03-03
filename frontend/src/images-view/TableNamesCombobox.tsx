@@ -22,11 +22,11 @@ import { useTableNames } from '@/queries/useTableNames.ts';
 function TableNamesCombobox() {
   const tableName = useSelectedTableStore((state) => state.props.tableName);
   const { setTableName, resetSelectedTableStore } = useSelectedTableStore(
-    (state) => state.actions,
+    (state) => state.actions
   );
   const tableNames = useTableNamesStore((state) => state.props.tableNames);
   const { setTableNames, resetTableNamesStore } = useTableNamesStore(
-    (state) => state.actions,
+    (state) => state.actions
   );
 
   const [open, setOpen] = useState(false);
@@ -38,6 +38,7 @@ function TableNamesCombobox() {
       resetSelectedTableStore();
       resetTableNamesStore();
     };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -45,6 +46,7 @@ function TableNamesCombobox() {
     if (isFetching || isError) return;
 
     setTableNames(data!.data);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, isFetching, isError]);
 
@@ -99,7 +101,7 @@ function TableNamesCombobox() {
                         value={item}
                         onSelect={(currentValue) => {
                           setTableName(
-                            currentValue === tableName ? '' : currentValue,
+                            currentValue === tableName ? '' : currentValue
                           );
 
                           setOpen(false);
@@ -108,7 +110,7 @@ function TableNamesCombobox() {
                         <Check
                           className={cn(
                             'mr-2 h-4 w-4',
-                            tableName === item ? 'opacity-100' : 'opacity-0',
+                            tableName === item ? 'opacity-100' : 'opacity-0'
                           )}
                         />
                         {item}

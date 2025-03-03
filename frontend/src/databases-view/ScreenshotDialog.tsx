@@ -12,18 +12,24 @@ import { useRetrieveUserScreenshot } from '@/queries/useRetrieveUserScreenshot.t
 
 const ScreenshotDialog = memo(() => {
   const { showDialog, userInfo, keyName, tableName } = useScreenshotStore(
-    (state) => state.props,
+    (state) => state.props
   );
   const { setShowDialog, resetScreenshotStore } = useScreenshotStore(
-    (state) => state.actions,
+    (state) => state.actions
   );
   const hash = useRef<string>(crypto.randomUUID());
-  const { data, isFetching, isError } = useRetrieveUserScreenshot(tableName, hash.current, keyName, userInfo);
+  const { data, isFetching, isError } = useRetrieveUserScreenshot(
+    tableName,
+    hash.current,
+    keyName,
+    userInfo
+  );
 
   useEffect(() => {
     return () => {
       resetScreenshotStore();
     };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -31,6 +37,7 @@ const ScreenshotDialog = memo(() => {
     if (isFetching) return;
 
     if (isError) setShowDialog(false);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, isFetching, isError]);
 

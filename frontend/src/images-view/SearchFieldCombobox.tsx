@@ -21,10 +21,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 function SearchFieldCombobox() {
   const searchField = useSearchStore((state) => state.props.searchField);
   const { setSearchField, resetSearchStore } = useSearchStore(
-    (state) => state.actions,
+    (state) => state.actions
   );
   const userData = useUserDataStore((state) => state.props.userData);
-
   const [open, setOpen] = useState(false);
   const [values, setValues] = useState<
     {
@@ -37,6 +36,7 @@ function SearchFieldCombobox() {
     return () => {
       resetSearchStore();
     };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -95,7 +95,7 @@ function SearchFieldCombobox() {
                           'mr-2 h-4 w-4',
                           searchField === item.label
                             ? 'opacity-100'
-                            : 'opacity-0',
+                            : 'opacity-0'
                         )}
                       />
                       {item.label}

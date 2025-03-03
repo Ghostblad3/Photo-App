@@ -34,6 +34,7 @@ function SelectedKeysCombobox() {
     return () => {
       resetAvailableKeysStore();
     };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -51,8 +52,8 @@ function SelectedKeysCombobox() {
     });
 
     setSelectedKeys(temp);
-
     setValues(newValues);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [availableKeys]);
 

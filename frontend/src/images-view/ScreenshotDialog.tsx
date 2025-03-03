@@ -25,6 +25,7 @@ const ScreenshotDialog = memo(({ children }: { children: ReactNode }) => {
     return () => {
       resetSingleUserDataStore();
     };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -39,6 +40,7 @@ const ScreenshotDialog = memo(({ children }: { children: ReactNode }) => {
           <img
             className="mx-auto h-[6.25rem] w-[6.563rem] rounded-md"
             src={`data:image/png;base64,${singleUserData['screenshot']}`}
+            alt={'Screenshot'}
           />
         </div>
         {availableKeys.map((key) => {

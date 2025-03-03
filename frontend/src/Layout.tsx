@@ -7,7 +7,7 @@ import photo from './assets/photo.png';
 function Layout() {
   const [currentComponent, setCurrentComponent] = useState(0);
   const [isFixedMenu, setIsFixedMenu] = useState(window.innerWidth < 768);
-  const [isVisible, setIsVisible] = useState(window.innerWidth > 768);
+  const [isVisibleMenu, setIsVisibleMenu] = useState(window.innerWidth > 768);
   const [, setWidth] = useState(window.innerWidth);
 
   useEffect(() => {
@@ -16,30 +16,30 @@ function Layout() {
         const newWidth = window.innerWidth;
 
         if (newWidth < 768 && prev >= 768) {
-          setIsVisible(false);
+          setIsVisibleMenu(false);
           return newWidth;
         }
 
         if (newWidth >= 768 && prev < 768) {
-          setIsVisible(true);
+          setIsVisibleMenu(true);
           return newWidth;
         }
 
         return prev;
       });
 
-      if (window.innerWidth < 768) {
+      if (window.innerWidth < 768)
         setIsFixedMenu((prev) => (prev ? prev : true));
-      } else {
-        setIsFixedMenu((prev) => (!prev ? prev : false));
-      }
+      else setIsFixedMenu((prev) => (!prev ? prev : false));
     };
 
     // Add event listener for window resize
     window.addEventListener('resize', handleResize);
 
     // Cleanup event listener on component unmount
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   return (
@@ -50,7 +50,7 @@ function Layout() {
             <MenuIcon
               className="cursor-pointer text-white"
               onClick={() => {
-                setIsVisible((prev) => !prev);
+                setIsVisibleMenu((prev) => !prev);
               }}
             />
           )}
@@ -63,13 +63,13 @@ function Layout() {
           <Menu
             currentComponent={currentComponent}
             setCurrentComponent={setCurrentComponent}
-            isVisible={isVisible}
+            isVisibleMenu={isVisibleMenu}
             isFixedMenu={isFixedMenu}
-            setIsVisible={setIsVisible}
+            setIsVisibleMenu={setIsVisibleMenu}
           />
           <div
             className={`overflow-y-auto ${
-              isVisible && !isFixedMenu ? 'w-[calc(100%-192px)]' : 'w-full'
+              isVisibleMenu && !isFixedMenu ? 'w-[calc(100%-192px)]' : 'w-full'
             }`}
           >
             <Content currentComponent={currentComponent} />

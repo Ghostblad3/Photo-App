@@ -27,10 +27,10 @@ function DatabasesView() {
     resetSelectedTableInfoStore,
   } = useSelectedTableInfoStore((state) => state.actions);
   const { setUserData, setUserKeys, resetUserData } = useUserDataStore(
-    (state) => state.actions,
+    (state) => state.actions
   );
   const resetSearchStore = useSearchStore(
-    (state) => state.actions.resetSearchStore,
+    (state) => state.actions.resetSearchStore
   );
   const startTimeRef = useRef(0);
   const [showTable, setShowTable] = useState(false);
@@ -68,6 +68,7 @@ function DatabasesView() {
       resetSearchStore();
       resetUserData();
     };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -75,34 +76,45 @@ function DatabasesView() {
     setShowTable(false);
     resetSearchStore();
     resetUserData();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tableName]);
 
-  const queriesFetching = tableColumnNamesFetching || tableCountRecordsFetching || tableCountScreenshotsFetching || tableScreenshotsSizeFetching;
-  const queriesFailed = tableColumnNamesError || tableCountRecordsError || tableCountScreenshotsError || tableScreenshotsSizeError;
-  const allQueriesData = tableColumnNamesData && tableCountRecordsData && tableCountScreenshotsData && tableScreenshotsSizeData as object | undefined;
+  const queriesFetching =
+    tableColumnNamesFetching ||
+    tableCountRecordsFetching ||
+    tableCountScreenshotsFetching ||
+    tableScreenshotsSizeFetching;
+  const queriesFailed =
+    tableColumnNamesError ||
+    tableCountRecordsError ||
+    tableCountScreenshotsError ||
+    tableScreenshotsSizeError;
+  const allQueriesData =
+    tableColumnNamesData &&
+    tableCountRecordsData &&
+    tableCountScreenshotsData &&
+    (tableScreenshotsSizeData as object | undefined);
   const queriesSucceeded = !queriesFetching && allQueriesData;
 
   useEffect(() => {
     if (tableName === '' || queriesFetching) return;
 
     handleTableRecordsRequests();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    queriesFetching, queriesFailed, queriesSucceeded,
-  ]);
+  }, [queriesFetching, queriesFailed, queriesSucceeded]);
 
   useEffect(() => {
     handleTableRecordsRequest();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tableRecordsData, tableRecordsFetching, tableRecordsError]);
 
   async function handleTableRecordsRequests() {
     const timeTaken = Date.now() - startTimeRef.current;
 
-    if (timeTaken < 500) {
-      await delay(500, timeTaken);
-    }
+    if (timeTaken < 500) await delay(500, timeTaken);
 
     if (queriesFailed) return;
 
@@ -111,11 +123,12 @@ function DatabasesView() {
     setScreenshotNumber(tableCountScreenshotsData!.data.toString());
     setScreenshotAverageSize(tableScreenshotsSizeData!.data.toString());
   }
-  
+
   async function handleTableRecordsRequest() {
     if (tableRecordsError) {
       resetSearchStore();
       resetUserData();
+
       return;
     }
 
@@ -139,18 +152,17 @@ function DatabasesView() {
     <div className="flex min-h-full w-full flex-col">
       <TableNamesCombobox />
       {queriesFetching && <CardsSkeleton />}
-      {queriesSucceeded && tableName.length !== 0 && (
-        <Cards />
-      )}
+      {queriesSucceeded && tableName.length !== 0 && <Cards />}
       {queriesSucceeded && tableName.length !== 0 && (
         <Button className="m-2" onClick={() => throttledOperation()}>
           Show records
         </Button>
       )}
       {!queriesFetching && tableRecordsFetching && <VirtualizedTableSkeleton />}
-      {showTable && !tableRecordsFetching && tableRecordsData && tableName.length !== 0 && (
-        <VirtualizedTable />
-      )}
+      {showTable &&
+        !tableRecordsFetching &&
+        tableRecordsData &&
+        tableName.length !== 0 && <VirtualizedTable />}
     </div>
   );
 }

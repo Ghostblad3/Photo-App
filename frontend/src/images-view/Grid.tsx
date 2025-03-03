@@ -15,17 +15,17 @@ import { useCountScreenshots } from '@/queries/useCountScreenshots.ts';
 
 function Grid() {
   const selectedKeys = useAvailableKeysStore(
-    (state) => state.props.selectedKeys,
+    (state) => state.props.selectedKeys
   );
   const { setAvailableKeys } = useAvailableKeysStore((state) => state.actions);
   const tableName = useSelectedTableStore((state) => state.props.tableName);
   const userData = useUserDataStore((state) => state.props.userData);
   const userDataFiltered = useUserDataStore(
-    (state) => state.props.userDataFiltered,
+    (state) => state.props.userDataFiltered
   );
   const userKeys = useUserDataStore((state) => state.props.userKeys);
   const { setUserData, resetUserDataStore } = useUserDataStore(
-    (state) => state.actions,
+    (state) => state.actions
   );
   const { setSingleUserData } = useSingleUserStore((state) => state.actions);
   const [count, setCount] = useState(0);
@@ -45,12 +45,15 @@ function Grid() {
     return () => {
       resetUserDataStore();
     };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const queryData = countScreenshotsData && userScreenshotData;
-  const queryFetching = !queryData && (countScreenshotsFetching || userScreenshotFetching);
-  const queryError = !queryFetching && (countScreenshotsError || userScreenshotError);
+  const queryFetching =
+    !queryData && (countScreenshotsFetching || userScreenshotFetching);
+  const queryError =
+    !queryFetching && (countScreenshotsError || userScreenshotError);
 
   useEffect(() => {
     if (queryFetching || queryError) return;
@@ -81,11 +84,13 @@ function Grid() {
           </div>
         </>
       )}
-      {queryError && <div className="m-2.5 flex shrink-0">
-        <span className="mx-auto">
-          <Label className="text-xl">No data to display</Label>
-        </span>
-      </div>}
+      {queryError && (
+        <div className="m-2.5 flex shrink-0">
+          <span className="mx-auto">
+            <Label className="text-xl">No data to display</Label>
+          </span>
+        </div>
+      )}
       {queryData && (
         <>
           <SelectedKeysCombobox />

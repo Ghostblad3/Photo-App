@@ -61,15 +61,15 @@ function VirtualizedTable<TData, TValue>() {
     setUserIndex: setUpdateUserInfoUserIndex,
   } = useUpdateUserInfoStore((state) => state.actions);
   const { setProps } = useDeleteUserStore((state) => state.actions);
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   useEffect(() => {
     return () => {
       resetUserData();
     };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const [sorting, setSorting] = useState<SortingState>([]);
 
   const table = useReactTable({
     data: filteredUserData as TData[],

@@ -14,14 +14,14 @@ const aspect = 16 / 9;
 function ImageCrop() {
   const tableName = useAddNewScreenshotStore((state) => state.props.tableName);
   const userIdName = useAddNewScreenshotStore(
-    (state) => state.props.userIdName,
+    (state) => state.props.userIdName
   );
   const userId = useAddNewScreenshotStore((state) => state.props.userId);
   const screenshotAsBase64 = useAddNewScreenshotStore(
-    (state) => state.props.screenshotAsBase64,
+    (state) => state.props.screenshotAsBase64
   );
   const setShowDialog = useAddNewScreenshotStore(
-    (state) => state.actions.setShowDialog,
+    (state) => state.actions.setShowDialog
   );
   const { updateUser } = useUserDataStore((state) => state.actions);
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -34,13 +34,13 @@ function ImageCrop() {
   const inputRef = useRef('');
   const [buttonEnabled, setButtonEnabled] = useState(true);
 
-  const {
-    mutate,
-    data,
-    isIdle,
-    isPending,
-    progress,
-  } = useAddUserScreenshot(screenshotBlob!, userIdName, userId, inputRef.current, tableName);
+  const { mutate, data, isIdle, isPending, progress } = useAddUserScreenshot(
+    screenshotBlob!,
+    userIdName,
+    userId,
+    inputRef.current,
+    tableName
+  );
 
   function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
     if (aspect) {
@@ -66,20 +66,21 @@ function ImageCrop() {
     const image = imgRef.current;
     const previewCanvas = previewCanvasRef.current;
 
-    if (!image || !previewCanvas || !completedCrop) throw new Error('Crop canvas does not exist');
+    if (!image || !previewCanvas || !completedCrop)
+      throw new Error('Crop canvas does not exist');
 
     // This will size relative to the uploaded image
     // size. If you want to size according to what they
     // are looking at on screen, remove scaleX + scaleY
-    let scaleX = image.naturalWidth / image.width;
-    let scaleY = image.naturalHeight / image.height;
+    // let scaleX = image.naturalWidth / image.width;
+    // let scaleY = image.naturalHeight / image.height;
 
-    scaleX = 1;
-    scaleY = 1;
+    const scaleX = 1;
+    const scaleY = 1;
 
     const offscreen = new OffscreenCanvas(
       completedCrop.width * scaleX,
-      completedCrop.height * scaleY,
+      completedCrop.height * scaleY
     );
 
     const ctx = offscreen.getContext('2d');
@@ -95,7 +96,7 @@ function ImageCrop() {
       0,
       0,
       offscreen.width,
-      offscreen.height,
+      offscreen.height
     );
 
     const blob = await offscreen.convertToBlob({
@@ -119,7 +120,7 @@ function ImageCrop() {
           previewCanvasRef.current,
           completedCrop,
           scale,
-          rotate,
+          rotate
         );
       }
     };
@@ -138,14 +139,16 @@ function ImageCrop() {
       updateUser(userId, {
         has_screenshot: 'yes',
         screenshot_day: inputRef.current,
-        photo_timestamp: new Date(data!.photo_timestamp).toLocaleString('it-IT'),
+        photo_timestamp: new Date(data!.photo_timestamp).toLocaleString(
+          'it-IT'
+        ),
       });
 
       setShowDialog(false);
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
-
 
   return (
     <>
@@ -205,7 +208,7 @@ function ImageCrop() {
                   disabled={!screenshotAsBase64}
                   onChange={(e) =>
                     setRotate(
-                      Math.min(180, Math.max(-180, Number(e.target.value))),
+                      Math.min(180, Math.max(-180, Number(e.target.value)))
                     )
                   }
                 />
@@ -256,7 +259,7 @@ async function canvasPreview(
   canvas: HTMLCanvasElement,
   crop: PixelCrop,
   scale = 1,
-  rotate = 0,
+  rotate = 0
 ) {
   const ctx = canvas.getContext('2d');
 
@@ -310,7 +313,7 @@ async function canvasPreview(
     0,
     0,
     image.naturalWidth,
-    image.naturalHeight,
+    image.naturalHeight
   );
 
   ctx.restore();
