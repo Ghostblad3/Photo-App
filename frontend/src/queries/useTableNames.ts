@@ -17,17 +17,19 @@ const useTableNames = (hash: string) => {
 
       if (!response.ok) throw new Error('Failed to fetch table names');
 
-      const receivedObject: {
+      const {
+        status,
+        data,
+      }: {
         status: string;
         data: { name: string }[];
         error: { message: string };
       } = await response.json();
 
-      const { data } = receivedObject;
+      if (status === 'error') throw new Error('Error');
 
       return { data: data.map((item) => item.name) };
     },
-    retry: false,
   });
 
   return { data, isFetching, isError };

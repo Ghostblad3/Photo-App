@@ -16,7 +16,7 @@ function DeleteCheckBoxButton() {
   const { mutate, isPending, isSuccess } = useDeleteTable(selectedTableName);
 
   useEffect(() => {
-    if (isPending) removeSelectedTable();
+    if (isSuccess) removeSelectedTable();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuccess]);

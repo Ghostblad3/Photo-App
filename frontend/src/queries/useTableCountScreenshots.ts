@@ -8,7 +8,7 @@ const useTableCountScreenshots = (tableName: string) => {
         `http://localhost:3000/table/count-screenshots/${tableName}`,
         {
           cache: 'no-store',
-        },
+        }
       );
 
       if (!response.ok) {
@@ -24,14 +24,11 @@ const useTableCountScreenshots = (tableName: string) => {
         error: { message: string };
       } = await response.json();
 
-      if (status === 'error') {
-        throw new Error('Failed to fetch user screenshot count');
-      }
+      if (status === 'error') throw new Error('Error');
 
       return { data };
     },
     enabled: tableName !== '',
-    retry: false,
   });
 
   return { data, isFetching, isError };

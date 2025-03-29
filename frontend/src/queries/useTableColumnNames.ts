@@ -11,7 +11,7 @@ const useTableColumnNames = (tableName: string, _delay: number) => {
         `http://localhost:3000/table/table-column-names/${tableName}`,
         {
           cache: 'no-store',
-        },
+        }
       );
 
       if (!response.ok) {
@@ -30,14 +30,13 @@ const useTableColumnNames = (tableName: string, _delay: number) => {
 
       if (status === 'error') {
         await delay(_delay - (time - Date.now()));
-        throw new Error('Failed to fetch table column names');
+        throw new Error('Error');
       }
 
       await delay(_delay - (time - Date.now()));
       return { data };
     },
     enabled: tableName !== '',
-    retry: false,
   });
 
   return { data, isFetching, isError };

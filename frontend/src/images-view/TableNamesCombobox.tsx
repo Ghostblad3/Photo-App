@@ -50,6 +50,11 @@ function TableNamesCombobox() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, isFetching, isError]);
 
+  const values = tableNames.map((tableName) => ({
+    value: tableName.toLowerCase(),
+    label: tableName,
+  }));
+
   return (
     <div className="p-2.5">
       {isFetching && (
@@ -85,7 +90,7 @@ function TableNamesCombobox() {
                   className="w-full justify-between"
                 >
                   {tableName !== ''
-                    ? tableNames.find((item) => item === tableName)
+                    ? values.find((item) => item.value === tableName)?.label
                     : 'Select table...'}
                   <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
                 </Button>
@@ -95,13 +100,15 @@ function TableNamesCombobox() {
                   <CommandInput placeholder="Search table..." />
                   <CommandEmpty>No table found.</CommandEmpty>
                   <CommandGroup>
-                    {tableNames.map((item) => (
+                    {values.map((item) => (
                       <CommandItem
-                        key={item}
-                        value={item}
+                        key={item.label}
+                        value={item.label}
                         onSelect={(currentValue) => {
                           setTableName(
-                            currentValue === tableName ? '' : currentValue
+                            currentValue === tableName.toLowerCase()
+                              ? ''
+                              : currentValue
                           );
 
                           setOpen(false);
@@ -110,10 +117,12 @@ function TableNamesCombobox() {
                         <Check
                           className={cn(
                             'mr-2 h-4 w-4',
-                            tableName === item ? 'opacity-100' : 'opacity-0'
+                            tableName === item.label
+                              ? 'opacity-100'
+                              : 'opacity-0'
                           )}
                         />
-                        {item}
+                        {item.label}
                       </CommandItem>
                     ))}
                   </CommandGroup>

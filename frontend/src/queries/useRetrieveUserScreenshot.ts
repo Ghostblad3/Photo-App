@@ -1,9 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { delay } from '@/utils/delay.ts';
 
-const useRetrieveUserScreenshot = (tableName: string, hash: string, keyName: string, userInfo: {
-  [p: string]: string
-}) => {
+const useRetrieveUserScreenshot = (
+  tableName: string,
+  hash: string,
+  keyName: string,
+  userInfo: {
+    [p: string]: string;
+  }
+) => {
   const { data, isFetching, isError } = useQuery({
     queryKey: ['screenshot', hash],
     queryFn: async () => {
@@ -13,7 +18,7 @@ const useRetrieveUserScreenshot = (tableName: string, hash: string, keyName: str
         `http://localhost:3000/screenshot/retrieve-user-screenshot/${keyName}/${userInfo[keyName]}/${tableName}`,
         {
           cache: 'no-store',
-        },
+        }
       );
 
       if (!response.ok) {
@@ -24,17 +29,19 @@ const useRetrieveUserScreenshot = (tableName: string, hash: string, keyName: str
 
       if (timeDiff < 500) await delay(500, timeDiff);
 
-      const receivedObject: {
+      const {
+        status,
+        data,
+      }: {
         status: string;
         data: string;
         error: { message: string };
       } = await response.json();
 
-      const { data } = receivedObject;
+      if (status === 'error') throw new Error('Error');
 
       return { data };
     },
-    retry: false,
   });
 
   return { data, isFetching, isError };

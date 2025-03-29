@@ -16,7 +16,6 @@ const ScreenshotDialog = memo(({ children }: { children: ReactNode }) => {
   const availableKeys = useAvailableKeysStore(
     (state) => state.props.availableKeys
   );
-
   const { resetSingleUserDataStore } = useSingleUserStore(
     (state) => state.actions
   );

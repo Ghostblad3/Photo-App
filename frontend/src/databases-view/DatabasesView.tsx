@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-//import { useOperationStore } from '../global-stores/operationStore';
 import { VirtualizedTable } from './VirtualizedTable';
 import { TableNamesCombobox } from './TableNamesCombobox';
 import { Cards } from './Cards';
@@ -90,11 +89,10 @@ function DatabasesView() {
     tableCountRecordsError ||
     tableCountScreenshotsError ||
     tableScreenshotsSizeError;
-  const allQueriesData =
-    tableColumnNamesData &&
+  const allQueriesData = (tableColumnNamesData &&
     tableCountRecordsData &&
     tableCountScreenshotsData &&
-    (tableScreenshotsSizeData as object | undefined);
+    tableScreenshotsSizeData) as object | undefined;
   const queriesSucceeded = !queriesFetching && allQueriesData;
 
   useEffect(() => {

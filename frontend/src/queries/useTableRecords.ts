@@ -11,35 +11,49 @@ const useTableRecords = (tableName: string) => {
         `http://localhost:3000/record/get-user-data/${tableName}`,
         {
           cache: 'no-store',
-        },
+        }
       );
 
       if (!firstRequestResponse.ok) {
         throw new Error('Failed to fetch user data');
       }
 
-      let receivedObject: {
+      const {
+        status,
+        data,
+      }: {
         status: string;
         data: { [key: string]: string }[];
         error: { message: string };
       } = await firstRequestResponse.json();
 
-      const { data } = receivedObject;
+      if (status === 'error') {
+        throw new Error('Error');
+      }
 
       const secondRequestResponse = await fetch(
         `http://localhost:3000/screenshot/retrieve-user-data-with-screenshots/${tableName}`,
         {
           cache: 'no-store',
-        },
+        }
       );
 
       if (!secondRequestResponse.ok) {
         throw new Error('Failed to fetch user data with screenshots');
       }
 
-      receivedObject = await secondRequestResponse.json();
+      const {
+        status: secondRequestStatus,
+        data: secondRequestData,
+      }: {
+        status: string;
+        data: { [key: string]: string }[];
+        error: { message: string };
+      } = await secondRequestResponse.json();
 
-      const { data: secondRequestData } = receivedObject;
+      if (secondRequestStatus === 'error') {
+        throw new Error('Error');
+      }
 
       const userDataUpdated = data;
       const firstUser = data[0];
@@ -49,14 +63,14 @@ const useTableRecords = (tableName: string) => {
 
       userDataUpdated.forEach((user) => {
         const currUserWithScreenshotData = secondRequestData.find(
-          (u) => u[idKey] === user[idKey],
+          (u) => u[idKey] === user[idKey]
         );
 
         if (currUserWithScreenshotData) {
           user.has_screenshot = 'yes';
           user.screenshot_day = currUserWithScreenshotData.dayNumber;
           user.photo_timestamp = new Date(
-            currUserWithScreenshotData.photo_timestamp,
+            currUserWithScreenshotData.photo_timestamp
           ).toLocaleString('it-IT');
         } else {
           user.has_screenshot = 'no';
@@ -67,9 +81,7 @@ const useTableRecords = (tableName: string) => {
 
       const timeTaken = Date.now() - time;
 
-      if (timeTaken < 500) {
-        await delay(500, timeTaken);
-      }
+      if (timeTaken < 500) await delay(500, timeTaken);
 
       return { data: userDataUpdated };
     },

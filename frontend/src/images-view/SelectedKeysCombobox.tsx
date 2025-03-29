@@ -7,15 +7,16 @@ import {
   Command,
   CommandEmpty,
   CommandGroup,
+  CommandInput,
   CommandItem,
+  CommandList,
 } from '@/components/ui/command';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 
 function SelectedKeysCombobox() {
   const selectedKeys = useAvailableKeysStore(
@@ -26,7 +27,6 @@ function SelectedKeysCombobox() {
   );
   const { setAvailableKeys, setSelectedKeys, resetAvailableKeysStore } =
     useAvailableKeysStore((state) => state.actions);
-
   const [open, setOpen] = useState(false);
   const [values, setValues] = useState<{ value: string; label: string }[]>([]);
 
@@ -40,7 +40,7 @@ function SelectedKeysCombobox() {
 
   useEffect(() => {
     const newValues = [...new Set(availableKeys)].map((key) => {
-      return { value: key.toLocaleLowerCase(), label: key };
+      return { value: key.toLowerCase(), label: key };
     });
 
     const temp = [...selectedKeys];
@@ -57,125 +57,146 @@ function SelectedKeysCombobox() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [availableKeys]);
 
+  function handleReorder(key: string, direction: 'up' | 'down') {
+    const index = availableKeys.indexOf(key);
+    if (
+      (direction === 'up' && index === 0) ||
+      (direction === 'down' && index === availableKeys.length - 1)
+    )
+      return;
+
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    const newKeys = [...availableKeys];
+    const temp = newKeys[newIndex];
+    newKeys[newIndex] = key;
+    newKeys[index] = temp;
+
+    setAvailableKeys(newKeys);
+  }
+
+  function handleSelect(key: string) {
+    if (selectedKeys.includes(key)) {
+      setSelectedKeys(selectedKeys.filter((k) => k !== key));
+    } else {
+      const selectedKeysOrdered = [...selectedKeys, key].sort((a, b) => {
+        return (
+          values.findIndex((item) => item.label === a) -
+          values.findIndex((item) => item.label === b)
+        );
+      });
+      setSelectedKeys(selectedKeysOrdered);
+    }
+    // Keep the popover open for multiple selections
+  }
+
+  function handleRemove(key: string) {
+    setSelectedKeys(selectedKeys.filter((k) => k !== key));
+  }
+
   return (
-    <div className="flex flex-col p-2.5">
+    <div className="space-y-4 p-3">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="max-w-full justify-between"
+            className="w-full justify-between border-slate-300 bg-white transition-colors hover:bg-slate-50"
           >
-            {'Select fields...'}
+            <span className="text-slate-600">
+              {selectedKeys.length > 0
+                ? `${selectedKeys.length} field${selectedKeys.length > 1 ? 's' : ''} selected`
+                : 'Select fields...'}
+            </span>
             <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="p-0">
+        <PopoverContent className="w-[300px] border-slate-200 p-0 shadow-lg">
           <Command shouldFilter={true}>
-            {/* <CommandInput placeholder="Search fields..." /> */}
-            <CommandEmpty>No field found.</CommandEmpty>
-            <ScrollArea className="max-h-[18.75rem]">
-              <CommandGroup>
-                {values.map((item) => (
-                  <div key={item.label} className="flex items-center">
-                    <CommandItem
-                      className="w-full"
-                      value={item.label}
-                      onSelect={() => {
-                        if (
-                          selectedKeys.some((selKey) => selKey === item.label)
-                        ) {
-                          setSelectedKeys(
-                            selectedKeys.filter(
-                              (selKey) => selKey !== item.label
-                            )
-                          );
-
-                          return;
-                        }
-
-                        const selectedKeysOrdered = [
-                          ...selectedKeys,
-                          item.label,
-                        ].sort((a, b) => {
-                          return (
-                            values.findIndex((item) => item.label === a) -
-                            values.findIndex((item) => item.label === b)
-                          );
-                        });
-
-                        setSelectedKeys(selectedKeysOrdered);
-                      }}
+            <CommandInput
+              placeholder="Search fields..."
+              className="border-b-0"
+            />
+            <div className="max-h-[250px] overflow-y-auto">
+              <CommandList>
+                <CommandEmpty className="py-6 text-center text-sm text-slate-500">
+                  No field found.
+                </CommandEmpty>
+                <CommandGroup className="p-1.5">
+                  {values.map((item) => (
+                    <div
+                      key={item.label}
+                      className="mb-1 flex items-center last:mb-0"
                     >
-                      <Check
+                      <CommandItem
                         className={cn(
-                          'mr-2 h-4 w-4',
-                          selectedKeys.some((selKey) => selKey === item.label)
-                            ? 'opacity-100'
-                            : 'opacity-0'
+                          'flex-1 rounded-md transition-colors',
+                          selectedKeys.includes(item.label)
+                            ? 'bg-slate-100 text-slate-900'
+                            : 'hover:bg-slate-50'
                         )}
-                      />
-                      {item.label}
-                    </CommandItem>
-                    <div className="flex">
-                      <ArrowUp
-                        className="size-4 text-slate-400"
-                        onClick={() => {
-                          const index = availableKeys.indexOf(item.label);
-
-                          if (index === 0) return;
-
-                          const otherKey = availableKeys[index - 1];
-                          const newKeys = [...availableKeys];
-
-                          newKeys[index - 1] = item.label;
-                          newKeys[index] = otherKey;
-
-                          setAvailableKeys(newKeys);
-                        }}
-                      />
-                      <ArrowDown
-                        className="size-4 text-slate-400"
-                        onClick={() => {
-                          const index = availableKeys.indexOf(item.label);
-
-                          if (index === availableKeys.length - 1) return;
-
-                          const otherKey = availableKeys[index + 1];
-                          const newKeys = [...availableKeys];
-
-                          newKeys[index + 1] = item.label;
-                          newKeys[index] = otherKey;
-
-                          setAvailableKeys(newKeys);
-                        }}
-                      />
+                        value={item.label}
+                        onSelect={() => handleSelect(item.label)}
+                      >
+                        <div
+                          className={cn(
+                            'mr-2 flex h-5 w-5 items-center justify-center rounded-sm border border-slate-300',
+                            selectedKeys.includes(item.label)
+                              ? 'bg-primary border-primary'
+                              : 'opacity-70'
+                          )}
+                        >
+                          {selectedKeys.includes(item.label) && (
+                            <Check className="size-3.5 text-primary-foreground" />
+                          )}
+                        </div>
+                        <span className="font-medium">{item.label}</span>
+                      </CommandItem>
+                      <div className="mx-1 flex flex-col">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-3.5 rounded-full hover:bg-slate-100"
+                          onClick={() => handleReorder(item.label, 'up')}
+                        >
+                          <ArrowUp className="size-3 text-slate-500" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-3.5 rounded-full hover:bg-slate-100"
+                          onClick={() => handleReorder(item.label, 'down')}
+                        >
+                          <ArrowDown className="size-3 text-slate-500" />
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </CommandGroup>
-            </ScrollArea>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </div>
           </Command>
         </PopoverContent>
       </Popover>
-      {selectedKeys.length !== 0 && (
-        <div className="mt-5 flex flex-wrap gap-2">
+      {selectedKeys.length > 0 && (
+        <div className="flex flex-wrap gap-2 duration-300 animate-in fade-in">
           {selectedKeys.map((key) => (
-            <div
+            <Badge
               key={key}
-              className="flex items-center gap-2 rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700"
+              variant="secondary"
+              className="group gap-1.5 bg-slate-100 py-1.5 pl-3 pr-2 text-slate-800 transition-all hover:bg-slate-200"
             >
-              <Label className="pb-1 pl-2">{key}</Label>
-              <X
-                className="size-4 hover:cursor-pointer"
-                onClick={() => {
-                  setSelectedKeys(
-                    selectedKeys.filter((selKey) => selKey !== key)
-                  );
-                }}
-              />
-            </div>
+              <span className="text-sm font-medium">{key}</span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-4 rounded-full p-0 hover:bg-slate-300 hover:text-slate-900"
+                onClick={() => handleRemove(key)}
+              >
+                <X className="size-3" />
+                <span className="sr-only">Remove {key}</span>
+              </Button>
+            </Badge>
           ))}
         </div>
       )}

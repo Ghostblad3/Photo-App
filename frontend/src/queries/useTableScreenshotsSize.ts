@@ -8,7 +8,7 @@ const useTableScreenshotsSize = (tableName: string) => {
         `http://localhost:3000/table/screenshots-size/${tableName}`,
         {
           cache: 'no-store',
-        },
+        }
       );
 
       if (!response.ok) {
@@ -24,14 +24,12 @@ const useTableScreenshotsSize = (tableName: string) => {
         error: { message: string };
       } = await response.json();
 
-      if (status === 'error') {
+      if (status === 'error')
         throw new Error('Failed to fetch screenshots size');
-      }
 
       return { data };
     },
     enabled: tableName !== '',
-    retry: false,
   });
 
   return { data, isFetching, isError };

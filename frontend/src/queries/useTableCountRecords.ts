@@ -8,7 +8,7 @@ const useTableCountRecords = (tableName: string) => {
         `http://localhost:3000/table/count-records/${tableName}`,
         {
           cache: 'no-store',
-        },
+        }
       );
 
       if (!response.ok) {
@@ -24,18 +24,14 @@ const useTableCountRecords = (tableName: string) => {
         error: { message: string };
       } = await response.json();
 
-      if (status === 'error') {
-        throw new Error('Failed to fetch record count');
-      }
+      if (status === 'error') throw new Error('Error');
 
       return { data };
     },
     enabled: tableName !== '',
-    retry: false,
   });
 
   return { data, isError, isFetching };
 };
-
 
 export { useTableCountRecords };

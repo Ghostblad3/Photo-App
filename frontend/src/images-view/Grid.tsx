@@ -17,7 +17,8 @@ function Grid() {
   const selectedKeys = useAvailableKeysStore(
     (state) => state.props.selectedKeys
   );
-  const { setAvailableKeys } = useAvailableKeysStore((state) => state.actions);
+  const { setAvailableKeys, setSelectedKeys, resetAvailableKeysStore } =
+    useAvailableKeysStore((state) => state.actions);
   const tableName = useSelectedTableStore((state) => state.props.tableName);
   const userData = useUserDataStore((state) => state.props.userData);
   const userDataFiltered = useUserDataStore(
@@ -62,11 +63,13 @@ function Grid() {
 
     if (userScreenshotData!.data.length === 0) {
       resetUserDataStore();
+      resetAvailableKeysStore();
       return;
     }
 
     setUserData(userScreenshotData!.data!);
     setAvailableKeys(userScreenshotData!.keys!);
+    setSelectedKeys([]);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryData, queryFetching, queryError]);

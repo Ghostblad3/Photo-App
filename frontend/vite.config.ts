@@ -8,6 +8,7 @@ const profiling = isProduction && {
   'react-dom/client': 'react-dom/profiling',
 };
 
+// eslint-disable-next-line import/no-default-export
 export default defineConfig({
   plugins: [react()],
   esbuild: {
@@ -20,4 +21,3 @@ export default defineConfig({
     },
   },
 });
-// vite.config.ts

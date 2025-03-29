@@ -4,22 +4,25 @@ const useCountScreenshots = (tableName: string) => {
   const { data, isFetching, isError } = useQuery({
     queryKey: ['user-count-screenshots', tableName],
     queryFn: async () => {
-      const countResponse = await fetch(
+      const response = await fetch(
         `http://localhost:3000/table/count-screenshots/${tableName}`,
         {
           cache: 'no-store',
-        },
+        }
       );
 
-      if (!countResponse.ok) throw new Error('Failed to fetch user data');
+      if (!response.ok) throw new Error('Failed to fetch user data');
 
-      const countResult: {
+      const {
+        status,
+        data,
+      }: {
         status: string;
         data: number;
         error: { message: string };
-      } = await countResponse.json();
+      } = await response.json();
 
-      const { data } = countResult;
+      if (status === 'error') throw new Error('Error');
 
       return { data };
     },

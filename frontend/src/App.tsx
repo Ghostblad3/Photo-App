@@ -8,6 +8,7 @@ const queryClient = new QueryClient({
       refetchOnWindowFocus: false, // Disable refetch on window focus
       refetchOnReconnect: false, // Disable refetch on network reconnect
       refetchInterval: false, // Disable automatic refetch interval
+      retry: false, // Disables retries globally
     },
   },
 });

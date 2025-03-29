@@ -1,4 +1,6 @@
 import type { Config } from 'tailwindcss';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 import animate from 'tailwindcss-animate';
 
 const config = {

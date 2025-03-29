@@ -10,7 +10,7 @@ const useDeleteTable = (tableName: string) => {
         `http://localhost:3000/table/delete/${tableName}`,
         {
           method: 'DELETE',
-        },
+        }
       );
 
       const timeDiff = Date.now() - time;
@@ -18,9 +18,6 @@ const useDeleteTable = (tableName: string) => {
       if (timeDiff < 500) await delay(500, timeDiff);
 
       if (!response.ok) throw new Error('Failed to delete table');
-
-      //removeSelectedTable();
-      //setDeleteTable(false);
     },
   });
 

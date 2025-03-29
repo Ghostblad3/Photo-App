@@ -2,7 +2,13 @@ import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 import { delay } from '@/utils/delay.ts';
 
-const useAddUserScreenshot = (screenshotBlob: Blob, userIdName: string, userId: string, dayNumber: string, tableName: string) => {
+const useAddUserScreenshot = (
+  screenshotBlob: Blob,
+  userIdName: string,
+  userId: string,
+  dayNumber: string,
+  tableName: string
+) => {
   const [progress, setProgress] = useState(0);
   const { mutate, data, isIdle, isPending, isSuccess, isError } = useMutation({
     mutationFn: async () => {
@@ -21,7 +27,7 @@ const useAddUserScreenshot = (screenshotBlob: Blob, userIdName: string, userId: 
         req.open(
           'POST',
           'http://localhost:3000/screenshot/add-user-screenshot',
-          true,
+          true
         );
         req.setRequestHeader('Content-Type', 'application/json');
 
@@ -52,7 +58,7 @@ const useAddUserScreenshot = (screenshotBlob: Blob, userIdName: string, userId: 
               type: 'Buffer',
               data: array,
             },
-          }),
+          })
         );
       });
 
@@ -76,7 +82,6 @@ const useAddUserScreenshot = (screenshotBlob: Blob, userIdName: string, userId: 
 
       return data;
     },
-    retry: false,
   });
 
   return { mutate, data, isIdle, isPending, isSuccess, isError, progress };

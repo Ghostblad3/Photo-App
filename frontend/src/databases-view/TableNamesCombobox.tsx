@@ -56,11 +56,16 @@ function TableNamesCombobox() {
     if (currentValue !== selectedTableName) resetSearchStore();
 
     setSelectedTableName(
-      currentValue === selectedTableName ? '' : currentValue
+      currentValue === selectedTableName.toLowerCase() ? '' : currentValue
     );
 
     setOpen(false);
   }
+
+  const values = tableNames.map((tableName) => ({
+    value: tableName.toLowerCase(),
+    label: tableName,
+  }));
 
   return (
     <div className="w-full space-y-12 p-2.5">
@@ -87,7 +92,8 @@ function TableNamesCombobox() {
                   disabled={tableNames.length === 0}
                 >
                   {selectedTableName !== ''
-                    ? tableNames.find((item) => item === selectedTableName)
+                    ? values.find((item) => item.value === selectedTableName)
+                        ?.label
                     : 'Select table...'}
                   <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
                 </Button>
@@ -99,21 +105,21 @@ function TableNamesCombobox() {
                   <ScrollArea className="max-h-[18.75rem]">
                     <div>
                       <CommandGroup>
-                        {tableNames.map((item) => (
+                        {values.map((item) => (
                           <CommandItem
-                            key={item}
-                            value={item}
+                            key={item.label}
+                            value={item.label}
                             onSelect={comboBoxOnSelect}
                           >
                             <Check
                               className={cn(
                                 'mr-2 h-4 w-4',
-                                selectedTableName === item
+                                selectedTableName === item.label
                                   ? 'opacity-100'
                                   : 'opacity-0'
                               )}
                             />
-                            {item}
+                            {item.label}
                           </CommandItem>
                         ))}
                       </CommandGroup>

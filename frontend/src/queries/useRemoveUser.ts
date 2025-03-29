@@ -23,7 +23,6 @@ const useRemoveUser = (
 
       if (!response.ok) throw new Error('Failed to delete user');
     },
-    retry: false,
   });
 
   return { mutate, isIdle, isPending, isSuccess, isError };

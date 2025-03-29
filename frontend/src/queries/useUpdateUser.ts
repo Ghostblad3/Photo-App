@@ -24,7 +24,6 @@ const useUpdateUser = (tableName: string, userId: string) => {
 
       if (!result.ok) throw new Error('Failed to update user information');
     },
-    retry: false,
   });
 
   return { mutate, isPending, isSuccess, isError };

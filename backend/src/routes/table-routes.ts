@@ -14,12 +14,12 @@ tableRouter.get("/names", (_, res: Response) => {
     .prepare(
       `select name
       from sqlite_master
-      where type='table';`
+      where type='table';`,
     )
     .all() as { name: string }[];
 
   data = data.filter(
-    (item) => item.name !== "sqlite_sequence" && !item.name.endsWith("_photos")
+    (item) => item.name !== "sqlite_sequence" && !item.name.endsWith("_photos"),
   );
 
   return res
@@ -33,7 +33,7 @@ tableRouter.post(
     z.object({
       tableName: tableNameType,
       columnNames: columnNamesType,
-    })
+    }),
   ),
   async (req: Request, res: Response, next: NextFunction) => {
     const {
@@ -83,7 +83,7 @@ tableRouter.post(
     return res
       .status(201)
       .send({ status: "success", data: {}, error: { message: "" } });
-  }
+  },
 );
 
 tableRouter.delete(
@@ -91,7 +91,7 @@ tableRouter.delete(
   schemaValidator(
     z.object({
       tableName: tableNameType,
-    })
+    }),
   ),
   async (req: Request, res: Response, next: NextFunction) => {
     const { tableName } = req.params as { tableName: string };
@@ -102,7 +102,7 @@ tableRouter.delete(
       result = sqlite
         .prepare(
           `select path
-          from "${tableName}_photos"`
+          from "${tableName}_photos"`,
         )
         .all() as { path: string }[];
     } catch (e) {
@@ -138,7 +138,7 @@ tableRouter.delete(
     return res
       .status(200)
       .send({ status: "success", data: {}, error: { message: "" } });
-  }
+  },
 );
 
 tableRouter.get(
@@ -146,7 +146,7 @@ tableRouter.get(
   schemaValidator(
     z.object({
       tableName: tableNameType,
-    })
+    }),
   ),
   (req: Request, res: Response) => {
     const { tableName } = req.params as { tableName: string };
@@ -154,7 +154,7 @@ tableRouter.get(
     const result = sqlite
       .prepare(
         `select count(*) as count 
-        from "${tableName}"`
+        from "${tableName}"`,
       )
       .get() as { count: number };
 
@@ -165,7 +165,7 @@ tableRouter.get(
       data: count,
       error: { message: "" },
     });
-  }
+  },
 );
 
 tableRouter.get(
@@ -173,7 +173,7 @@ tableRouter.get(
   schemaValidator(
     z.object({
       tableName: tableNameType,
-    })
+    }),
   ),
   (req: Request, res: Response) => {
     const { tableName } = req.params as { tableName: string };
@@ -181,7 +181,7 @@ tableRouter.get(
     const result = sqlite
       .prepare(
         `select count(*) as count
-        from "${tableName}_photos"`
+        from "${tableName}_photos"`,
       )
       .get() as { count: number };
 
@@ -192,7 +192,7 @@ tableRouter.get(
       data: count,
       error: { message: "" },
     });
-  }
+  },
 );
 
 tableRouter.get(
@@ -200,7 +200,7 @@ tableRouter.get(
   schemaValidator(
     z.object({
       tableName: tableNameType,
-    })
+    }),
   ),
   async (req: Request, res: Response, next: NextFunction) => {
     const { tableName } = req.params as { tableName: string };
@@ -212,7 +212,7 @@ tableRouter.get(
         .prepare(
           `select name
           from sqlite_master
-          where type='table';`
+          where type='table';`,
         )
         .all() as { name: string }[];
     } catch (e) {
@@ -232,7 +232,7 @@ tableRouter.get(
     try {
       await fs.access(`./screenshots/${tableName}`);
       averageBytes = await getAverageScreenshotSizeInDirectory(
-        `./screenshots/${tableName}`
+        `./screenshots/${tableName}`,
       );
     } catch (e) {
       return next(new Error((e as Error).toString()));
@@ -243,7 +243,7 @@ tableRouter.get(
       data: averageBytes ? averageBytes : 0,
       error: { message: "" },
     });
-  }
+  },
 );
 
 tableRouter.get(
@@ -251,7 +251,7 @@ tableRouter.get(
   schemaValidator(
     z.object({
       tableName: tableNameType,
-    })
+    }),
   ),
   (req: Request, res: Response) => {
     const { tableName } = req.params as { tableName: string };
@@ -259,7 +259,7 @@ tableRouter.get(
     const result = sqlite
       .prepare(
         `select name
-        from pragma_table_info(?)`
+        from pragma_table_info(?)`,
       )
       .all(tableName) as { name: string }[];
 
@@ -276,7 +276,7 @@ tableRouter.get(
       data: columnNames,
       error: { message: "" },
     });
-  }
+  },
 );
 
 tableRouter.all("/*", (_: Request, res: Response) => {
