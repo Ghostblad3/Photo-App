@@ -84,32 +84,26 @@ app.all("/*", (_: Request, res: Response) => {
 let server: Server<typeof IncomingMessage, typeof ServerResponse> | undefined =
   undefined;
 
-(async () => {
-  if (process.env.ENVIRONMENT === "TEST") {
-    return;
-  }
+begin();
+
+async function begin() {
+  if (process.env.ENVIRONMENT === "TEST") return;
 
   await startServer();
-})();
+}
 
 async function startServer() {
-  return await new Promise<void>((resolve, _) => {
-    server =
-      server ||
-      app.listen(process.env.PORT || 3000, async () => {
-        console.log(
-          `Server is running at http://localhost:${process.env.PORT || 3000}!`,
-        );
+  if (!server) {
+    server = app.listen(process.env.PORT ?? 3000, async () => {
+      console.log(
+        `Server is running at http://localhost:${process.env.PORT ?? 3000}!`,
+      );
 
-        try {
-          await fs.access("./screenshots");
-        } catch (e) {
-          await fs.mkdir("./screenshots");
-        }
+      await fs.mkdir("./screenshots", { recursive: true });
+    });
+  }
 
-        resolve();
-      });
-  });
+  return server;
 }
 
 async function closeServer() {

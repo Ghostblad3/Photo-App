@@ -2,7 +2,7 @@ class ResponseHandler<T> {
   constructor(
     private code: number,
     private error: string | null,
-    private data: T
+    private data: T,
   ) {}
 
   getCode() {
@@ -13,7 +13,7 @@ class ResponseHandler<T> {
     return {
       status: this.error ? "error" : "success",
       data: this.data,
-      error: { message: this.error || "" },
+      error: { message: this.error ?? "" },
     };
   }
 }
