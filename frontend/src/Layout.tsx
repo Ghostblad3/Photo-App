@@ -48,6 +48,7 @@ function Layout() {
         <div className="flex h-11 w-full shrink-0 items-center gap-2.5 bg-[#0d1b2a] pl-4">
           {isFixedMenu && (
             <MenuIcon
+              data-testid="menu-icon"
               className="cursor-pointer text-white"
               onClick={() => {
                 setIsVisibleMenu((prev) => !prev);
