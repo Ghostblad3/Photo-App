@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useCreateTable } from '@/queries/useCreateTable.ts';
 import { useAddUsers } from '@/queries/useAddUsers.ts';
+import { LoadingSpinner } from '@/global-components/SpinningLoader.tsx';
 
 function CreateTable() {
   const displayableData = useDataStore((state) => state.props.displayableData);
@@ -90,7 +91,9 @@ function CreateTable() {
 
     setInputErrors(inputErrors);
 
-    if (!inputErrors.typeOne && inputErrors.typeTwo && inputErrors.typeThree) {
+    if (
+      !(inputErrors.typeOne && inputErrors.typeTwo && inputErrors.typeThree)
+    ) {
       setTableName(inputRef.current);
     }
   }
@@ -109,47 +112,53 @@ function CreateTable() {
   }
 
   return (
-    <div className="w-full space-y-12 rounded-md border p-5">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold decoration-slate-100">
-          Create New Table
-        </h1>
-        <p className="text-slate-500">Enter a name for your new table.</p>
-      </div>
-
-      <div className="flex flex-col space-y-2.5">
-        <Label htmlFor="name" className="font-bold">
-          Table Name
-        </Label>
-        <Input id="name" placeholder="Table name" onChange={inputHandler} />
-        {inputErrors.typeOne && (
-          <div className="flex gap-2.5">
-            <CircleAlert className="shrink-0 text-red-500" />
-            <p className="text-red-500">
-              The table name must be between 5 and 20 characters.
-            </p>
-          </div>
-        )}
-        {inputErrors.typeTwo && (
-          <div className="flex gap-2.5">
-            <CircleAlert className="shrink-0 text-red-500" />
-            <p className="text-red-500">
-              The table name must not end with "_photos".
-            </p>
-          </div>
-        )}
-        {inputErrors.typeThree && (
-          <div className="flex gap-2.5">
-            <CircleAlert className="shrink-0 text-red-500" />
-            <p className="text-red-500">
-              The table name must contain only letters, numbers, and
-              underscores. It can only start with letters and underscores.
-            </p>
-          </div>
-        )}
-        <Button onClick={buttonHandler} disabled={tableName === ''}>
-          Create table
-        </Button>
+    <div>
+      {createUsersPending && (
+        <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
+          <LoadingSpinner size={32} />
+        </div>
+      )}
+      <div className="w-full space-y-12 rounded-md border p-5">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold decoration-slate-100">
+            Create New Table
+          </h1>
+          <p className="text-slate-500">Enter a name for your new table.</p>
+        </div>
+        <div className="flex flex-col space-y-2.5">
+          <Label htmlFor="name" className="font-bold">
+            Table Name
+          </Label>
+          <Input id="name" placeholder="Table name" onChange={inputHandler} />
+          {inputErrors.typeOne && (
+            <div className="flex gap-2.5">
+              <CircleAlert className="shrink-0 text-red-500" />
+              <p className="text-red-500">
+                The table name must be between 5 and 20 characters.
+              </p>
+            </div>
+          )}
+          {inputErrors.typeTwo && (
+            <div className="flex gap-2.5">
+              <CircleAlert className="shrink-0 text-red-500" />
+              <p className="text-red-500">
+                The table name must not end with "_photos".
+              </p>
+            </div>
+          )}
+          {inputErrors.typeThree && (
+            <div className="flex gap-2.5">
+              <CircleAlert className="shrink-0 text-red-500" />
+              <p className="text-red-500">
+                The table name must contain only letters, numbers, and
+                underscores. It can only start with letters and underscores.
+              </p>
+            </div>
+          )}
+          <Button onClick={buttonHandler} disabled={tableName === ''}>
+            Create table
+          </Button>
+        </div>
       </div>
     </div>
   );

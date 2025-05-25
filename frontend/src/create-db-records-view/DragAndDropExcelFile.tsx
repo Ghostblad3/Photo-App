@@ -1,12 +1,12 @@
-import { useEffect, useRef, DragEvent, ChangeEvent } from 'react';
+import { useEffect, useRef, DragEvent, ChangeEvent, useState } from 'react';
 import { read, utils } from 'xlsx';
 import { z } from 'zod';
 import { useFieldsStore } from './stores/fieldsStore';
 import { useDataStore } from './stores/dataStore';
 import { useNavigationStore } from './stores/navigationStore';
 import { Button } from '@/components/ui/button';
-import { useOperationStore } from '@/global-stores/operationStore';
-import { delay } from '@/utils/delay';
+import { LoadingSpinner } from '@/global-components/SpinningLoader.tsx';
+import { delay } from '@/utils/delay.ts';
 
 const usersType = z
   .array(
@@ -95,9 +95,7 @@ function DragAndDropExcelFile() {
     (state) => state.actions
   );
   const allowLeft = useNavigationStore((state) => state.props.allowLeft);
-  const { addOperation, changeOperationStatus, removeOperation } =
-    useOperationStore((state) => state.actions);
-
+  const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -133,20 +131,11 @@ function DragAndDropExcelFile() {
   }
 
   function fileReader(file: File) {
-    const hash = crypto.randomUUID();
-
-    addOperation(
-      hash,
-      'pending',
-      'create',
-      'Creating users from the excel file',
-      true
-    );
+    setLoading(true);
+    const start = Date.now();
 
     const reader = new FileReader();
     reader.onload = async (e) => {
-      const time = Date.now();
-
       const workbook = read(e?.target?.result, { type: 'string' });
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
@@ -163,35 +152,20 @@ function DragAndDropExcelFile() {
 
       const result = usersType.safeParse(json);
 
-      const timeDiff = Date.now() - time;
+      const elapseTime = Date.now() - start;
 
-      if (timeDiff < 2000) {
-        await delay(2000, timeDiff);
-      }
+      if (elapseTime < 500) await delay(500, elapseTime);
 
       if (!result.success) {
-        changeOperationStatus(
-          hash,
-          'error',
-          'Failed to create users due to parse error in the excel file',
-          true
-        );
-        await remove(hash);
+        setLoading(false);
 
         return;
       }
 
-      changeOperationStatus(
-        hash,
-        'success',
-        'Successfully created users from the excel file',
-        true
-      );
-      await remove(hash);
-
       setFields(Object.keys(json[0]));
       setData(json);
       setVisibleFields([]);
+      setLoading(false);
 
       if (json.length > 0) {
         incrementIndex();
@@ -201,32 +175,34 @@ function DragAndDropExcelFile() {
     reader.readAsArrayBuffer(file);
   }
 
-  async function remove(hash: string) {
-    await delay(5000);
-    removeOperation(hash);
-  }
-
   return (
-    <div
-      className="flex flex-col items-center justify-evenly space-y-12 rounded-xl border-2 border-dashed border-zinc-300 p-5"
-      onDragOver={handleDragOver}
-      onDrop={handleDrop}
-    >
-      <h1 className="text-3xl text-slate-400">
-        Drag and drop an excel file here
-      </h1>
-      <h3 className="text-lg text-slate-400">Or, if you prefer...</h3>
-      <input
-        type="file"
-        accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        multiple
-        onChange={inputOnChange}
-        hidden
-        ref={inputRef}
-      />
-      <Button className="" onClick={() => inputRef.current!.click()}>
-        Select an excel file from your computer
-      </Button>
+    <div>
+      {loading && (
+        <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
+          <LoadingSpinner size={32} />
+        </div>
+      )}
+      <div
+        className="flex flex-col items-center justify-evenly space-y-12 rounded-xl border-2 border-dashed border-zinc-300 p-5"
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+      >
+        <h1 className="text-3xl text-slate-400">
+          Drag and drop an excel file here
+        </h1>
+        <h3 className="text-lg text-slate-400">Or, if you prefer...</h3>
+        <input
+          type="file"
+          accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          multiple
+          onChange={inputOnChange}
+          hidden
+          ref={inputRef}
+        />
+        <Button className="" onClick={() => inputRef.current!.click()}>
+          Select an excel file from your computer
+        </Button>
+      </div>
     </div>
   );
 }
