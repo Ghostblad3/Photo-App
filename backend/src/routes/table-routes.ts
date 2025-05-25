@@ -13,8 +13,8 @@ tableRouter.get("/names", (_, res: Response) => {
   let data = sqlite
     .prepare(
       `select name
-      from sqlite_master
-      where type='table';`,
+       from sqlite_master
+       where type='table'`,
     )
     .all() as { name: string }[];
 
@@ -47,7 +47,7 @@ tableRouter.post(
       queryA += `${columnName} text not null ${index === 0 ? "unique" : ""},`;
     });
 
-    queryA += `primary key("rec_id"));`;
+    queryA += `primary key("rec_id"))`;
 
     const queryB = `create table ${tableName}_photos (
                     photo_id integer not null,
@@ -56,7 +56,7 @@ tableRouter.post(
                     photo_timestamp text not null,
                     rec_id integer not null unique,
                     primary key("photo_id"),
-                    foreign key("rec_id") references ${tableName}("rec_id") on delete cascade);`;
+                    foreign key("rec_id") references ${tableName}("rec_id") on delete cascade)`;
 
     let tsx: Transaction<() => void>;
 
@@ -77,7 +77,7 @@ tableRouter.post(
     } catch (e) {
       sqlite.prepare(`drop table "${tableName}"`).run();
 
-      return next(new Error("error occured during creating table folder"));
+      return next(new Error("error occurred during creating table folder"));
     }
 
     return res
@@ -87,7 +87,7 @@ tableRouter.post(
 );
 
 tableRouter.delete(
-  "/delete/:tableName",
+  "/delete/tableName/:tableName",
   schemaValidator(
     z.object({
       tableName: tableNameType,
@@ -102,7 +102,7 @@ tableRouter.delete(
       result = sqlite
         .prepare(
           `select path
-          from "${tableName}_photos"`,
+           from "${tableName}_photos"`,
         )
         .all() as { path: string }[];
     } catch (e) {
@@ -142,7 +142,7 @@ tableRouter.delete(
 );
 
 tableRouter.get(
-  "/count-records/:tableName",
+  "/count-records/tableName/:tableName",
   schemaValidator(
     z.object({
       tableName: tableNameType,
@@ -154,7 +154,7 @@ tableRouter.get(
     const result = sqlite
       .prepare(
         `select count(*) as count 
-        from "${tableName}"`,
+         from "${tableName}"`,
       )
       .get() as { count: number };
 
@@ -169,7 +169,7 @@ tableRouter.get(
 );
 
 tableRouter.get(
-  "/count-screenshots/:tableName",
+  "/count-screenshots/tableName/:tableName",
   schemaValidator(
     z.object({
       tableName: tableNameType,
@@ -181,7 +181,7 @@ tableRouter.get(
     const result = sqlite
       .prepare(
         `select count(*) as count
-        from "${tableName}_photos"`,
+         from "${tableName}_photos"`,
       )
       .get() as { count: number };
 
@@ -196,7 +196,7 @@ tableRouter.get(
 );
 
 tableRouter.get(
-  "/screenshots-size/:tableName",
+  "/screenshots-size/tableName/:tableName",
   schemaValidator(
     z.object({
       tableName: tableNameType,
@@ -211,19 +211,19 @@ tableRouter.get(
       result = sqlite
         .prepare(
           `select name
-          from sqlite_master
-          where type='table';`,
+           from sqlite_master
+           where type='table'`,
         )
         .all() as { name: string }[];
     } catch (e) {
       return next(new Error((e as Error).toString()));
     }
 
-    const mapedResult = result
+    const mappedResult = result
       .filter((item) => !item.name.endsWith("_photos"))
       .map((item) => item.name);
 
-    if (!mapedResult.includes(tableName)) {
+    if (!mappedResult.includes(tableName)) {
       return next(new Error("table not found"));
     }
 
@@ -247,7 +247,7 @@ tableRouter.get(
 );
 
 tableRouter.get(
-  "/table-column-names/:tableName",
+  "/table-column-names/tableName/:tableName",
   schemaValidator(
     z.object({
       tableName: tableNameType,
@@ -259,7 +259,7 @@ tableRouter.get(
     const result = sqlite
       .prepare(
         `select name
-        from pragma_table_info(?)`,
+         from pragma_table_info(?)`,
       )
       .all(tableName) as { name: string }[];
 
@@ -280,7 +280,7 @@ tableRouter.get(
 );
 
 tableRouter.all("/*", (_: Request, res: Response) => {
-  res.status(404).send({ error: "route not found" });
+  return res.status(404).send({ error: "route not found" });
 });
 
 export default tableRouter;

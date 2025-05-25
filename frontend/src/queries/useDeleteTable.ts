@@ -7,7 +7,7 @@ const useDeleteTable = (tableName: string) => {
       const time = Date.now();
 
       const response = await fetch(
-        `http://localhost:3000/table/delete/${tableName}`,
+        `http://localhost:3000/table/delete/tableName/${tableName}`,
         {
           method: 'DELETE',
         }

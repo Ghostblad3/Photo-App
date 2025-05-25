@@ -13,7 +13,7 @@ function CreateTable() {
   const resetDataStore = useDataStore((state) => state.actions.resetDataStore);
   const { resetNavigationStore } = useNavigationStore((state) => state.actions);
   const setAllowRight = useNavigationStore(
-    (state) => state.actions.setAllowRight,
+    (state) => state.actions.setAllowRight
   );
 
   const inputRef = useRef('');
@@ -37,7 +37,7 @@ function CreateTable() {
     isPending: createUsersPending,
     isSuccess: createUsersSuccess,
     isError: createUsersError,
-  } = useAddUsers(tableName, displayableData);
+  } = useAddUsers();
 
   useEffect(() => {
     if (allowCreateTable) createTableMutate();
@@ -50,7 +50,7 @@ function CreateTable() {
 
     if (createTableError) setAllowCreateTable(false);
 
-    if (createTableSuccess) createUsersMutate();
+    if (createTableSuccess) createUsersMutate({ tableName, displayableData });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [createTablePending, createTableSuccess, createTableError]);
@@ -102,8 +102,8 @@ function CreateTable() {
       inputErrors.typeThree ||
       createTablePending ||
       createUsersPending
-    ) return;
-
+    )
+      return;
 
     setAllowCreateTable(true);
   }
@@ -147,7 +147,9 @@ function CreateTable() {
             </p>
           </div>
         )}
-        <Button onClick={buttonHandler} disabled={tableName === ''}>Create table</Button>
+        <Button onClick={buttonHandler} disabled={tableName === ''}>
+          Create table
+        </Button>
       </div>
     </div>
   );

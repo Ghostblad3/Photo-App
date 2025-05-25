@@ -78,7 +78,7 @@ app.use(
 );
 
 app.all("/*", (_: Request, res: Response) => {
-  res.status(404).send({ error: "route not found" });
+  return res.status(404).send({ error: "route not found" });
 });
 
 let server: Server<typeof IncomingMessage, typeof ServerResponse> | undefined =

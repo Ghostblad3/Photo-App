@@ -52,6 +52,7 @@ const UpdateUserDialog = memo(() => {
   );
   const propsToUpdateRef = useRef<{ [key: string]: string }>();
   const [buttonDisabled, setButtonDisabled] = useState(false);
+
   const { mutate, isPending, isSuccess, isError } = useUpdateUser(
     tableName,
     userId
@@ -103,13 +104,8 @@ const UpdateUserDialog = memo(() => {
   }
 
   return (
-    <Dialog open={showDialog}>
-      <DialogContent
-        className="sm:max-w-[26.563rem]"
-        onPointerDownOutside={() => {
-          setShowDialog(false);
-        }}
-      >
+    <Dialog open={showDialog} onOpenChange={(open) => setShowDialog(open)}>
+      <DialogContent className="sm:max-w-[26.563rem]">
         <DialogHeader>
           <DialogTitle>Update user information</DialogTitle>
         </DialogHeader>
@@ -118,6 +114,7 @@ const UpdateUserDialog = memo(() => {
             <div key={key} className="mx-4">
               <p className="block space-y-1 text-sm font-semibold">{key}</p>
               <Input
+                data-testid={`${key}-input`}
                 className="mt-1"
                 defaultValue={userObjRef.current[key]}
                 onChange={(e) => {

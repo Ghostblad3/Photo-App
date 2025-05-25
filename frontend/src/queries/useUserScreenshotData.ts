@@ -5,7 +5,7 @@ const useUserScreenshotData = (tableName: string) => {
     queryKey: ['user-data', tableName],
     queryFn: async () => {
       const response = await fetch(
-        `http://localhost:3000/screenshot/retrieve-user-screenshots-all-days/${tableName}`,
+        `http://localhost:3000/screenshot/retrieve-user-screenshots-all-days/tableName/${tableName}`,
         {
           cache: 'no-store',
         }

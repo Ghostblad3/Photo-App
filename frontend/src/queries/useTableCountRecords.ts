@@ -5,7 +5,7 @@ const useTableCountRecords = (tableName: string) => {
     queryKey: ['table-info-count-records', tableName],
     queryFn: async () => {
       const response = await fetch(
-        `http://localhost:3000/table/count-records/${tableName}`,
+        `http://localhost:3000/table/count-records/tableName/${tableName}`,
         {
           cache: 'no-store',
         }

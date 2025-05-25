@@ -8,7 +8,7 @@ const useTableRecords = (tableName: string) => {
       const time = Date.now();
 
       const firstRequestResponse = await fetch(
-        `http://localhost:3000/record/get-user-data/${tableName}`,
+        `http://localhost:3000/record/get-user-data/tableName/${tableName}`,
         {
           cache: 'no-store',
         }
@@ -32,7 +32,7 @@ const useTableRecords = (tableName: string) => {
       }
 
       const secondRequestResponse = await fetch(
-        `http://localhost:3000/screenshot/retrieve-user-data-with-screenshots/${tableName}`,
+        `http://localhost:3000/screenshot/retrieve-user-data-with-screenshots/tableName/${tableName}`,
         {
           cache: 'no-store',
         }

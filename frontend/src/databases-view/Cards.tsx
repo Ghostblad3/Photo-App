@@ -4,7 +4,7 @@ import { Card } from './Card';
 import { useSelectedTableInfoStore } from './stores/selectedTableInfoStore';
 
 function Cards() {
-  const [showCards, setShowCards] = useState(true);
+  const [showCards, setShowCards] = useState(false);
   const columnNames = useSelectedTableInfoStore(
     (state) => state.props.columnNames
   );

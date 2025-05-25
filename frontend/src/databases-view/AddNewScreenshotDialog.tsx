@@ -27,13 +27,8 @@ const AddNewScreenshotDialog = memo(() => {
   }, []);
 
   return (
-    <Dialog open={showDialog}>
-      <DialogContent
-        className="sm:max-w-[51.563rem]"
-        onPointerDownOutside={() => {
-          setShowDialog(false);
-        }}
-      >
+    <Dialog open={showDialog} onOpenChange={(open) => setShowDialog(open)}>
+      <DialogContent className="sm:max-w-[51.563rem]">
         <DialogHeader>
           <DialogTitle>Add new screenshot for user</DialogTitle>
         </DialogHeader>

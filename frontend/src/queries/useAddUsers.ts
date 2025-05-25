@@ -1,9 +1,15 @@
 import { useMutation } from '@tanstack/react-query';
-import { delay } from '@/utils/delay.ts';
+import { delay } from '@/utils/delay';
 
-const useAddUsers = (tableName: string, displayableData: { [p: string]: string }[]) => {
+const useAddUsers = () => {
   const { mutate, isPending, isSuccess, isError } = useMutation({
-    mutationFn: async () => {
+    mutationFn: async ({
+      tableName,
+      displayableData,
+    }: {
+      tableName: string;
+      displayableData: { [key: string]: string }[];
+    }) => {
       const time = Date.now();
       const response = await fetch('http://localhost:3000/record/add-users', {
         method: 'POST',

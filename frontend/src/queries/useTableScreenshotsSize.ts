@@ -5,7 +5,7 @@ const useTableScreenshotsSize = (tableName: string) => {
     queryKey: ['table-info-screenshots-size', tableName],
     queryFn: async () => {
       const response = await fetch(
-        `http://localhost:3000/table/screenshots-size/${tableName}`,
+        `http://localhost:3000/table/screenshots-size/tableName/${tableName}`,
         {
           cache: 'no-store',
         }
