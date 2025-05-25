@@ -41,6 +41,8 @@ const ScreenshotDialog = memo(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, isFetching, isError]);
 
+  console.log(data, isFetching, isError);
+
   return (
     <Dialog open={showDialog}>
       <DialogContent

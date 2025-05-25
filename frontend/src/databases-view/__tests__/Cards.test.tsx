@@ -1,32 +1,37 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { Cards } from '../Cards';
+import { useSelectedTableInfoStore } from '../stores/selectedTableInfoStore';
+import userEvent from '@testing-library/user-event';
 
-vi.mock('../stores/selectedTableInfoStore', () => ({
-  useSelectedTableInfoStore: vi.fn((selector) => {
-    const store = {
-      props: {
-        columnNames: ['Name', 'Age', 'Email'],
-        userNumber: '100',
-        screenshotNumber: '50',
-        screenshotAverageSize: '2048',
-      },
-      actions: {
-        setTableName: vi.fn(),
-        setColumnNames: vi.fn(),
-        setUserNumber: vi.fn(),
-        setScreenshotNumber: vi.fn(),
-        setScreenshotAverageSize: vi.fn(),
-        resetSelectedTableInfoStore: vi.fn(),
-      },
-    };
-    return selector ? selector(store) : store;
-  }),
-}));
+// Utility function to render the component
+const renderComponent = () => {
+  return render(<Cards />);
+};
 
 describe('Cards component', () => {
-  it('renders card information correctly', () => {
-    render(<Cards />);
+  beforeEach(() => {
+    // Reset the store before each test
+    useSelectedTableInfoStore.getState().actions.resetSelectedTableInfoStore();
+
+    // Set initial store state
+    useSelectedTableInfoStore
+      .getState()
+      .actions.setColumnNames(['Name', 'Age', 'Email']);
+    useSelectedTableInfoStore.getState().actions.setUserNumber('100');
+    useSelectedTableInfoStore.getState().actions.setScreenshotNumber('50');
+    useSelectedTableInfoStore
+      .getState()
+      .actions.setScreenshotAverageSize('2048');
+  });
+
+  it('renders card information correctly', async () => {
+    renderComponent();
+
+    const toggleSwitch = screen.getByRole('switch');
+    expect(toggleSwitch).toBeInTheDocument();
+
+    await userEvent.click(toggleSwitch);
 
     expect(screen.getByText('User properties')).toBeInTheDocument();
     expect(screen.getByText('Name')).toBeInTheDocument();
@@ -41,19 +46,21 @@ describe('Cards component', () => {
   });
 
   it('toggles visibility when switch is clicked', async () => {
-    render(<Cards />);
+    renderComponent();
     const toggleSwitch = screen.getByRole('switch');
-
     expect(toggleSwitch).toBeInTheDocument();
 
+    await userEvent.click(toggleSwitch);
+
+    // Initial state - visible
     expect(screen.getByText('User properties')).toBeInTheDocument();
 
-    fireEvent.click(toggleSwitch);
-
+    // First click - hide
+    await userEvent.click(toggleSwitch);
     expect(screen.queryByText('User properties')).not.toBeInTheDocument();
 
-    fireEvent.click(toggleSwitch);
-
+    // Second click - show again
+    await userEvent.click(toggleSwitch);
     expect(screen.getByText('User properties')).toBeInTheDocument();
   });
 });

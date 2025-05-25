@@ -177,7 +177,7 @@ screenshotRouter.post(
         sqlite
           .prepare(
             `insert into ${tableName}_photos
-                 (dayNumber, path, photo_timestamp, rec_id)
+             (dayNumber, path, photo_timestamp, rec_id)
              values (?, ?, ?, ?)`,
           )
           .run(dayNumber, screenshotFilePath, photo_timestamp, rec_id);
@@ -202,8 +202,8 @@ screenshotRouter.post(
           .prepare(
             `update ${tableName}_photos
              set dayNumber = ?,
-                 path = ?,
-                 photo_timestamp = ?
+             path = ?,
+             photo_timestamp = ?
              where rec_id = ?`,
           )
           .run(dayNumber, screenshotFilePath, new Date().toISOString(), rec_id);
@@ -222,7 +222,7 @@ screenshotRouter.post(
 
 // Delete the screenshot of a user
 screenshotRouter.delete(
-  "/delete-user-screenshot/:userIdName/:userId/:tableName",
+  "/delete-user-screenshot/userIdName/:userIdName/userId/:userId/tableName/:tableName",
   schemaValidator(
     z.object({
       userIdName: userPropNameType,
@@ -408,7 +408,7 @@ screenshotRouter.patch(
 
 // Retrieves the screenshots of users for a specific table for a given date
 screenshotRouter.get(
-  "/retrieve-user-screenshots-single-day/:dayNumber/:tableName",
+  "/retrieve-user-screenshots-single-day/dayNumber/:dayNumber/tableName/:tableName",
   schemaValidator(
     z.object({
       dayNumber: dayNumberType,
@@ -434,7 +434,7 @@ screenshotRouter.get(
         .prepare(
           `select *
            from ${tableName}_photos
-                    inner join ${tableName} on ${tableName}_photos.rec_id = ${tableName}.rec_id
+           inner join ${tableName} on ${tableName}_photos.rec_id = ${tableName}.rec_id
            where dayNumber = ?`,
         )
         .all(dayNumber) as {
@@ -482,7 +482,7 @@ screenshotRouter.get(
 
 // Retrieves the submitted days for a given table
 screenshotRouter.get(
-  "/retrieve-submitted-days/:tableName",
+  "/retrieve-submitted-days/tableName/:tableName",
   schemaValidator(
     z.object({
       tableName: tableNameType,
@@ -511,7 +511,7 @@ screenshotRouter.get(
 
 // Retrieves the screenshots of users of specific table for all days
 screenshotRouter.get(
-  "/retrieve-user-screenshots-all-days/:tableName",
+  "/retrieve-user-screenshots-all-days/tableName/:tableName",
   schemaValidator(
     z.object({
       tableName: tableNameType,
@@ -533,7 +533,7 @@ screenshotRouter.get(
         .prepare(
           `select *
            from ${tableName}
-                    inner join ${tableName}_photos on ${tableName}_photos.photo_id = ${tableName}.rec_id`,
+           inner join ${tableName}_photos on ${tableName}_photos.photo_id = ${tableName}.rec_id`,
         )
         .all() as {
         [key: string]: string;
@@ -590,7 +590,7 @@ screenshotRouter.get(
 );
 
 screenshotRouter.get(
-  "/retrieve-user-screenshot/:userIdName/:userId/:tableName",
+  "/retrieve-user-screenshot/userIdName/:userIdName/userId/:userId/tableName/:tableName",
   schemaValidator(
     z.object({
       userIdName: userPropNameType,
@@ -658,25 +658,17 @@ screenshotRouter.get(
       return next(new Error("user not found"));
     }
 
-    let result:
-      | {
-          path: string;
-        }
-      | undefined;
+    let result: { path: string } | undefined;
 
     try {
       result = sqlite
         .prepare(
           `select path
            from ${tableName}_photos
-                    inner join ${tableName} on ${tableName}_photos.rec_id = ${tableName}.rec_id
+           inner join ${tableName} on ${tableName}_photos.rec_id = ${tableName}.rec_id
            where ${tableName}.${userIdName} = ?`,
         )
-        .get(userId) as
-        | {
-            path: string;
-          }
-        | undefined;
+        .get(userId) as { path: string } | undefined;
     } catch (e) {
       return next(new Error((e as Error).toString()));
     }
@@ -698,8 +690,8 @@ screenshotRouter.get(
         sqlite
           .prepare(
             `delete
-                    from ${tableName}_photos
-                    where rec_id = ?`,
+             from ${tableName}_photos
+             where rec_id = ?`,
           )
           .run(rec_id);
       } catch (e) {
@@ -718,7 +710,7 @@ screenshotRouter.get(
 );
 
 screenshotRouter.get(
-  "/retrieve-user-data-with-screenshots/:tableName",
+  "/retrieve-user-data-with-screenshots/tableName/:tableName",
   schemaValidator(
     z.object({
       tableName: tableNameType,
@@ -763,7 +755,7 @@ screenshotRouter.get(
         .prepare(
           `select *
            from ${tableName}_photos
-                    inner join ${tableName} on ${tableName}_photos.rec_id = ${tableName}.rec_id`,
+           inner join ${tableName} on ${tableName}_photos.rec_id = ${tableName}.rec_id`,
         )
         .all() as {
         [key: string]: string | number;
@@ -800,7 +792,7 @@ screenshotRouter.get(
 );
 
 screenshotRouter.all("/*", (_: Request, res: Response) => {
-  res.status(404).send({ error: "route not found" });
+  return res.status(404).send({ error: "route not found" });
 });
 
 export default screenshotRouter;

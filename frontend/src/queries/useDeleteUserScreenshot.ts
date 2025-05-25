@@ -11,7 +11,7 @@ const useDeleteUserScreenshot = (
       const time = Date.now();
 
       const response = await fetch(
-        `http://localhost:3000/screenshot/delete-user-screenshot/${userIdName}/${userId}/${tableName}`,
+        `http://localhost:3000/screenshot/delete-user-screenshot/userIdName/${userIdName}/userId/${userId}/tableName/${tableName}`,
         {
           method: 'DELETE',
         }

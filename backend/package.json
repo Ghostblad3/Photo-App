@@ -1,8 +1,8 @@
 {
   "scripts": {
-    "start": "tsx ./src/server.ts",
+    "start": "tsx watch ./src/server.ts",
     "test": "cross-env ENVIRONMENT=TEST jest --detectOpenHandles",
-    "test-schemas": "jest ./src/__test__/schema-validators.test.ts",
+    "test-schemas": "jest ./src/__tests__/schema-validators.test.ts",
     "cc": "jest --clearCache"
   },
   "dependencies": {

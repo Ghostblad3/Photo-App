@@ -39,12 +39,12 @@ const useDeleteUserStore = create<DeleteUserProps & DeleteUserActions>(
         });
       },
       setShowDialog: (showDialog: boolean) => {
-        set({
+        set((state) => ({
           props: {
-            ...initialProps,
+            ...state.props, // Correctly access `state.props` here
             showDialog,
           },
-        });
+        }));
       },
       resetDeleteUserStore: () => {
         set({

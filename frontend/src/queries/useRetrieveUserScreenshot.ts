@@ -15,7 +15,7 @@ const useRetrieveUserScreenshot = (
       const timeNow = new Date();
 
       const response = await fetch(
-        `http://localhost:3000/screenshot/retrieve-user-screenshot/${keyName}/${userInfo[keyName]}/${tableName}`,
+        `http://localhost:3000/screenshot/retrieve-user-screenshot/userIdName/${keyName}/userId/${userInfo[keyName]}/tableName/${tableName}`,
         {
           cache: 'no-store',
         }

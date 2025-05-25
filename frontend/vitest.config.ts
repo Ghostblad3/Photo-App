@@ -9,13 +9,7 @@ export default mergeConfig(
       globals: true,
       environment: 'jsdom',
       setupFiles: ['./setup-vitest.ts'],
-      isolate: false,
-      // you can also disable isolation only for specific pools
-      poolOptions: {
-        forks: {
-          isolate: false,
-        },
-      },
+      watch: false,
     },
   })
 );

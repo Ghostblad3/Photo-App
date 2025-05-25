@@ -8,7 +8,7 @@ const useTableColumnNames = (tableName: string, _delay: number) => {
       const time = Date.now();
 
       const response = await fetch(
-        `http://localhost:3000/table/table-column-names/${tableName}`,
+        `http://localhost:3000/table/table-column-names/tableName/${tableName}`,
         {
           cache: 'no-store',
         }

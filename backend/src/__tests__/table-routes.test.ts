@@ -57,7 +57,9 @@ describe("Delete a table that exists", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(app).delete("/table/delete/test_table_2024");
+    const res = await request(app).delete(
+      "/table/delete/tableName/test_table_2024",
+    );
 
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual({
@@ -74,7 +76,9 @@ describe("Delete a table that doesn't exist", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(app).delete("/table/delete/test_table_2024");
+    const res = await request(app).delete(
+      "/table/delete/tableName/test_table_2024",
+    );
 
     expect(res.statusCode).toEqual(404);
     expect(res.body).toEqual({
@@ -138,7 +142,9 @@ describe("Count records of users in specific table ", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(app).get("/table/count-records/test_table_2024");
+    const res = await request(app).get(
+      "/table/count-records/tableName/test_table_2024",
+    );
 
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual({
@@ -155,7 +161,9 @@ describe("Count records in table that doesn't exist", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(app).get("/table/count-records/test_table_2024");
+    const res = await request(app).get(
+      "/table/count-records/tableName/test_table_2024",
+    );
 
     expect(res.statusCode).toEqual(404);
     expect(res.body).toEqual({
@@ -181,7 +189,9 @@ describe("Count screenshots for users of specific table", () => {
       tableName: "test_table_2024",
     };
 
-    const res = await request(app).get("/table/count-records/test_table_2024");
+    const res = await request(app).get(
+      "/table/count-records/tableName/test_table_2024",
+    );
 
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual({
@@ -207,7 +217,7 @@ describe("Get screenshot size of users of specific table", () => {
     };
 
     const res = await request(app).get(
-      "/table/screenshots-size/test_table_2024"
+      "/table/screenshots-size/tableName/test_table_2024",
     );
 
     expect(res.statusCode).toEqual(200);
@@ -226,7 +236,7 @@ describe("Get screenshot size for table that doesn't exist", () => {
     };
 
     const res = await request(app).get(
-      "/table/screenshots-size/test_table_2024"
+      "/table/screenshots-size/tableName/test_table_2024",
     );
 
     expect(res.statusCode).toEqual(404);
@@ -249,7 +259,7 @@ describe("Get column names for users of specific table", () => {
     };
 
     const res = await request(app).get(
-      "/table/table-column-names/test_table_2024"
+      "/table/table-column-names/tableName/test_table_2024",
     );
 
     expect(res.statusCode).toEqual(200);
@@ -268,7 +278,7 @@ describe("Get column names for table that doesn't exist", () => {
     };
 
     const res = await request(app).get(
-      "/table/table-column-names/test_table_2024"
+      "/table/table-column-names/tableName/test_table_2024",
     );
 
     expect(res.statusCode).toEqual(404);

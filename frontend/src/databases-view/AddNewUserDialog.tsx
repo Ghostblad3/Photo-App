@@ -45,9 +45,7 @@ const AddNewUserDialog = memo(() => {
     }, {})
   );
   const [buttonIsDisabled, setButtonIsDisabled] = useState(true);
-  const { mutate, isSuccess, isPending, isError } = useAddUsers(tableName, [
-    userRef.current,
-  ]);
+  const { mutate, isSuccess, isPending, isError } = useAddUsers();
 
   useEffect(() => {
     if (!isPending && (isSuccess || isError)) setShowDialog(false);
@@ -56,13 +54,14 @@ const AddNewUserDialog = memo(() => {
   }, [isPending, isSuccess, isError]);
 
   useEffect(() => {
-    if (isSuccess)
+    if (isSuccess) {
       addUser({
         ...userRef.current,
         has_screenshot: 'no',
         screenshot_day: '-',
         photo_timestamp: '-',
       });
+    }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuccess]);
@@ -86,17 +85,12 @@ const AddNewUserDialog = memo(() => {
   }, [fieldsModified]);
 
   function addNewUserButtonHandler() {
-    mutate();
+    mutate({ tableName, displayableData: [userRef.current] });
   }
 
   return (
-    <Dialog open={showDialog}>
-      <DialogContent
-        className="sm:max-w-[26.563rem]"
-        onPointerDownOutside={() => {
-          setShowDialog(false);
-        }}
-      >
+    <Dialog open={showDialog} onOpenChange={(open) => setShowDialog(open)}>
+      <DialogContent className="sm:max-w-[26.563rem]">
         <DialogHeader>
           <DialogTitle>Add new user</DialogTitle>
         </DialogHeader>
@@ -132,7 +126,7 @@ const AddNewUserDialog = memo(() => {
         <Button
           className="mx-4 w-[calc(100%_-_2rem)]"
           onClick={addNewUserButtonHandler}
-          disabled={isPending}
+          disabled={isPending || buttonIsDisabled}
         >
           {isPending && <ReloadIcon className="mr-2 size-4 animate-spin" />}
           Submit

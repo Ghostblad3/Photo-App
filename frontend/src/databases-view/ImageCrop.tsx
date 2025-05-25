@@ -243,7 +243,11 @@ function ImageCrop() {
         <div className="flex h-[12.5rem] flex-col items-center justify-center">
           <h1 className="text-xl">Uploading</h1>
           <div className="mt-10 flex w-full items-center justify-center gap-2.5">
-            <Progress value={progress} className="mt-[0.188rem] h-2.5 w-3/5" />
+            <Progress
+              role="progressbar"
+              value={progress}
+              className="mt-[0.188rem] h-2.5 w-3/5"
+            />
             <p className="">{progress} %</p>
           </div>
         </div>

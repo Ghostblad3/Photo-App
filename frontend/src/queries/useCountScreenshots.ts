@@ -5,7 +5,7 @@ const useCountScreenshots = (tableName: string) => {
     queryKey: ['user-count-screenshots', tableName],
     queryFn: async () => {
       const response = await fetch(
-        `http://localhost:3000/table/count-screenshots/${tableName}`,
+        `http://localhost:3000/table/count-screenshots/tableName/${tableName}`,
         {
           cache: 'no-store',
         }

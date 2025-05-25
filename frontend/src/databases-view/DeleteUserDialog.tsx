@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { ReloadIcon } from '@radix-ui/react-icons';
 import { useDeleteUserStore } from './stores/deleteUserStore.ts';
 import { useUserDataStore } from './stores/userDataStore';
@@ -20,12 +20,8 @@ const DeleteUserDialog = () => {
     (state) => state.actions
   );
   const deleteUser = useUserDataStore((state) => state.actions.deleteUser);
-  const checkedBoxIsCheckedRef = useRef(false);
-  const { mutate, isIdle, isPending, isSuccess, isError } = useRemoveUser(
-    tableName,
-    userId,
-    userIdName
-  );
+  const [checkboxIsChecked, setCheckboxIsChecked] = useState(false);
+  const { mutate, isPending, isSuccess, isError } = useRemoveUser();
 
   useEffect(() => {
     return () => {
@@ -48,26 +44,23 @@ const DeleteUserDialog = () => {
   }, [isSuccess, isError]);
 
   function deleteButtonHandler() {
-    if (checkedBoxIsCheckedRef.current) mutate();
+    if (checkboxIsChecked) mutate({ tableName, userId, userIdName });
   }
 
   return (
-    <Dialog open={showDialog}>
-      <DialogContent
-        className="sm:max-w-[26.563rem]"
-        onPointerDownOutside={() => {
-          setShowDialog(false);
-        }}
-      >
+    <Dialog open={showDialog} onOpenChange={(open) => setShowDialog(open)}>
+      <DialogContent className="sm:max-w-[26.563rem]">
         <DialogHeader>
           <DialogTitle>Delete user</DialogTitle>
         </DialogHeader>
         <p className="mx-4">Are you sure you want to delete this user?</p>
         <div className="mx-4 flex items-center space-x-2">
           <Checkbox
+            data-testid="terms"
             id="terms"
+            checked={checkboxIsChecked}
             onCheckedChange={() => {
-              checkedBoxIsCheckedRef.current = true;
+              setCheckboxIsChecked((prev) => !prev);
             }}
           />
           <Label
@@ -80,7 +73,7 @@ const DeleteUserDialog = () => {
         <Button
           className="mx-4 w-[calc(100%_-_2rem)]"
           onClick={deleteButtonHandler}
-          disabled={!isIdle}
+          disabled={isPending || !checkboxIsChecked}
         >
           {isPending && <ReloadIcon className="mr-2 size-4 animate-spin" />}
           Submit
